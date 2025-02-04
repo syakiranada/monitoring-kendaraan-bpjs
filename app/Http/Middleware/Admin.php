@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class User
+class Admin
 {
     /**
      * Handle an incoming request.
@@ -16,9 +16,9 @@ class User
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::user()->peran != 'pengguna')
+        if (Auth::user()->peran != 'admin')
         {
-            return redirect('admin/beranda');
+            return redirect('beranda');
         }
         
         return $next($request);
