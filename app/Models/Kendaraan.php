@@ -51,4 +51,19 @@ class Kendaraan extends Model
     {
         return $this->hasMany(ServisRutin::class, 'id_kendaraan', 'id_kendaraan');
     }
+
+    public function bbm()
+    {
+        return $this->hasMany(BBM::class, 'id_kendaraan', 'id_kendaraan');
+    }
+
+    public function asuransi()
+    {
+        return $this->hasMany(Asuransi::class, 'id_kendaraan', 'id_kendaraan');
+    }
+
+    public function pajak()
+    {
+        return $this->hasMany(Pajak::class, 'id_kendaraan', 'id_kendaraan');
+    }
 }
