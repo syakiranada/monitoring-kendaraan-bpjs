@@ -21,5 +21,7 @@ class DatabaseSeeder extends Seeder
         ]);
         $this->call(UsersSeeder::class);
         $this->call(KendaraanSeeder::class);
+        $this->call(PeminjamanSeeder::class);
+        $this->call(CekFisikSeeder::class);
     }
 }

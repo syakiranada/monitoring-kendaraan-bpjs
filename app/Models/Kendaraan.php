@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Kendaraan extends Model
 {
@@ -30,4 +31,14 @@ class Kendaraan extends Model
         'no_rangka',
         'kapasitas',
     ];
+
+    public function peminjaman()
+    {
+        return $this->hasMany(Peminjaman::class, 'id_kendaraan', 'id_kendaraan');
+    }
+
+    public function cekFisik()
+    {
+        return $this->hasMany(CekFisik::class, 'id_kendaraan', 'id_kendaraan');
+    }
 }
