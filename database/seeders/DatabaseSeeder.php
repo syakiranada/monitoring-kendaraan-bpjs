@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ServisInsidental;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -23,5 +24,7 @@ class DatabaseSeeder extends Seeder
         $this->call(KendaraanSeeder::class);
         $this->call(PeminjamanSeeder::class);
         $this->call(CekFisikSeeder::class);
+        $this->call(ServisInsidentalSeeder::class);
+        $this->call(ServisRutinSeeder::class);
     }
 }
