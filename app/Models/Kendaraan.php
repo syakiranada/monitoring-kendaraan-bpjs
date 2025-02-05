@@ -41,4 +41,14 @@ class Kendaraan extends Model
     {
         return $this->hasMany(CekFisik::class, 'id_kendaraan', 'id_kendaraan');
     }
+
+    public function servisInsidental()
+    {
+        return $this->hasMany(ServisInsidental::class, 'id_kendaraan', 'id_kendaraan');
+    }
+
+    public function servisRutin()
+    {
+        return $this->hasMany(ServisRutin::class, 'id_kendaraan', 'id_kendaraan');
+    }
 }

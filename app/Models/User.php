@@ -23,6 +23,16 @@ class User extends Authenticatable
         'password',
     ];
 
+    public function servisInsidental()
+    {
+        return $this->hasMany(ServisInsidental::class, 'user_id', 'id');
+    }
+
+    public function servisRutin()
+    {
+        return $this->hasMany(ServisRutin::class, 'user_id', 'id');
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
