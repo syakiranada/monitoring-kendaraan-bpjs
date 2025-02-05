@@ -4,6 +4,9 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PeminjamanController;
+use App\Http\Controllers\DaftarKendaraanPenggunaController;
+
 
 Route::get('/', function () {
     // return view('welcome');
@@ -18,6 +21,8 @@ Route::get('/', function () {
 // Route Pengguna
 Route::middleware(['auth', 'user'])->group(function () {
     Route::get('/beranda', [HomeController::class, 'berandaPengguna'])->name('beranda');
+    Route::get('/peminjaman', [PeminjamanController::class, 'peminjamanPage'])->name('peminjaman');
+    Route::get('/kendaraan', [DaftarKendaraanPenggunaController::class, 'daftarKendaraanPage'])->name('kendaraan');
 });
 
 // Route Admin
