@@ -7,6 +7,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PeminjamanController;
 use App\Http\Controllers\DaftarKendaraanPenggunaController;
 
+use App\Http\Controllers\PengajuanPeminjamanController;
 
 Route::get('/', function () {
     // return view('welcome');
@@ -28,6 +29,10 @@ Route::middleware(['auth', 'user'])->group(function () {
 // Route Admin
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/beranda', [HomeController::class, 'berandaAdmin'])->name('admin.beranda');
+    Route::get('/admin/pengajuan-peminjaman', [PengajuanPeminjamanController::class, 'index'])->name('admin.pengajuan-peminjaman.index');
+    Route::get('/admin/pengajuan-peminjaman/{id}', [PengajuanPeminjamanController::class, 'detail'])->name('admin.pengajuan-peminjaman.detail');
+    Route::post('/admin/pengajuan-peminjaman/setujui/{id}', [PengajuanPeminjamanController::class, 'setujui'])->name('admin.pengajuan-peminjaman.setujui');
+    Route::post('/admin/pengajuan-peminjaman/tolak/{id}', [PengajuanPeminjamanController::class, 'tolak'])->name('admin.pengajuan-peminjaman.tolak');
 });
 
 Route::middleware('auth')->group(function () {
