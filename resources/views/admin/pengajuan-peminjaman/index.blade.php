@@ -87,6 +87,14 @@
                     // Jika ya, submit form yang sesuai
                     const form = document.getElementById(`${action}-form-${id}`);
                     form.submit();
+
+                    // Tampilkan pesan sukses setelah form dikirim
+                    Swal.fire({
+                        title: "Berhasil!",
+                        text: `Peminjaman telah ${action === 'setujui' ? 'disetujui' : 'ditolak'}`,
+                        icon: "success",
+                        confirmButtonColor: "#3085d6",
+                    });
                 }
             });
         }
