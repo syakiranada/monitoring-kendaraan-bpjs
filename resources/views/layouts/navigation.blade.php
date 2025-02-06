@@ -1,7 +1,7 @@
-<nav style="background-color: #3575B8" class="sticky top-0 w-full z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<nav style="background-color: #3575B8" class="fixed top-0 transition-all duration-300 ease-in-out z-500 w-full">
+    <div class="mx-auto px-4 sm:px-6">
         <div class="flex justify-between items-center h-16">
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center">
                 <div class="w-10 h-10">
                     <img 
                         alt="Logo" 
@@ -105,6 +105,12 @@
         </div>
     </div>
 </nav>
+
+<style>
+    body {
+        padding-top: 64px; /* Sesuaikan dengan tinggi navbar */
+    }
+</style>
 
 {{--  <footer class="bg-[#3575B8] text-white py-4">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">

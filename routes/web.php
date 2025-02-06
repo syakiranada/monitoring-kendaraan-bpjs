@@ -23,22 +23,17 @@ Route::get('/', function () {
 // Route Pengguna
 Route::middleware(['auth', 'user'])->group(function () {
     Route::get('/beranda', [HomeController::class, 'berandaPengguna'])->name('beranda');
-<<<<<<< HEAD
     // Route::get('/kendaraan', [KendaraanController::class, 'index'])->name('kendaraan.index');
     // Route::get('/peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
     // Route::get('/servis-insidental', [ServisController::class, 'insidental'])->name('servis.insidental');
     // Route::get('/pengisian-bbm', [BBMController::class, 'index'])->name('bbm.index');
- });
-=======
     Route::get('/peminjaman', [PeminjamanController::class, 'peminjamanPage'])->name('peminjaman');
     Route::get('/kendaraan', [DaftarKendaraanPenggunaController::class, 'daftarKendaraanPage'])->name('kendaraan');
 });
->>>>>>> 89764433664685efd5487af21fcd073b16303653
 
 // Route Admin
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/beranda', [HomeController::class, 'berandaAdmin'])->name('admin.beranda');
-<<<<<<< HEAD
     // Route::get('/admin/kendaraan', [KendaraanController::class, 'adminIndex'])->name('admin.kendaraan');
     // Route::get('/admin/pengajuan-peminjaman', [PeminjamanController::class, 'adminPengajuan'])->name('admin.peminjaman');
     // Route::get('/admin/pajak', [PajakController::class, 'index'])->name('admin.pajak');
@@ -47,14 +42,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Route::get('/admin/pengisian-bbm', [BBMController::class, 'adminIndex'])->name('admin.bbm');
     // Route::get('/admin/cek-fisik', [CekFisikController::class, 'index'])->name('admin.cek-fisik');
     // Route::get('/admin/riwayat', [RiwayatController::class, 'index'])->name('admin.riwayat');
- });
-=======
     Route::get('/admin/pengajuan-peminjaman', [PengajuanPeminjamanController::class, 'index'])->name('admin.pengajuan-peminjaman.index');
     Route::get('/admin/pengajuan-peminjaman/{id}', [PengajuanPeminjamanController::class, 'detail'])->name('admin.pengajuan-peminjaman.detail');
     Route::post('/admin/pengajuan-peminjaman/setujui/{id}', [PengajuanPeminjamanController::class, 'setujui'])->name('admin.pengajuan-peminjaman.setujui');
     Route::post('/admin/pengajuan-peminjaman/tolak/{id}', [PengajuanPeminjamanController::class, 'tolak'])->name('admin.pengajuan-peminjaman.tolak');
 });
->>>>>>> 89764433664685efd5487af21fcd073b16303653
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
