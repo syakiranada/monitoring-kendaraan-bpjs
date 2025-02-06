@@ -16,11 +16,11 @@ class Admin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::user()->peran != 'admin')
-        {
-            return redirect('beranda');
-        }
-        
-        return $next($request);
+    if (Auth::user()->peran != 'admin')
+    {
+        return redirect('beranda')->with('error', 'Anda tidak memiliki akses ke halaman tersebut');
+    }
+    
+    return $next($request);
     }
 }
