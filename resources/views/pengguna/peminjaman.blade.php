@@ -13,7 +13,9 @@
             <h1 class="mt-10 text-xl font-semibold text-gray-900 dark:text-white mb-4">Daftar Peminjaman Kendaraan</h1>
            
             <!-- Wrapper untuk tombol dan search -->
-            <div class="flex justify-between items-center mb-4">
+            <a href="{{ route('peminjaman.form')}}"
+            <div class="flex justify-between items-center mb-4"> 
+                
                 <button type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
                     + Tambah
                 </button>
@@ -44,50 +46,69 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Baris 1 -->
+                    @foreach ($daftarPeminjaman as $peminjaman)
                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            Apple MacBook Pro 17"
-                        </th>
-                        <td class="px-6 py-4">Silver</td>
-                        <td class="px-6 py-4">2023-10-01</td>
-                        <td class="px-6 py-4">2023-10-10</td>
-                        <td class="px-6 py-4">Disetujui</td>
-                        <td class="px-6 py-4 space-x-3">
-                            <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
-                            <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline">Hapus</a>
-                        </td>
-                    </tr>
+                        <td class="px-6 py-4">{{ $peminjaman->kendaraan->merk }} {{ $peminjaman->kendaraan->tipe }}</td>
+                        <td class="px-6 py-4">{{ $peminjaman->kendaraan->plat_nomor }}</td>
+                        <td class="px-6 py-4">{{ $peminjaman->tgl_mulai }}</td>
+                        <td class="px-6 py-4">{{ $peminjaman->tgl_selesai }}</td>
+                        <td class="px-6 py-4">{{ $peminjaman->status_pinjam }}</td>
+                        <td class="px-6 py-4">
+                            <!-- Tombol Detail (selalu tampil) -->
+                            <a 
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                            Detail
+                            </a>
 
-                    <!-- Baris 2 -->
-                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            Microsoft Surface Pro
-                        </th>
-                        <td class="px-6 py-4">White</td>
-                        <td class="px-6 py-4">2023-10-05</td>
-                        <td class="px-6 py-4">2023-10-15</td>
-                        <td class="px-6 py-4">Menunggu</td>
-                        <td class="px-6 py-4 space-x-3">
-                            <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
-                            <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline">Hapus</a>
-                        </td>
-                    </tr>
+                            <!-- Jika status Menunggu Persetujuan -->
+                            @if($peminjaman->status_pinjam == 'Menunggu Persetujuan')
+                                <a 
+                                class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800">
+                                Batal
+                                </a>
+                            @endif
 
-                    <!-- Baris 3 -->
-                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            Magic Mouse 2
-                        </th>
-                        <td class="px-6 py-4">Black</td>
-                        <td class="px-6 py-4">2023-10-02</td>
-                        <td class="px-6 py-4">2023-10-12</td>
-                        <td class="px-6 py-4">Ditolak</td>
-                        <td class="px-6 py-4 space-x-3">
-                            <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
-                            <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline">Hapus</a>
+                            <!-- Jika status Disetujui -->
+                            @if($peminjaman->status_pinjam == 'Disetujui')
+                                <a 
+                                class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800">
+                                Batal
+                                </a>
+                                <a
+                                class="text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-yellow-500 dark:hover:bg-yellow-600 focus:outline-none dark:focus:ring-yellow-800">
+                                Perpanjang
+                                </a>
+                                <a 
+                                class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 focus:outline-none dark:focus:ring-green-800">
+                                Selesai
+                                </a>
+                            @endif
+
+                            <!-- Jika status Ditolak -->
+                            @if($peminjaman->status_pinjam == 'Ditolak')
+                                <!-- Hanya tombol Detail -->
+                            @endif
+
+                            <!-- Jika status Diperpanjang -->
+                            @if($peminjaman->status_pinjam == 'Diperpanjang')
+                                <!-- Hanya tombol Detail -->
+                            @endif
+
+                            <!-- Jika status Dibatalkan -->
+                            @if($peminjaman->status_pinjam == 'Dibatalkan')
+                                <!-- Hanya tombol Detail -->
+                            @endif
+
+                            <!-- Jika status Telah Dikembalikan -->
+                            @if($peminjaman->status_pinjam == 'Telah Dikembalikan')
+                                <!-- Hanya tombol Detail -->
+                            @endif
                         </td>
+
+                        
+                       
                     </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
