@@ -29,6 +29,10 @@
             .sidebar-hidden #collapseBtn {
                 display: none;
             }
+
+            .sidebar-hidden #logoContainer {
+                display: none; /* Menyembunyikan logo saat sidebar collapse */
+            }
             
             .sidebar-hidden #expandBtn {
                 display: block;
@@ -36,6 +40,7 @@
             
             .content-expanded {
                 margin-left: 50px !important;
+                width: calc(100% - 50px);
             }
         
             .sidebar-icon {
@@ -57,19 +62,20 @@
                 left: 4px;
                 margin-top: 4px;
                 display: none;
-            }
-
-            #collapseBtn {
-                left: 200px;
-                margin-top: 4px;
-                padding: 10px;
-            }
-        
-            .toggle-btn {
                 padding: 8px;
                 background: transparent;
                 border: none;
                 cursor: pointer;
+            }
+
+            #collapseBtn {
+                padding: 8px;
+                background: transparent;
+                border: none;
+                cursor: pointer;
+            }
+        
+            .toggle-btn {
                 color: #000000;
                 transition: color 0.2s;
             }
@@ -77,15 +83,16 @@
             .toggle-btn:hover {
                 color: #333;
             }
+
+            #content {
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
         </style>
     </head>
     <body class="font-sans antialiased">
-        {{--  <!-- Floating button to show sidebar -->
-        <button id="showSidebarBtn" class="p-2 bg-gray-700 text-white rounded-full hover:bg-gray-600 focus:outline-none shadow-lg">
-            <i class="fas fa-bars"></i>
-        </button>  --}}
-
-        <div class="flex min-h-screen top-0 h-full bg-gray-100">
+        <div id="main-container" class="flex min-h-screen top-0 h-full bg-gray-100">
             <!-- Sidebar -->
             @php
             use Illuminate\Support\Facades\Auth;
@@ -93,37 +100,14 @@
             $user = Auth::user();
             $menuItems = [
                 ['icon' => 'home', 'title' => 'Beranda', 'route' => 'beranda'],
+                // Add more menu items as needed
             ];
-
-            
-
             @endphp
-            {{--  Buat Sidebar kalo udah ada controller lain, di matiin aja commentnya
-            if ($user->peran === 'admin') {
-                $menuItems = array_merge($menuItems, [
-                    ['icon' => 'car', 'title' => 'Daftar Kendaraan', 'route' => 'admin.kendaraan'],
-                    ['icon' => 'hand-paper', 'title' => 'Pengajuan Peminjaman', 'route' => 'admin.peminjaman'],
-                    ['icon' => 'file-invoice', 'title' => 'Pajak', 'route' => 'admin.pajak'],
-                    ['icon' => 'shield-alt', 'title' => 'Asuransi', 'route' => 'admin.asuransi'],
-                    ['icon' => 'wrench', 'title' => 'Servis Rutin', 'route' => 'admin.servis-rutin'],
-                    ['icon' => 'gas-pump', 'title' => 'Pengisian BBM', 'route' => 'admin.bbm'],
-                    ['icon' => 'clipboard-check', 'title' => 'Cek Fisik', 'route' => 'admin.cek-fisik'],
-                    ['icon' => 'history', 'title' => 'Riwayat', 'route' => 'admin.riwayat']
-                ]);
-            } elseif ($user->peran === 'pengguna') {
-                $menuItems = array_merge($menuItems, [
-                    ['icon' => 'car', 'title' => 'Daftar Kendaraan', 'route' => 'kendaraan.index'],
-                    ['icon' => 'hand-paper', 'title' => 'Peminjaman', 'route' => 'peminjaman.index'],
-                    ['icon' => 'wrench', 'title' => 'Servis Insidental', 'route' => 'servis.insidental'],
-                    ['icon' => 'gas-pump', 'title' => 'Pengisian BBM', 'route' => 'bbm.index']
-                ]);
-            }  --}}
             
             <div id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-white shadow-md transition-all duration-300 ease-in-out z-50">
                 <div class="p-4 border-b sidebar-header flex items-center justify-between">
-                    <div class="flex items-center">
+                    <div id="logoContainer" class="flex items-center justify-between">
                         <img src="{{ asset('images/logo_bpjs.png') }}" alt="BPJS Logo" class="w-10 h-10 mr-3">
-                        {{--  <h2 class="text-xl font-bold text-gray-800 sidebar-header-text">{{ ucfirst($user->peran) }}</h2>  --}}
                     </div>
                     
                     <div>
@@ -158,21 +142,21 @@
              </div>
 
             <!-- Content Area -->
-            <div id="content" class="sticky top-0 ml-64 w-full transition-all duration-300 ease-in-out">
+            <div id="content" class="ml-64 w-full transition-all duration-300 ease-in-out">
                 @include('layouts.navigation')
                 
-            
-                @isset($header)
+                {{--  @isset($header)
                     <header class="bg-white shadow">
                         <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                             {{ $header }}
                         </div>
                     </header>
-                @endisset
-            
-                {{--  <main>
-                    {{ $slot }}
-                </main>  --}}
+                @endisset  --}}
+
+                <!-- Konten akan masuk di sini -->
+                <main class="p-6">
+                    @yield('content')
+                </main>
             </div>
         </div>
 
@@ -186,11 +170,13 @@
                 function collapseSidebar() {
                     sidebar.classList.add('sidebar-hidden');
                     content.classList.add('content-expanded');
+                    content.style.marginLeft = '50px';
                 }
             
                 function expandSidebar() {
                     sidebar.classList.remove('sidebar-hidden');
                     content.classList.remove('content-expanded');
+                    content.style.marginLeft = '256px';
                 }
             
                 // Collapse button click
@@ -199,7 +185,6 @@
                 // Expand button click
                 expandBtn.addEventListener('click', expandSidebar);
             });
-            
         </script>
     </body>
 </html>
