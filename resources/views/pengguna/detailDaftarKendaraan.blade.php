@@ -66,7 +66,7 @@
                     <!-- Nilai Perolehan -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Nilai Perolehan</p>
-                        <p class="font-normal text-gray-900 dark:text-white">{{ $kendaraan->nilai_perolehan }}</p>
+                        <p class="font-normal text-gray-900 dark:text-white">Rp.{{ number_format($kendaraan->nilai_perolehan, 0, ',', '.') }}</p>
                     </div>
 
                     <!-- Tanggal Pembelian -->
@@ -90,7 +90,7 @@
                     <!-- Nilai Buku -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Nilai Buku</p>
-                        <p class="font-normal text-gray-900 dark:text-white">{{ $kendaraan->nilai_buku }}</p>
+                        <p class="font-normal text-gray-900 dark:text-white">Rp.{{ number_format($kendaraan->nilai_buku, 0, ',', '.') }}</p>
                     </div>
 
                     <!-- Status Pajak -->
@@ -114,7 +114,7 @@
                     <!-- Pengisian BBM Terakhir -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Pengisian BBM Terakhir</p>
-                        <p class="font-normal text-gray-900 dark:text-white">{{ $bbm->tgl_isi }} - {{$bbm->nominal}}</p>
+                        <p class="font-normal text-gray-900 dark:text-white">{{ $bbm->tgl_isi }} - Rp.{{ number_format($bbm->nominal, 0, ',', '.') }}</p>
                     </div>
 
                     <!-- Status Peminjaman -->

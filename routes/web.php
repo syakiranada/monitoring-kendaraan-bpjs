@@ -27,7 +27,17 @@ Route::middleware(['auth', 'user'])->group(function () {
     Route::get('/peminjaman', [PeminjamanPenggunaController::class, 'peminjamanPage'])->name('peminjaman');
     Route::get('/kendaraan', [DaftarKendaraanPenggunaController::class, 'daftarKendaraan'])->name('kendaraan');
     Route::get('/kendaraan/{id}', [DaftarKendaraanPenggunaController::class, 'detail'])->name('kendaraan.detail');
-    Route::get('/formPeminjaman', [PeminjamanPenggunaController::class, 'form'])->name('peminjaman.form');
+    Route::get('/peminjaman/form', [PeminjamanPenggunaController::class, 'showForm'])->name('peminjaman.showForm');
+    Route::post('/peminjaman/simpan', [PeminjamanPenggunaController::class, 'simpan'])->name('peminjaman.simpan');
+    Route::get('/get-kendaraan', [PeminjamanPenggunaController::class, 'getAvailableKendaraan'])->name('peminjaman.getKendaraan');
+    Route::get('/peminjaman/{id}/detail', [PeminjamanPenggunaController::class, 'detail'])->name('peminjaman.detail');
+    Route::get('/peminjaman/{id}/batal', [PeminjamanPenggunaController::class, 'batal'])->name('peminjaman.batal');
+    Route::get('/peminjaman/{id}/formPengembalian', [PeminjamanPenggunaController::class, 'showFormPengembalian'])->name('peminjaman.showFormPengembalian');
+    Route::post('/peminjaman/pengembalian/{id}', [PeminjamanPenggunaController::class, 'simpanPengembalian'])->name('peminjaman.pengembalian');
+    Route::get('/peminjaman/{id}/formPerpanjangan', [PeminjamanPenggunaController::class, 'showFormPerpanjangan'])->name('peminjaman.showFormPerpanjangan');
+
+   
+
 
 
     // Route::get('/kendaraan', [KendaraanController::class, 'index'])->name('kendaraan.index');

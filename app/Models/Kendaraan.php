@@ -66,4 +66,5 @@ class Kendaraan extends Model
     {
         return $this->hasMany(Pajak::class, 'id_kendaraan', 'id_kendaraan');
     }
+    
 }

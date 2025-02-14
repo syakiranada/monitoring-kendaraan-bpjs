@@ -3,11 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-=======
-@extends('layouts.sidebar')
-
-<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;700&display=swap" rel="stylesheet">
-
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <title>Daftar Kendaraan</title>
@@ -39,7 +34,6 @@
                         <th scope="col" class="px-6 py-3">Warna</th>
                         <th scope="col" class="px-6 py-3">Kapasitas</th>
                         <th scope="col" class="px-6 py-3">Plat</th>
-                        <th scope="col" class="px-6 py-3">Status</th>
                         <th scope="col" class="px-6 py-3">Aksi</th>
                     </tr>
                 </thead>
@@ -50,14 +44,14 @@
                         <td class="px-6 py-4">{{ $item->warna }}</td>
                         <td class="px-6 py-4">{{ $item->kapasitas }}</td>
                         <td class="px-6 py-4">{{ $item->plat_nomor }}</td>
-                        <td class="px-6 py-4 uppercase">
+                        <!-- <td class="px-6 py-4 uppercase">
                             <span class="
                                 @if($item->status_ketersediaan == 'Tersedia') bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-green-900 dark:text-green-300
                                 @else bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-red-900 dark:text-red-300
                                 @endif">
                                 {{ $item->status_ketersediaan }}
                             </span>
-                        </td>
+                        </td> -->
                         <td class="px-6 py-4">
                         <a href="{{ route('kendaraan.detail', $item->id_kendaraan) }}" 
                             <button type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-2 py-1.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Detail</button>
