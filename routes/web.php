@@ -8,9 +8,13 @@ use App\Http\Controllers\RiwayatController;
 use App\Http\Controllers\CekFisikController;
 use App\Http\Controllers\Admin\UserController;
 
-use App\Http\Controllers\PeminjamanPenggunaController;
 use App\Http\Controllers\PengajuanPeminjamanController;
+use App\Http\Controllers\PeminjamanPenggunaController;
 use App\Http\Controllers\DaftarKendaraanPenggunaController;
+use App\Http\Controllers\AsuransiController;
+use App\Http\Controllers\PajakController;
+use App\Http\Controllers\DaftarKendaraanAdminController;
+use App\Http\Controllers\BerandaController;
 
 Route::get('/', function () {
     // return view('welcome');
@@ -60,7 +64,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Route::get('/admin/servis-rutin', [ServisController::class, 'rutin'])->name('admin.servis-rutin');
     // Route::get('/admin/pengisian-bbm', [BBMController::class, 'adminIndex'])->name('admin.bbm');
     // Route::get('/admin/riwayat', [RiwayatController::class, 'index'])->name('admin.riwayat');
-
     Route::get('/admin/pengajuan-peminjaman', [PengajuanPeminjamanController::class, 'index'])->name('admin.pengajuan-peminjaman.index');
     Route::get('/admin/pengajuan-peminjaman/{id}', [PengajuanPeminjamanController::class, 'detail'])->name('admin.pengajuan-peminjaman.detail');
     Route::post('/admin/pengajuan-peminjaman/setujui/{id}', [PengajuanPeminjamanController::class, 'setujui'])->name('admin.pengajuan-peminjaman.setujui');
@@ -83,6 +86,37 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/riwayat', [RiwayatController::class, 'index'])->name('admin.riwayat.index');
     Route::get('/admin/riwayat/peminjaman', [RiwayatController::class, 'peminjaman'])->name('admin.riwayat.peminjaman');
     Route::get('/admin/riwayat/detail-peminjaman/{id}', [RiwayatController::class, 'detailPeminjaman'])->name('admin.riwayat.detail-peminjaman');
+
+    //PAJAK
+    Route::get('/pajak', [PajakController::class, 'index'])->name('pajak.daftar_kendaraan_pajak');
+    Route::get('pajak/kelola/{id_kendaraan}', [PajakController::class, 'kelola'])->name('pajak.kelola');
+    Route::get('/pajak/edit/{id_pajak}', [PajakController::class, 'edit'])->name('pajak.edit');
+    Route::put('/pajak/update/{id}', [PajakController::class, 'update'])->name('pajak.update');
+    Route::get('/pajak/detail/{id_pajak}', [PajakController::class, 'detail'])->name('pajak.detail');
+    Route::delete('/pajak/hapus/{id_pajak}', [PajakController::class, 'hapus'])->name('pajak.hapus');
+    Route::post('/pajak/store', [PajakController::class, 'store'])->name('pajak.store');
+    Route::post('/pajak/delete-file', [PajakController::class, 'deleteFile'])->name('pajak.deleteFile');
+    
+    //ASURANSI
+    Route::get('/asuransi', [AsuransiController::class, 'index'])->name('asuransi.daftar_kendaraan_asuransi');
+    Route::get('/asuransi/kelola/{id_kendaraan}', [AsuransiController::class, 'kelola'])->name('asuransi.kelola');
+    Route::get('/asuransi/edit/{id_asuransi}', [AsuransiController::class, 'edit'])->name('asuransi.edit');
+    Route::put('/asuransi/update/{id}', [AsuransiController::class, 'update'])->name('asuransi.update');
+    Route::get('/asuransi/detail/{id_asuransi}', [AsuransiController::class, 'detail'])->name('asuransi.detail');
+    Route::delete('/asuransi/hapus/{id_asuransi}', [AsuransiController::class, 'hapus'])->name('asuransi.hapus');
+    Route::post('/asuransi/store', [AsuransiController::class, 'store'])->name('asuransi.store');
+    Route::post('/asuransi/delete-file', [AsuransiController::class, 'deleteFile'])->name('asuransi.deleteFile');
+
+    //DATA KENDARAAN
+    Route::get('/admin/kendaraan', [DaftarKendaraanAdminController::class, 'index'])->name('kendaraan.daftar_kendaraan');
+    Route::get('/admin/kendaraan/tambah', [DaftarKendaraanAdminController::class, 'tambah'])->name('kendaraan.tambah');
+    Route::get('/admin/kendaraan/edit/{id_kendaraan}', [DaftarKendaraanAdminController::class, 'edit'])->name('kendaraan.edit');
+    Route::put('/admin/kendaraan/update/{id}', [DaftarKendaraanAdminController::class, 'update'])->name('kendaraan.update');
+    Route::get('/admin/kendaraan/detail/{id_kendaraan}', [DaftarKendaraanAdminController::class, 'detail'])->name('kendaraan.detail');
+    Route::delete('/admin/kendaraan/hapus/{id_kendaraan}', [DaftarKendaraanAdminController::class, 'hapus'])->name('kendaraan.hapus');
+    Route::post('/admin/kendaraan/store', [DaftarKendaraanAdminController::class, 'store'])->name('kendaraan.store');
+    Route::post('/admin/kendaraan/{id}/hitung-depresiasi', [DaftarKendaraanAdminController::class, 'hitungDepresiasi'])->name('kendaraan.hitungDepresiasi');
+
 });
 
 Route::middleware('auth')->group(function () {
@@ -90,5 +124,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+//BERANDA
+Route::get('/pengguna/beranda', [BerandaController::class, 'pengguna'])->name('beranda_pengguna');
+Route::get('/admin/beranda', [BerandaController::class, 'admin'])->name('beranda_admin');
 
 require __DIR__.'/auth.php';

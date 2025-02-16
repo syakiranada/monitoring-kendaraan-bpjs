@@ -14,25 +14,6 @@ class AsuransiSeeder extends Seeder
      */
     public function run(): void
     {
-        // // Fungsi pembantu untuk menghitung pajak berdasarkan nilai kendaraan dan jenisnya
-        // $calculateTax = function($nilai_perolehan, $jenis) {
-        //     // Tarif pajak berbeda untuk mobil dan motor
-        //     $rate = $jenis === 'Motor' ? 0.015 : 0.02; // 1.5% untuk motor, 2% untuk mobil
-        //     return round($nilai_perolehan * $rate);
-        // };
-
-        // // Fungsi pembantu untuk menentukan status pajak berdasarkan tanggal jatuh tempo
-        // $getTaxStatus = function($due_date) {
-        //     $today = Carbon::create(2024, 1, 30); // Tanggal saat ini dari pengaturan sistem
-        //     $due = Carbon::parse($due_date);
-
-        //     if ($today > $due) {
-        //         return 'JATUH TEMPO';
-        //     } else {
-        //         return 'MENDEKATI JATUH TEMPO';
-        //     }
-        // };
-
         // Fungsi pembantu untuk mengambil user_id dengan peran admin
         $getAdminUserId = function() {
             $admin = DB::table('users')
@@ -51,13 +32,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2024,
                 'tgl_bayar' => '2024-05-15',
                 'polis' => 'POLIS123456', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_1_2024.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_1_2024.pdf',
                 'tgl_perlindungan_awal' => '2024-05-15',
                 'tgl_perlindungan_akhir' => '2025-05-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -67,13 +46,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2025,
                 'tgl_bayar' => '2025-05-15',
                 'polis' => 'POLIS123457', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_1_2025.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_1_2025.pdf',
                 'tgl_perlindungan_awal' => '2025-05-15',
                 'tgl_perlindungan_akhir' => '2026-05-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -83,13 +60,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2023,
                 'tgl_bayar' => '2023-12-10',
                 'polis' => 'POLIS123458', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_2_2024.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_8_2025.pdf',
                 'tgl_perlindungan_awal' => '2022-12-15',
                 'tgl_perlindungan_akhir' => '2023-12-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -99,13 +74,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2024,
                 'tgl_bayar' => '2023-12-10', // Belum dibayar
                 'polis' => null, // Belum ada polis
-                'bukti_bayar' => null, // Belum ada bukti bayar
-                //'status' => 'JATUH TEMPO',
+                'bukti_bayar_asuransi' => null, // Belum ada bukti bayar
                 'tgl_perlindungan_awal' => '2023-12-15',
                 'tgl_perlindungan_akhir' => '2024-12-14',
                 'nominal' => null, // Belum dibayar
-                'biaya_asuransi_lain' => null, // Belum dibayar
-                'jml_bayar' => null, // Belum dibayar
+                'biaya_asuransi_lain' => null, 
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -115,13 +88,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2024,
                 'tgl_bayar' => '2024-02-15',
                 'polis' => 'POLIS123459', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_3_2024.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_3_2024.pdf',
                 'tgl_perlindungan_awal' => '2023-02-15',
                 'tgl_perlindungan_akhir' => '2024-02-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -131,13 +102,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2025,
                 'tgl_bayar' => '2024-02-15', // Belum dibayar
                 'polis' => null, // Belum ada polis
-                'bukti_bayar' => null, // Belum ada bukti bayar
-                //'status' => 'MENDEKATI JATUH TEMPO',
+                'bukti_bayar_asuransi' => null, // Belum ada bukti bayar
                 'tgl_perlindungan_awal' => '2024-02-15',
                 'tgl_perlindungan_akhir' => '2025-02-14',
                 'nominal' => null, // Belum dibayar
-                'biaya_asuransi_lain' => null, // Belum dibayar
-                'jml_bayar' => null, // Belum dibayar
+                'biaya_asuransi_lain' => null, 
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -147,13 +116,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2024,
                 'tgl_bayar' => '2024-05-15',
                 'polis' => 'POLIS123456', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_1_2024.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_1_2024.pdf',
                 'tgl_perlindungan_awal' => '2024-05-15',
                 'tgl_perlindungan_akhir' => '2025-05-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -163,13 +130,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2025,
                 'tgl_bayar' => '2025-05-15',
                 'polis' => 'POLIS123457', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_1_2025.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_1_2025.pdf',
                 'tgl_perlindungan_awal' => '2025-05-15',
                 'tgl_perlindungan_akhir' => '2026-05-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -179,13 +144,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2023,
                 'tgl_bayar' => '2023-12-10',
                 'polis' => 'POLIS123458', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_2_2024.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_2_2024.pdf',
                 'tgl_perlindungan_awal' => '2022-12-15',
                 'tgl_perlindungan_akhir' => '2023-12-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -195,13 +158,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2024,
                 'tgl_bayar' => '2023-12-10', // Belum dibayar
                 'polis' => null, // Belum ada polis
-                'bukti_bayar' => null, // Belum ada bukti bayar
-                //'status' => 'JATUH TEMPO',
+                'bukti_bayar_asuransi' => null, // Belum ada bukti bayar
                 'tgl_perlindungan_awal' => '2023-12-15',
                 'tgl_perlindungan_akhir' => '2024-12-14',
                 'nominal' => null, // Belum dibayar
                 'biaya_asuransi_lain' => null, // Belum dibayar
-                'jml_bayar' => null, // Belum dibayar
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -211,13 +172,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2024,
                 'tgl_bayar' => '2024-02-15',
                 'polis' => 'POLIS123459', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_3_2024.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_3_2024.pdf',
                 'tgl_perlindungan_awal' => '2023-02-15',
                 'tgl_perlindungan_akhir' => '2024-02-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -227,13 +186,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2025,
                 'tgl_bayar' => '2024-02-15', // Belum dibayar
                 'polis' => null, // Belum ada polis
-                'bukti_bayar' => null, // Belum ada bukti bayar
-                //'status' => 'MENDEKATI JATUH TEMPO',
+                'bukti_bayar_asuransi' => null, // Belum ada bukti bayar
                 'tgl_perlindungan_awal' => '2024-02-15',
                 'tgl_perlindungan_akhir' => '2025-02-14',
                 'nominal' => null, // Belum dibayar
                 'biaya_asuransi_lain' => null, // Belum dibayar
-                'jml_bayar' => null, // Belum dibayar
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -243,13 +200,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2024,
                 'tgl_bayar' => '2024-05-15',
                 'polis' => 'POLIS123456', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_1_2024.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_1_2024.pdf',
                 'tgl_perlindungan_awal' => '2024-05-15',
                 'tgl_perlindungan_akhir' => '2025-05-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -259,13 +214,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2025,
                 'tgl_bayar' => '2025-05-15',
                 'polis' => 'POLIS123457', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_1_2025.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_1_2025.pdf',
                 'tgl_perlindungan_awal' => '2025-05-15',
                 'tgl_perlindungan_akhir' => '2026-05-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -275,13 +228,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2023,
                 'tgl_bayar' => '2023-12-10',
                 'polis' => 'POLIS123458', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_2_2024.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_2_2024.pdf',
                 'tgl_perlindungan_awal' => '2022-12-15',
                 'tgl_perlindungan_akhir' => '2023-12-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -291,13 +242,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2024,
                 'tgl_bayar' => '2023-12-10', // Belum dibayar
                 'polis' => null, // Belum ada polis
-                'bukti_bayar' => null, // Belum ada bukti bayar
-                //'status' => 'JATUH TEMPO',
+                'bukti_bayar_asuransi' => null, // Belum ada bukti bayar
                 'tgl_perlindungan_awal' => '2023-12-15',
                 'tgl_perlindungan_akhir' => '2024-12-14',
                 'nominal' => null, // Belum dibayar
-                'biaya_asuransi_lain' => null, // Belum dibayar
-                'jml_bayar' => null, // Belum dibayar
+                'biaya_asuransi_lain' => null, 
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -307,13 +256,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2024,
                 'tgl_bayar' => '2024-02-15',
                 'polis' => 'POLIS123459', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_3_2024.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_3_2024.pdf',
                 'tgl_perlindungan_awal' => '2023-02-15',
                 'tgl_perlindungan_akhir' => '2024-02-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -323,13 +270,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2025,
                 'tgl_bayar' => '2024-02-15', // Belum dibayar
                 'polis' => null, // Belum ada polis
-                'bukti_bayar' => null, // Belum ada bukti bayar
-                //'status' => 'MENDEKATI JATUH TEMPO',
+                'bukti_bayar_asuransi' => null, // Belum ada bukti bayar
                 'tgl_perlindungan_awal' => '2024-02-15',
                 'tgl_perlindungan_akhir' => '2025-02-14',
                 'nominal' => null, // Belum dibayar
-                'biaya_asuransi_lain' => null, // Belum dibayar
-                'jml_bayar' => null, // Belum dibayar
+                'biaya_asuransi_lain' => null, 
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -339,13 +284,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2024,
                 'tgl_bayar' => '2024-05-15',
                 'polis' => 'POLIS123456', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_1_2024.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_1_2024.pdf',
                 'tgl_perlindungan_awal' => '2024-05-15',
                 'tgl_perlindungan_akhir' => '2025-05-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -355,13 +298,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2025,
                 'tgl_bayar' => '2025-05-15',
                 'polis' => 'POLIS123457', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_1_2025.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_1_2025.pdf',
                 'tgl_perlindungan_awal' => '2025-05-15',
                 'tgl_perlindungan_akhir' => '2026-05-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -371,13 +312,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2023,
                 'tgl_bayar' => '2023-12-10',
                 'polis' => 'POLIS123458', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_2_2024.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_2_2024.pdf',
                 'tgl_perlindungan_awal' => '2022-12-15',
                 'tgl_perlindungan_akhir' => '2023-12-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -387,13 +326,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2024,
                 'tgl_bayar' => '2023-12-10', // Belum dibayar
                 'polis' => null, // Belum ada polis
-                'bukti_bayar' => null, // Belum ada bukti bayar
-                //'status' => 'JATUH TEMPO',
+                'bukti_bayar_asuransi' => null, // Belum ada bukti bayar
                 'tgl_perlindungan_awal' => '2023-12-15',
                 'tgl_perlindungan_akhir' => '2024-12-14',
                 'nominal' => null, // Belum dibayar
-                'biaya_asuransi_lain' => null, // Belum dibayar
-                'jml_bayar' => null, // Belum dibayar
+                'biaya_asuransi_lain' => null, 
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -403,13 +340,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2024,
                 'tgl_bayar' => '2024-02-15',
                 'polis' => 'POLIS123459', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_3_2024.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_3_2024.pdf',
                 'tgl_perlindungan_awal' => '2023-02-15',
                 'tgl_perlindungan_akhir' => '2024-02-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -419,13 +354,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2025,
                 'tgl_bayar' => '2024-02-15', // Belum dibayar
                 'polis' => null, // Belum ada polis
-                'bukti_bayar' => null, // Belum ada bukti bayar
-                //'status' => 'MENDEKATI JATUH TEMPO',
+                'bukti_bayar_asuransi' => null, // Belum ada bukti bayar
                 'tgl_perlindungan_awal' => '2024-02-15',
                 'tgl_perlindungan_akhir' => '2025-02-14',
                 'nominal' => null, // Belum dibayar
-                'biaya_asuransi_lain' => null, // Belum dibayar
-                'jml_bayar' => null, // Belum dibayar
+                'biaya_asuransi_lain' => null, 
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -435,13 +368,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2024,
                 'tgl_bayar' => '2024-05-15',
                 'polis' => 'POLIS123456', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_1_2024.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_1_2024.pdf',
                 'tgl_perlindungan_awal' => '2024-05-15',
                 'tgl_perlindungan_akhir' => '2025-05-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -451,13 +382,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2025,
                 'tgl_bayar' => '2025-05-15',
                 'polis' => 'POLIS123457', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_1_2025.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_1_2025.pdf',
                 'tgl_perlindungan_awal' => '2025-05-15',
                 'tgl_perlindungan_akhir' => '2026-05-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ]
@@ -471,13 +400,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2023,
                 'tgl_bayar' => '2023-12-10',
                 'polis' => 'POLIS123458', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_2_2024.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_2_2024.pdf',
                 'tgl_perlindungan_awal' => '2022-12-15',
                 'tgl_perlindungan_akhir' => '2023-12-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -487,13 +414,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2024,
                 'tgl_bayar' => '2023-12-10', // Belum dibayar
                 'polis' => null, // Belum ada polis
-                'bukti_bayar' => null, // Belum ada bukti bayar
-                //'status' => 'JATUH TEMPO',
+                'bukti_bayar_asuransi' => null, // Belum ada bukti bayar
                 'tgl_perlindungan_awal' => '2023-12-15',
                 'tgl_perlindungan_akhir' => '2024-12-14',
                 'nominal' => null, // Belum dibayar
-                'biaya_asuransi_lain' => null, // Belum dibayar
-                'jml_bayar' => null, // Belum dibayar
+                'biaya_asuransi_lain' => null, 
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -503,13 +428,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2024,
                 'tgl_bayar' => '2024-02-15',
                 'polis' => 'POLIS123459', // Nomor polis asuransi
-                'bukti_bayar' => 'bukti_bayar_3_2024.pdf',
-                //'status' => 'SUDAH DIBAYAR',
+                'bukti_bayar_asuransi' => 'bukti_bayar_3_2024.pdf',
                 'tgl_perlindungan_awal' => '2023-02-15',
                 'tgl_perlindungan_akhir' => '2024-02-14',
                 'nominal' => 2500000,
                 'biaya_asuransi_lain' => 150000,
-                'jml_bayar' => 2650000, // nominal + biaya_asuransi_lain
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -519,13 +442,11 @@ class AsuransiSeeder extends Seeder
                 'tahun' => 2025,
                 'tgl_bayar' => '2024-02-15', // Belum dibayar
                 'polis' => null, // Belum ada polis
-                'bukti_bayar' => null, // Belum ada bukti bayar
-                //'status' => 'MENDEKATI JATUH TEMPO',
+                'bukti_bayar_asuransi' => null, // Belum ada bukti bayar
                 'tgl_perlindungan_awal' => '2024-02-15',
                 'tgl_perlindungan_akhir' => '2025-02-14',
                 'nominal' => null, // Belum dibayar
-                'biaya_asuransi_lain' => null, // Belum dibayar
-                'jml_bayar' => null, // Belum dibayar
+                'biaya_asuransi_lain' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]

@@ -22,8 +22,7 @@ class Pajak extends Model
         'tahun',
         'tgl_bayar',
         'tgl_jatuh_tempo',
-        'bukti_bayar',
-        //'status',
+        'bukti_bayar_pajak',
         'nominal',
         'biaya_pajak_lain',
     ];
