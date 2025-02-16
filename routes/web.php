@@ -1,14 +1,16 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProfileController;
+
+use App\Http\Controllers\RiwayatController;
+use App\Http\Controllers\CekFisikController;
 use App\Http\Controllers\Admin\UserController;
 
-use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PeminjamanPenggunaController;
-use App\Http\Controllers\DaftarKendaraanPenggunaController;
-
 use App\Http\Controllers\PengajuanPeminjamanController;
+use App\Http\Controllers\DaftarKendaraanPenggunaController;
 
 Route::get('/', function () {
     // return view('welcome');
@@ -57,12 +59,30 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Route::get('/admin/asuransi', [AsuransiController::class, 'index'])->name('admin.asuransi');
     // Route::get('/admin/servis-rutin', [ServisController::class, 'rutin'])->name('admin.servis-rutin');
     // Route::get('/admin/pengisian-bbm', [BBMController::class, 'adminIndex'])->name('admin.bbm');
-    // Route::get('/admin/cek-fisik', [CekFisikController::class, 'index'])->name('admin.cek-fisik');
     // Route::get('/admin/riwayat', [RiwayatController::class, 'index'])->name('admin.riwayat');
+
     Route::get('/admin/pengajuan-peminjaman', [PengajuanPeminjamanController::class, 'index'])->name('admin.pengajuan-peminjaman.index');
     Route::get('/admin/pengajuan-peminjaman/{id}', [PengajuanPeminjamanController::class, 'detail'])->name('admin.pengajuan-peminjaman.detail');
     Route::post('/admin/pengajuan-peminjaman/setujui/{id}', [PengajuanPeminjamanController::class, 'setujui'])->name('admin.pengajuan-peminjaman.setujui');
     Route::post('/admin/pengajuan-peminjaman/tolak/{id}', [PengajuanPeminjamanController::class, 'tolak'])->name('admin.pengajuan-peminjaman.tolak');
+
+    Route::get('/admin/cek-fisik', [CekFisikController::class, 'index'])->name('admin.cek-fisik.index');
+    Route::get('/admin/cek-fisik/{id_kendaraan}', [CekFisikController::class, 'detail'])->name('admin.cek-fisik.detail');
+    
+    // Route untuk menambahkan (catat) cek fisik
+    Route::get('/admin/cek-fisik/catat/{id_kendaraan}', [CekFisikController::class, 'create'])->name('admin.cek-fisik.create');
+    Route::post('/admin/cek-fisik/simpan', [CekFisikController::class, 'store'])->name('admin.cek-fisik.store');
+
+    // Route untuk mengedit cek fisik terakhir
+    Route::get('/admin/cek-fisik/edit/{id_kendaraan}', [CekFisikController::class, 'edit'])->name('admin.cek-fisik.edit');
+    Route::put('/admin/cek-fisik/update/{id_kendaraan}', [CekFisikController::class, 'update'])->name('admin.cek-fisik.update');
+
+    // Route untuk menghapus cek fisik terakhir
+    Route::delete('/admin/cek-fisik/hapus/{id_kendaraan}', [CekFisikController::class, 'destroy'])->name('admin.cek-fisik.destroy');
+
+    Route::get('/admin/riwayat', [RiwayatController::class, 'index'])->name('admin.riwayat.index');
+    Route::get('/admin/riwayat/peminjaman', [RiwayatController::class, 'peminjaman'])->name('admin.riwayat.peminjaman');
+    Route::get('/admin/riwayat/detail-peminjaman/{id}', [RiwayatController::class, 'detailPeminjaman'])->name('admin.riwayat.detail-peminjaman');
 });
 
 Route::middleware('auth')->group(function () {

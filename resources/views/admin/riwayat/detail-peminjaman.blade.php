@@ -5,7 +5,7 @@
 {{-- <x-app-layout> --}}
     <div class="p-6">
         <div class="mb-4 flex space-x-2">
-            <a href="{{ route('admin.pengajuan-peminjaman.index') }}" class="flex items-center px-5 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg text-sm hover:bg-gray-100 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
+            <a href="{{ route('admin.riwayat.peminjaman') }}" class="flex items-center px-5 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg text-sm hover:bg-gray-100 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
                 <svg class="w-4 h-4 text-gray-800 dark:text-white mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7"/>
                 </svg>              

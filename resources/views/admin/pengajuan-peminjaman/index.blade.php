@@ -1,4 +1,8 @@
-<x-app-layout>
+@extends('layouts.sidebar')
+
+@section('content')
+
+{{-- <x-app-layout> --}}
     <div class="p-6">
         <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Daftar Pengajuan Peminjaman Kendaraan</h2>
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
@@ -99,4 +103,5 @@
             });
         }
     </script>
-</x-app-layout>
+{{-- </x-app-layout> --}}
+@endsection
