@@ -19,21 +19,25 @@
                 </div>
             @endif
 
-            <form id="form-perpanjangan"action="{{ route('peminjaman.simpan') }}" method="POST">
+            <form id="form-perpanjangan"action="{{ route('peminjaman.perpanjang') }}" method="POST">
                 @csrf
+                <input type="hidden" name="id_peminjaman" value="{{ $peminjaman->id_peminjaman }}">
                 <!-- Tanggal & Jam Mulai Perpanjangan DISABLED OTOMATIS DARI TANGGAL SELESAI SEBELUMNYA --> 
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
                         <label for="tgl_mulai" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai Pinjam</label>
-                        <input type="date" id="tgl_mulai" name="tgl_mulai" class="w-full p-2.5 border rounded-lg bg-white-100" required>
-                        <p id="warning-tgl-mulai" class="text-red-500 text-sm mt-1 hidden">Tanggal mulai harus diisi!</p>
+                        <input type="date" id="tgl_mulai" name="tgl_mulai" class="w-full p-2.5 border rounded-lg bg-white-100" 
+                            value="{{ old('tgl_mulai', $peminjaman->tgl_selesai ? date('Y-m-d', strtotime($peminjaman->tgl_selesai)) : '') }}" 
+                            disabled>
                     </div>
                     <div>
                         <label for="jam_mulai" class="block text-sm font-medium text-gray-700 mb-1">Jam Mulai Pinjam</label>
-                        <input type="time" id="jam_mulai" name="jam_mulai" class="w-full p-2.5 border rounded-lg bg-white-100" required>
-                        <p id="warning-jam-mulai" class="text-red-500 text-sm mt-1 hidden">Jam mulai harus diisi!</p>
+                        <input type="time" id="jam_mulai" name="jam_mulai" class="w-full p-2.5 border rounded-lg bg-white-100" 
+                            value="{{ old('jam_mulai', $peminjaman->jam_selesai ?? '') }}" 
+                            disabled>
                     </div>
                 </div>
+
 
                 <!-- Tanggal & Jam Selesai Peminjaman -->
                 <div class="grid grid-cols-2 gap-4 mb-4">
@@ -51,11 +55,9 @@
 
                <!-- Pilihan Kendaraan DISABLED OTOMATIS SAMA KAYA YG SEBELUMNYA-->
                 <div class="mb-4">
-                <label for="pilih-kendaraan" class="block text-sm font-medium text-gray-700 mb-1">Pilih Kendaraan</label>
-                    <select id="pilih-kendaraan" name="kendaraan" class="w-full p-2.5 border rounded-lg bg-white" disabled>
-                        <option value="" disabled selected>Pilih Kendaraan</option>
-                    </select>
-                    <p id="warning-kendaraan" class="text-red font-bold text-sm mt-1 hidden">Silakan isi tanggal & jam terlebih dahulu</p>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Detail Kendaraan</label>
+                    <input type="text" name="kendaraan" class="w-full p-2.5 border rounded-lg" disabled
+                        value="{{ $peminjaman->kendaraan->merk ?? 'Tidak ada kendaraan yang dipinjam' }} {{ $peminjaman->kendaraan->tipe }} - {{ $peminjaman->kendaraan->plat_nomor ?? '' }}">
                 </div>
 
                 <!-- Tujuan Peminjaman -->
@@ -74,4 +76,185 @@
     </div>
 
 </body>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+    // Form submission handler
+// Form submission handler with correct form ID
+$(document).ready(function() {
+    // Cancel button handler
+    $("#btn-batal").on("click", function () {
+        Swal.fire({
+            title: "Yakin ingin membatalkan?",
+            text: "Semua perubahan tidak akan disimpan.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Ya, Batal",
+            cancelButtonText: "Tidak"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "{{ route('peminjaman') }}";
+            }
+        });
+    });
+
+    // Form submission handler with the correct ID
+    $("#form-perpanjangan").on("submit", function (e) {
+        e.preventDefault();
+
+        // Validate date/time first
+        if (!validateDateTime()) {
+            Swal.fire({
+                title: "Validasi Error!",
+                text: "Waktu selesai harus setelah waktu mulai!",
+                icon: "error"
+            });
+            return false;
+        }
+
+        // Form data is valid, proceed with confirmation
+        Swal.fire({
+            title: "Konfirmasi Perpanjangan",
+            text: "Pastikan semua data sudah benar sebelum menyimpan.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Ya, Simpan!",
+            cancelButtonText: "Batal"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = $(this);
+                const url = form.attr('action');
+                const formData = form.serialize();
+
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: formData,
+                    beforeSend: function () {
+                        Swal.fire({
+                            title: "Menyimpan...",
+                            text: "Mohon tunggu sebentar.",
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                    },
+                    success: function (response) {
+                        Swal.fire({
+                            title: "Berhasil!",
+                            text: response.message,
+                            icon: "success",
+                            confirmButtonText: "OK"
+                        }).then(() => {
+                            if (response.redirect) {
+                                window.location.href = response.redirect;
+                            }
+                        });
+                    },
+                    error: function (xhr) {
+                        let errorMessage = "Terjadi kesalahan pada server";
+                        
+                        if (xhr.responseJSON) {
+                            if (xhr.responseJSON.type === 'conflict') {
+                                // Format conflicts for display
+                                let conflictDetails = '<div class="text-left">';
+                                conflictDetails += '<p class="mb-2">Kendaraan sudah dibooking pada periode:</p>';
+                                
+                                xhr.responseJSON.conflicts.forEach(conflict => {
+                                    conflictDetails += `
+                                        <div class="mb-2 p-2 bg-gray-100 rounded">
+                                            <p><strong>Tanggal:</strong> ${conflict.tanggal}</p>
+                                            <p><strong>Waktu:</strong> ${conflict.waktu}</p>
+                                            <p><strong>Status:</strong> ${conflict.status}</p>
+                                            <p><strong>Peminjam:</strong> ${conflict.peminjam}</p>
+                                        </div>
+                                    `;
+                                });
+                                
+                                conflictDetails += '</div>';
+
+                                Swal.fire({
+                                    title: "Bentrok Jadwal!",
+                                    html: conflictDetails,
+                                    icon: "error",
+                                    confirmButtonText: "OK",
+                                    width: '600px'
+                                });
+                            } else if (xhr.responseJSON.type === 'validation') {
+                                // For validation errors
+                                errorMessage = Object.values(xhr.responseJSON.errors || {})
+                                    .flat()
+                                    .join('\n');
+                                
+                                Swal.fire({
+                                    title: "Validasi Gagal!",
+                                    text: errorMessage,
+                                    icon: "error",
+                                    confirmButtonText: "OK"
+                                });
+                            } else {
+                                // For other errors
+                                errorMessage = xhr.responseJSON.message || errorMessage;
+                                
+                                Swal.fire({
+                                    title: "Gagal!",
+                                    text: errorMessage,
+                                    icon: "error",
+                                    confirmButtonText: "OK"
+                                });
+                            }
+                        } else {
+                            Swal.fire({
+                                title: "Gagal!",
+                                text: errorMessage,
+                                icon: "error",
+                                confirmButtonText: "OK"
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    });
+});
+
+// Date/time validation function
+function validateDateTime() {
+    const tglSelesai = document.getElementById('tgl_selesai');
+    const jamSelesai = document.getElementById('jam_selesai');
+    const tglMulai = document.getElementById('tgl_mulai');
+    const jamMulai = document.getElementById('jam_mulai');
+    const warningTglSelesai = document.getElementById('warning-tgl-selesai');
+    const warningJamSelesai = document.getElementById('warning-jam-selesai');
+    
+    const startDateTime = new Date(tglMulai.value + ' ' + jamMulai.value);
+    const endDateTime = new Date(tglSelesai.value + ' ' + jamSelesai.value);
+    
+    let isValid = true;
+    
+    // Reset warnings
+    warningTglSelesai.classList.add('hidden');
+    warningJamSelesai.classList.add('hidden');
+    
+    // Validate dates
+    if (endDateTime <= startDateTime) {
+        if (tglSelesai.value <= tglMulai.value) {
+            warningTglSelesai.classList.remove('hidden');
+        }
+        if (tglSelesai.value === tglMulai.value && jamSelesai.value <= jamMulai.value) {
+            warningJamSelesai.classList.remove('hidden');
+        }
+        isValid = false;
+    }
+    
+    return isValid;
+}
+</script>
 </html>
+

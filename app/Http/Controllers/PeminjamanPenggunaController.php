@@ -26,7 +26,7 @@ class PeminjamanPenggunaController extends Controller
         $userId = Auth::id(); // Ambil ID user yang sedang login
         $daftarPeminjaman = Peminjaman::with('kendaraan') // Ambil data kendaraan juga
             ->where('user_id', $userId)
-            ->orderBy('tgl_mulai', 'desc') // Urutkan dari terbaru
+            ->orderBy('created_at', 'desc') // Urutkan dari terbaru
             ->get();
         
         return view('pengguna.peminjaman', compact('daftarPeminjaman'));
@@ -194,12 +194,6 @@ class PeminjamanPenggunaController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Update status kendaraan
-            // $peminjaman->kendaraan()->update([
-            //     'status_ketersediaan' => 'Tersedia',
-            //     'updated_at' => now(),
-            // ]);
-
             DB::commit();
 
             if ($request->ajax()) {
@@ -237,6 +231,115 @@ class PeminjamanPenggunaController extends Controller
             ->firstOrFail();
         
             return view('pengguna.formPerpanjangan',  compact('peminjaman'));
+    }
+
+    public function perpanjangan(Request $request)
+    {
+        $peminjaman = Peminjaman::find($request->id_peminjaman);
+
+        if (!$peminjaman) {
+            return response()->json(['message' => 'Peminjaman tidak ditemukan'], 404);
+        }
+        try {
+            // Validate request
+            $validated = $request->validate([
+                'tgl_selesai' => 'required|date',
+                'jam_selesai' => 'required',
+                'tujuan' => 'required|string|max:255',
+            ]);
+
+            DB::beginTransaction();
+
+            // Get existing peminjaman
+            $oldPeminjaman = Peminjaman::find($request->id_peminjaman);
+            if (!$oldPeminjaman) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Peminjaman tidak ditemukan',
+                    'type' => 'error'
+                ], 404);
+            }
+
+            // Create Carbon instances for time comparison
+            $startDateTime = Carbon::parse($oldPeminjaman->tgl_selesai . ' ' . $oldPeminjaman->jam_selesai);
+            $endDateTime = Carbon::parse($request->tgl_selesai . ' ' . $request->jam_selesai);
+
+            // Validate end time is after start time
+            if ($endDateTime <= $startDateTime) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Waktu selesai harus setelah waktu mulai peminjaman',
+                    'type' => 'validation'
+                ], 422);
+            }
+
+            // Check if vehicle is available (include time check)
+            $conflictingBookings = Peminjaman::where('id_kendaraan', $oldPeminjaman->id_kendaraan)
+                ->where('id_peminjaman', '!=', $oldPeminjaman->id_peminjaman)
+                ->where(function ($query) use ($startDateTime, $endDateTime) {
+                    $query->where(function ($q) use ($startDateTime, $endDateTime) {
+                        $q->whereBetween('tgl_mulai', [$startDateTime->format('Y-m-d'), $endDateTime->format('Y-m-d')])
+                            ->orWhereBetween('tgl_selesai', [$startDateTime->format('Y-m-d'), $endDateTime->format('Y-m-d')]);
+                    })->where(function ($q) use ($startDateTime, $endDateTime) {
+                        $q->where(function ($q2) use ($startDateTime, $endDateTime) {
+                            $q2->whereBetween('jam_mulai', [$startDateTime->format('H:i:s'), $endDateTime->format('H:i:s')])
+                            ->orWhereBetween('jam_selesai', [$startDateTime->format('H:i:s'), $endDateTime->format('H:i:s')]);
+                        });
+                    })->whereIn('status_pinjam', ['Disetujui', 'Menunggu Persetujuan']);
+                })->get();
+
+            if ($conflictingBookings->count() > 0) {
+                DB::rollback(); // Explicit rollback
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terdapat bentrok jadwal peminjaman',
+                    'type' => 'conflict'
+                ], 422);
+            }
+
+            // Create new peminjaman record
+            $newPeminjaman = new Peminjaman();
+            $newPeminjaman->fill([
+                'tgl_mulai' => $oldPeminjaman->tgl_selesai,
+                'jam_mulai' => $oldPeminjaman->jam_selesai,
+                'tgl_selesai' => $request->tgl_selesai,
+                'jam_selesai' => $request->jam_selesai,
+                'id_kendaraan' => $oldPeminjaman->id_kendaraan,
+                'user_id' => auth()->id(),
+                'tujuan' => $request->tujuan,
+                'status_pinjam' => 'Menunggu Persetujuan',
+                'perpanjangan_dari' => $oldPeminjaman->id_peminjaman
+            ]);
+
+            // Update status of old peminjaman
+            $oldPeminjaman->status_pinjam = 'Diperpanjang';
+            $oldPeminjaman->save();
+            $newPeminjaman->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Perpanjangan peminjaman berhasil diajukan',
+                'redirect' => route('peminjaman')
+            ]);
+
+        } catch (ValidationException $e) {
+            DB::rollback();
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'type' => 'validation',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                'type' => 'error'
+            ], 500);
+        }
     }
 
 }

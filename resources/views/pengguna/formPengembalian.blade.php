@@ -78,6 +78,21 @@
         });
 
         // Cancel button handler remains the same...
+        // Konfirmasi tombol batal
+        $("#btn-batal").on("click", function () {
+            Swal.fire({
+                title: "Yakin ingin membatalkan?",
+                text: "Semua perubahan tidak akan disimpan.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Ya, Batal",
+                cancelButtonText: "Tidak"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{{ route('peminjaman') }}"; // Sesuaikan rute ke halaman awal
+                }
+            });
+        });
 
         $("#form-pengembalian").on("submit", function (e) {
             e.preventDefault();
