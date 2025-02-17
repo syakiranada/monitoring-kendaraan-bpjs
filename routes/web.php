@@ -28,7 +28,7 @@ Route::get('/', function () {
 
 // Route Pengguna
 Route::middleware(['auth', 'user'])->group(function () {
-    Route::get('/beranda', [HomeController::class, 'berandaPengguna'])->name('beranda');
+    Route::get('/beranda', [BerandaController::class, 'pengguna'])->name('beranda');
 
     Route::get('/peminjaman', [PeminjamanPenggunaController::class, 'peminjamanPage'])->name('peminjaman');
     Route::get('/kendaraan', [DaftarKendaraanPenggunaController::class, 'daftarKendaraan'])->name('kendaraan');
@@ -52,12 +52,11 @@ Route::middleware(['auth', 'user'])->group(function () {
     // Route::get('/servis-insidental', [ServisController::class, 'insidental'])->name('servis.insidental');
     // Route::get('/pengisian-bbm', [BBMController::class, 'index'])->name('bbm.index');
 
-
 });
 
 // Route Admin
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/beranda', [HomeController::class, 'berandaAdmin'])->name('admin.beranda');
+    Route::get('/admin/beranda', [BerandaController::class, 'admin'])->name('admin.beranda');
     // Route::get('/admin/kendaraan', [KendaraanController::class, 'adminIndex'])->name('admin.kendaraan');
     // Route::get('/admin/pengajuan-peminjaman', [PeminjamanController::class, 'adminPengajuan'])->name('admin.peminjaman');
     // Route::get('/admin/pajak', [PajakController::class, 'index'])->name('admin.pajak');
@@ -125,9 +124,5 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-//BERANDA
-Route::get('/pengguna/beranda', [BerandaController::class, 'pengguna'])->name('beranda_pengguna');
-Route::get('/admin/beranda', [BerandaController::class, 'admin'])->name('beranda_admin');
 
 require __DIR__.'/auth.php';

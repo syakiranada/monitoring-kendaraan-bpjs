@@ -37,7 +37,7 @@ class BerandaController extends Controller
         }
     }
 
-    return view('pengguna.beranda_pengguna', compact('user', 'peminjaman', 'latePeminjaman'));
+    return view('pengguna.beranda', compact('user', 'peminjaman', 'latePeminjaman'));
 }
 
 public function admin()
@@ -119,7 +119,7 @@ public function admin()
     // Urutkan semua batas waktu berdasarkan tanggal terdekat
     $batasWaktu = $batasWaktu->sortBy('batas_waktu');
 
-    return view('admin.beranda_admin', compact(
+    return view('admin.beranda', compact(
         'user',
         'peminjamanTerlambat',
         'butuhCekFisik',
