@@ -41,6 +41,7 @@ Route::middleware(['auth', 'user'])->group(function () {
     Route::get('/peminjaman/{id}/formPengembalian', [PeminjamanPenggunaController::class, 'showFormPengembalian'])->name('peminjaman.showFormPengembalian');
     Route::post('/peminjaman/pengembalian/{id}', [PeminjamanPenggunaController::class, 'simpanPengembalian'])->name('peminjaman.pengembalian');
     Route::get('/peminjaman/{id}/formPerpanjangan', [PeminjamanPenggunaController::class, 'showFormPerpanjangan'])->name('peminjaman.showFormPerpanjangan');
+    Route::post('/peminjaman/perpanjangan', [PeminjamanPenggunaController::class, 'perpanjangan'])->name('peminjaman.perpanjang');
 
    
 
