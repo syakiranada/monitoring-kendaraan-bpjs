@@ -71,21 +71,25 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/admin/cek-fisik', [CekFisikController::class, 'index'])->name('admin.cek-fisik.index');
     Route::get('/admin/cek-fisik/{id_kendaraan}', [CekFisikController::class, 'detail'])->name('admin.cek-fisik.detail');
-    
     // Route untuk menambahkan (catat) cek fisik
     Route::get('/admin/cek-fisik/catat/{id_kendaraan}', [CekFisikController::class, 'create'])->name('admin.cek-fisik.create');
     Route::post('/admin/cek-fisik/simpan', [CekFisikController::class, 'store'])->name('admin.cek-fisik.store');
-
     // Route untuk mengedit cek fisik terakhir
     Route::get('/admin/cek-fisik/edit/{id_kendaraan}', [CekFisikController::class, 'edit'])->name('admin.cek-fisik.edit');
     Route::put('/admin/cek-fisik/update/{id_kendaraan}', [CekFisikController::class, 'update'])->name('admin.cek-fisik.update');
-
     // Route untuk menghapus cek fisik terakhir
     Route::delete('/admin/cek-fisik/hapus/{id_kendaraan}', [CekFisikController::class, 'destroy'])->name('admin.cek-fisik.destroy');
 
     Route::get('/admin/riwayat', [RiwayatController::class, 'index'])->name('admin.riwayat.index');
     Route::get('/admin/riwayat/peminjaman', [RiwayatController::class, 'peminjaman'])->name('admin.riwayat.peminjaman');
     Route::get('/admin/riwayat/detail-peminjaman/{id}', [RiwayatController::class, 'detailPeminjaman'])->name('admin.riwayat.detail-peminjaman');
+    Route::get('/admin/riwayat/pajak', [RiwayatController::class, 'pajak'])->name('admin.riwayat.pajak');
+    Route::get('/admin/riwayat/detail-pajak/{id}', [RiwayatController::class, 'detailPajak'])->name('admin.riwayat.detail-pajak');
+    Route::get('/admin/riwayat/asuransi', [RiwayatController::class, 'asuransi'])->name('admin.riwayat.asuransi');
+    Route::get('/admin/riwayat/detail-asuransi/{id}', [RiwayatController::class, 'detailAsuransi'])->name('admin.riwayat.detail-asuransi');
+    Route::get('/admin/riwayat/servis-rutin', [RiwayatController::class, 'servisRutin'])->name('admin.riwayat.servis-rutin');
+    Route::get('/admin/riwayat/detail-servis-rutin/{id}', [RiwayatController::class, 'detailServisRutin'])->name('admin.riwayat.detail-servis-rutin');
+
 
     //PAJAK
     Route::get('/pajak', [PajakController::class, 'index'])->name('pajak.daftar_kendaraan_pajak');
