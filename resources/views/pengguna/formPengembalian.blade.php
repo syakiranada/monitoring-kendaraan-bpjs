@@ -27,18 +27,49 @@
                     <input type="text" name="kendaraan" class="w-full p-2.5 border rounded-lg" disabled
                         value="{{ $peminjaman->kendaraan->merk ?? 'Tidak ada kendaraan yang dipinjam' }} {{ $peminjaman->kendaraan->tipe }} - {{ $peminjaman->kendaraan->plat_nomor ?? '' }}">
                 </div>
-                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="tgl_mulai" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai Pinjam</label>
+                        <input type="date" id="tgl_mulai" name="tgl_mulai" class="w-full p-2.5 border rounded-lg bg-white-100" 
+                            value="{{ old('tgl_mulai', $peminjaman->tgl_mulai ? date('Y-m-d', strtotime($peminjaman->tgl_mulai)) : '') }}" 
+                            disabled>
+                    </div>
+                    <div>
+                        <label for="jam_mulai" class="block text-sm font-medium text-gray-700 mb-1">Jam Mulai Pinjam</label>
+                        <input type="time" id="jam_mulai" name="jam_mulai" class="w-full p-2.5 border rounded-lg bg-white-100" 
+                            value="{{ old('jam_mulai', $peminjaman->jam_mulai ?? '') }}" 
+                            disabled>
+                    </div>
+                </div>
+
+
+                <!-- Tanggal & Jam Selesai Peminjaman -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="tgl_selesai" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai Pinjam</label>
+                        <input type="date" id="tgl_selesai" name="tgl_selesai" class="w-full p-2.5 border rounded-lg bg-white-100" 
+                            value="{{ old('tgl_selesai', $peminjaman->tgl_selesai ? date('Y-m-d', strtotime($peminjaman->tgl_selesai)) : '') }}" 
+                            disabled>
+                    </div>
+                    <div>
+                        <label for="jam_selesai" class="block text-sm font-medium text-gray-700 mb-1">Jam Mulai Pinjam</label>
+                        <input type="time" id="jam_selesai" name="jam_selesai" class="w-full p-2.5 border rounded-lg bg-white-100" 
+                            value="{{ old('jam_selesai', $peminjaman->jam_selesai ?? '') }}" 
+                            disabled>
+                    </div>
+                </div>
+            
                 <!-- Tanggal & Jam Pengembalian -->
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
                         <label for="tgl" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pengembalian</label>
                         <input type="date" id="tgl" name="tgl" class="w-full p-2.5 border rounded-lg bg-white-100" required>
-                        <p id="warning-tgl" class="text-red-500 text-sm mt-1 hidden">Tanggal pengembalian harus diisi!</p>
+                        <p id="warning-tgl" class="text-red-500 text-sm mt-1 hidden">Tanggal pengembalian harus setelah tanggal mulai!</p>
                     </div>
                     <div>
                         <label for="jam" class="block text-sm font-medium text-gray-700 mb-1">Jam Pengembalian</label>
                         <input type="time" id="jam" name="jam" class="w-full p-2.5 border rounded-lg bg-white-100" required>
-                        <p id="warning-jam" class="text-red-500 text-sm mt-1 hidden">Jam pengembalian harus diisi!</p>
+                        <p id="warning-jam" class="text-red-500 text-sm mt-1 hidden">Jam pengembalian harus setelah tanggal mulai!</p>
                     </div>
                 </div>
 
@@ -55,8 +86,8 @@
 
                 <!-- Detail Insiden -->
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Detail Insiden (Jika Ada)</label>
-                    <input type="text" name="detail" class="w-full p-2.5 border rounded-lg">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Detail Insiden (Jika tidak ada bisa diisi '-' )</label>
+                    <input type="text" name="detail" class="w-full p-2.5 border rounded-lg" required>
                 </div>
 
                 <!-- Tombol Submit -->
@@ -71,130 +102,190 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        
+$(document).ready(function () {
+    $.ajaxSetup({
+        headers: {
+            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+        },
+    });
+
+    function showWarning(input, warningElement) {
+        if (!input.val()) {
+            warningElement.removeClass("hidden");
+            input.addClass("border-red-500");
+        }
+    }
+
+    function hideWarning(input, warningElement) {
+        if (input.val()) {
+            warningElement.addClass("hidden");
+            input.removeClass("border-red-500");
+        }
+    }
+
+
+    function validateDateTime() {
+    let tglMulai = $("#tgl_mulai").val();
+    let jamMulai = $("#jam_mulai").val();
+    let tgl = $("#tgl").val();
+    let jam = $("#jam").val();
+
+    let isValid = true;
+
+    if (tglMulai && tgl) {
+        // Pisahkan tanggal (YYYY-MM-DD)
+        let startParts = tglMulai.split("-");
+        let endParts = tgl.split("-");
+
+        // Buat Date object secara eksplisit
+        let startDate = new Date(startParts[0], startParts[1] - 1, startParts[2]); // (YYYY, MM-1, DD)
+        let endDate = new Date(endParts[0], endParts[1] - 1, endParts[2]); // (YYYY, MM-1, DD)
+
+        // Validasi tanggal selesai
+        if (endDate <= startDate) {
+            $("#warning-tgl").removeClass("hidden");
+            $("#tgl").addClass("border-red-500");
+            isValid = false;
+        } else {
+            $("#warning-tgl").addClass("hidden");
+            $("#tgl").removeClass("border-red-500");
+        }
+
+        // Validasi jam selesai (hanya jika tanggal sama)
+        if (startDate.getTime() === endDate.getTime() && jamMulai && jam) {
+            let startTime = new Date(`2000-01-01T${jamMulai}`);
+            let endTime = new Date(`2000-01-01T${jam}`);
+
+            if (endTime <= startTime) {
+                $("#warning-jam").removeClass("hidden");
+                $("#jam").addClass("border-red-500");
+                isValid = false;
+            } else {
+                $("#warning-jam").addClass("hidden");
+                $("#jam").removeClass("border-red-500");
+            }
+        } else {
+            $("#warning-jam").addClass("hidden");
+            $("#jam").removeClass("border-red-500");
+        }
+    }
+
+    return isValid;
+}
+    $("input").on("blur", function () {
+        showWarning($(this), $(`#warning-${this.id}`));
+    });
+    
+    $("input").on("input change", function () {
+        hideWarning($(this), $(`#warning-${this.id}`));
+
+    }); 
+
+    $("#tgl, #jam, #tgl_mulai, #jam_mulai").on("input change", function () {
+        validateDateTime();
+    });
+
+    $("#btn-batal").on("click", function () {
+        Swal.fire({
+            title: "Yakin ingin membatalkan?",
+            text: "Semua perubahan tidak akan disimpan.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Ya, Batal",
+            cancelButtonText: "Tidak",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "{{ route('peminjaman') }}";
             }
         });
+    });
 
-        // Cancel button handler remains the same...
-        // Konfirmasi tombol batal
-        $("#btn-batal").on("click", function () {
+    $("#form-pengembalian").on("submit", function (e) {
+        e.preventDefault();
+
+        let errors = [];
+
+        // if (!$("#tgl").val()) {
+        //     errors.push("Tanggal pengembalian harus diisi");
+        // }
+
+        // if (!$("#jam").val()) {
+        //     errors.push("Jam pengembalian harus diisi");
+        // }
+
+        if (!$("#kondisi_kendaraan").val()) {
+            errors.push("Kondisi kendaraan harus dipilih");
+        }
+
+        if (errors.length > 0) {
             Swal.fire({
-                title: "Yakin ingin membatalkan?",
-                text: "Semua perubahan tidak akan disimpan.",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Ya, Batal",
-                cancelButtonText: "Tidak"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = "{{ route('peminjaman') }}"; // Sesuaikan rute ke halaman awal
-                }
+                title: "Validasi Error!",
+                html: errors.join("<br>"),
+                icon: "error",
             });
-        });
+            return false;
+        }
 
-        $("#form-pengembalian").on("submit", function (e) {
-            e.preventDefault();
+        Swal.fire({
+            title: "Konfirmasi Pengembalian",
+            text: "Pastikan semua data sudah benar sebelum menyimpan.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Ya, Simpan!",
+            cancelButtonText: "Batal",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = $(this);
+                const url = form.attr("action");
+                const formData = form.serialize();
 
-            // Debug logging
-            console.log('Form Values:', {
-                tanggal: $("#tgl").val(),
-                jam: $("#jam").val(),
-                kondisi: $("#kondisi_kendaraan").val(),
-                detail: $("input[name='detail']").val()
-            });
-            // Improved validation with specific error messages
-            let errors = [];
-            
-            if (!$("#tgl").val()) {
-                errors.push("Tanggal pengembalian harus diisi");
-            }
-            
-            if (!$("#jam").val()) {
-                errors.push("Jam pengembalian harus diisi");
-            }
-            
-            if (!$("#kondisi_kendaraan").val()) {
-                errors.push("Kondisi kendaraan harus dipilih");
-            }
-
-            // If there are validation errors
-            if (errors.length > 0) {
-                Swal.fire({
-                    title: "Validasi Error!",
-                    html: errors.join('<br>'),
-                    icon: "error"
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: formData,
+                    beforeSend: function () {
+                        Swal.fire({
+                            title: "Menyimpan...",
+                            text: "Mohon tunggu sebentar.",
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            },
+                        });
+                    },
+                    success: function (response) {
+                        Swal.fire({
+                            title: "Berhasil!",
+                            text: "Pengembalian kendaraan berhasil disimpan.",
+                            icon: "success",
+                            confirmButtonText: "OK",
+                        }).then(() => {
+                            window.location.href = "{{ route('peminjaman') }}";
+                        });
+                    },
+                    error: function (xhr) {
+                        Swal.fire({
+                            title: "Gagal!",
+                            text:
+                                xhr.responseJSON?.message ||
+                                "Terjadi kesalahan pada server, silakan coba lagi.",
+                            icon: "error",
+                            confirmButtonText: "OK",
+                        });
+                    },
                 });
-                return false;
-            }
-
-            // Form data is valid, proceed with confirmation
-            Swal.fire({
-                title: "Konfirmasi Pengembalian",
-                text: "Pastikan semua data sudah benar sebelum menyimpan.",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Ya, Simpan!",
-                cancelButtonText: "Batal"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const form = $(this);
-                    const url = form.attr('action');
-                    const formData = form.serialize();
-
-                    // Debug: Log the form data being sent
-                    console.log('Form Data:', formData);
-
-                    $.ajax({
-                        url: url,
-                        type: "POST",
-                        data: formData,
-                        beforeSend: function () {
-                            Swal.fire({
-                                title: "Menyimpan...",
-                                text: "Mohon tunggu sebentar.",
-                                allowOutsideClick: false,
-                                didOpen: () => {
-                                    Swal.showLoading();
-                                }
-                            });
-                        },
-                        success: function (response) {
-                            console.log('Success Response:', response);
-                            Swal.fire({
-                                title: "Berhasil!",
-                                text: "Pengembalian kendaraan berhasil disimpan.",
-                                icon: "success",
-                                confirmButtonText: "OK"
-                            }).then(() => {
-                                window.location.href = "{{ route('peminjaman') }}";
-                            });
-                        },
-                        error: function (xhr, status, error) {
-                            console.log('Error:', xhr.responseText);
-                            Swal.fire({
-                                title: "Gagal!",
-                                text: xhr.responseJSON?.message || "Terjadi kesalahan pada server, silakan coba lagi.",
-                                icon: "error",
-                                confirmButtonText: "OK"
-                            });
-                        }
-                    });
-                }
-            });
-        });
-
-        // Add input event listeners to clear validation messages
-        $("#tgl, #jam, #kondisi_kendaraan").on('input change', function() {
-            console.log(this.id + ' changed:', this.value);
-        });
-        $("#kondisi_kendaraan").on('change', function() {
-            console.log('Kondisi changed:', this.value);
-            if (this.value) {
-                $(this).removeClass('border-red-500');
             }
         });
+    });
+
+    $("#tgl, #jam, #kondisi_kendaraan").on("input change", function () {
+        if ($(this).val()) {
+            $(this).removeClass("border-red-500");
+        }
+    });
+});
+
     </script>
 </body>
 </html>
