@@ -14,22 +14,33 @@ class ServisInsidentalPenggunaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ServisInsidental::with(['kendaraan']);
+        $userId = Auth::id();
+    
+        // Get peminjaman data filtered by user_id
+        $peminjamans = Peminjaman::where('user_id', $userId)
+                                ->with('kendaraan')
+                                ->orderBy('created_at', 'desc')
+                                ->get();
+        
+        // Build query for servis insidental with search functionality
+        $query = ServisInsidental::where('user_id', $userId)
+                                ->with(['kendaraan', 'peminjaman']);
 
-        if ($request->has('search')) {
+        // Apply search if provided
+        if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->whereHas('kendaraan', function($q) use ($search) {
-                $q->where('merek', 'like', "%{$search}%")
+                $q->where('merk', 'like', "%{$search}%")
                   ->orWhere('tipe', 'like', "%{$search}%")
                   ->orWhere('plat_nomor', 'like', "%{$search}%");
             });
         }
 
+        // Get paginated results
         $servisInsidentals = $query->orderBy('tgl_servis', 'desc')
                             ->paginate(10);
 
-        return view('pengguna.servisInsidental', compact('servisInsidentals'));
-
+        return view('pengguna.servisInsidental', compact('peminjamans', 'servisInsidentals'));
     }
 
     public function create()

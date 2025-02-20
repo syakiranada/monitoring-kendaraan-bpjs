@@ -16,6 +16,7 @@ export default {
             },
         },
     },
+    darMode: false,
 
     plugins: [forms],
 };

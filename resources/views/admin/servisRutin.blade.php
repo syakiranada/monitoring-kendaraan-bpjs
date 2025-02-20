@@ -33,9 +33,8 @@
                         @foreach ($servisRutins as $servis)
                         <tr class="kendaraan-row cursor-pointer" data-id="{{ $servis->kendaraan->id_kendaraan ?? '' }}">
                             <td class="py-3 px-4 border-b">
-                                <div>{{ $servis->kendaraan->tipe ?? 'Tidak Diketahui' }}</div>
-                                <div class="text-sm text-gray-500">{{ $servis->kendaraan->merk ?? 'Tidak Diketahui' }}</div>
-                            </td>
+                                <div>{{ ($servis->kendaraan->merk ?? 'Tidak Diketahui') . ' ' . ($servis->kendaraan->tipe ?? '') }}</div>
+                            </td>                            
                             <td class="py-3 px-4 border-b">{{ $servis->kendaraan->plat_nomor ?? '-' }}</td>
                             <td class="py-3 px-4 border-b">{{ \Carbon\Carbon::parse($servis->tgl_servis_real)->locale('id')->format('d-m-Y') }}</td>
                             <td class="py-3 px-4 border-b text-{{ $servis->status == 'SUDAH' ? 'green' : 'red' }}-500">
@@ -56,8 +55,10 @@
                 </table>
                 
                 <!-- Pagination -->
-                <div class="p-4 bg-gray-100 flex justify-between items-center">
-                    {{ $servisRutins->links() }}
+                <div class="flex justify-center items-center py-4">
+                    <div class="bg-white rounded-lg shadow-md p-2">
+                        {{ $servisRutins->links('pagination::tailwind') }}
+                    </div>
                 </div>
             </div>
         </div>
