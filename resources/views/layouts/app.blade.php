@@ -110,6 +110,8 @@
             } elseif ($user->peran === 'pengguna') {
                 $menuItems = array_merge($menuItems, [
                     ['icon' => 'home', 'title' => 'Beranda', 'route' => 'beranda'],
+                    ['icon' => 'car', 'title' => 'Daftar Kendaraan', 'route' => 'kendaraan'],
+                    ['icon' => 'pen-to-square', 'title' => 'Peminjaman', 'route' => 'peminjaman'],
                     ['icon' => 'gears', 'title' => 'Servis Insidental', 'route' => 'servisInsidental'],
                     ['icon' => 'gas-pump', 'title' => 'Pengisian BBM', 'route' => 'pengisianBBM'],
                 ]);
