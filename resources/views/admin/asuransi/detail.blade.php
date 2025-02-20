@@ -1,6 +1,6 @@
-{{-- <x-app-layout> --}}
-@extends('layouts.sidebar')
-@section('content')
+<x-app-layout>
+{{-- @extends('layouts.sidebar')
+@section('content') --}}
     <style>
         #polisModal,
         #pembayaranModal {
@@ -159,5 +159,5 @@
             }
         });
     </script>
-{{-- </x-app-layout> --}}
-@endsection
+</x-app-layout>
+{{-- @endsection --}}

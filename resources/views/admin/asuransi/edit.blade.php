@@ -1,6 +1,6 @@
-{{-- <x-app-layout> --}}
-@extends('layouts.sidebar')
-@section('content')
+<x-app-layout>
+{{-- @extends('layouts.sidebar')
+@section('content') --}}
     <div class="min-h-screen flex items-center justify-center py-12 px-4">
         <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-lg">
             <h2 class="text-2xl font-bold mb-6 text-center">Form Edit Pembayaran Asuransi Kendaraan</h2>
@@ -376,5 +376,5 @@
             validateFileInput(this, allowedTypes, 'uploadTextPembayaran', 'removeFilePembayaran');
         });
     </script>
-{{-- </x-app-layout> --}}
-@endsection
+</x-app-layout>
+{{-- @endsection --}}

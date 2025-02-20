@@ -1,6 +1,6 @@
-{{-- <x-app-layout> --}}
-@extends('layouts.sidebar')
-@section('content')
+<x-app-layout>
+{{-- @extends('layouts.sidebar')
+@section('content') --}}
     <style>
         #imageModal {
             z-index: 40;
@@ -154,5 +154,5 @@
         }
     });
     </script>
-{{-- </x-app-layout> --}}
-@endsection
+</x-app-layout>
+{{-- @endsection --}}

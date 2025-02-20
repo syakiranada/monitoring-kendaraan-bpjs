@@ -97,17 +97,30 @@
             @php
             use Illuminate\Support\Facades\Auth;
 
+            $menuItems = [];
             $user = Auth::user();
-            $menuItems = [
-                ['icon' => 'home', 'title' => 'Beranda', 'route' => 'beranda'],
-                // Add more menu items as needed
-            ];
+
+            if ($user->peran === 'admin') {
+                $menuItems = array_merge($menuItems, [
+                    ['icon' => 'home', 'title' => 'Beranda', 'route' => 'admin.beranda'],
+                    ['icon' => 'screwdriver-wrench', 'title' => 'Servis Rutin', 'route' => 'admin.servisRutin'],
+                    ['icon' => 'gears', 'title' => 'Servis Insidental', 'route' => 'admin.servisInsidental'],
+
+                    
+                ]);
+            } elseif ($user->peran === 'pengguna') {
+                $menuItems = array_merge($menuItems, [
+                    ['icon' => 'home', 'title' => 'Beranda', 'route' => 'beranda'],
+                    ['icon' => 'gears', 'title' => 'Servis Insidental', 'route' => 'servisInsidental'],
+                    ['icon' => 'gas-pump', 'title' => 'Pengisian BBM', 'route' => 'pengisianBBM'],
+                ]);
+            }
             @endphp
             
             <div id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-white shadow-md transition-all duration-300 ease-in-out z-50">
                 <div class="p-4 border-b sidebar-header flex items-center justify-between">
                     <div id="logoContainer" class="flex items-center justify-between">
-                        <img src="{{ asset('images/logo_bpjs.png') }}" alt="BPJS Logo" class="w-10 h-10 mr-3">
+                        <img src="{{ asset('logo_bpjs.png') }}" alt="BPJS Logo">
                     </div>
                     
                     <div>

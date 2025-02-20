@@ -15,6 +15,9 @@ use App\Http\Controllers\AsuransiController;
 use App\Http\Controllers\PajakController;
 use App\Http\Controllers\DaftarKendaraanAdminController;
 use App\Http\Controllers\BerandaController;
+use App\Http\Controllers\IsiBBMPenggunaController;
+use App\Http\Controllers\ServisInsidentalPenggunaControllerr;
+
 
 Route::get('/', function () {
     // return view('welcome');
@@ -42,27 +45,30 @@ Route::middleware(['auth', 'user'])->group(function () {
     Route::post('/peminjaman/pengembalian/{id}', [PeminjamanPenggunaController::class, 'simpanPengembalian'])->name('peminjaman.pengembalian');
     Route::get('/peminjaman/{id}/formPerpanjangan', [PeminjamanPenggunaController::class, 'showFormPerpanjangan'])->name('peminjaman.showFormPerpanjangan');
     Route::post('/peminjaman/perpanjangan', [PeminjamanPenggunaController::class, 'perpanjangan'])->name('peminjaman.perpanjang');
-
-   
-
-
+    
+    Route::get('/pengisianBBM', [IsiBBMPenggunaController::class, 'index'])->name('pengisianBBM');
+    Route::get('/servisInsidental', [ServisInsidentalPenggunaController::class, 'index'])->name('servisInsidental');
+    Route::get('/servisInsidental/create', [ServisInsidentalPenggunaController::class, 'create'])->name('servisInsidental.create');
+    Route::post('/servisInsidental', [ServisInsidentalPenggunaController::class, 'store'])->name('servisInsidental.store');
+    Route::get('/servisInsidental/{id}', [ServisInsidentalPenggunaController::class, 'detail'])->name('servisInsidental.detail');
 
     // Route::get('/kendaraan', [KendaraanController::class, 'index'])->name('kendaraan.index');
     // Route::get('/peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
     // Route::get('/servis-insidental', [ServisController::class, 'insidental'])->name('servis.insidental');
-    // Route::get('/pengisian-bbm', [BBMController::class, 'index'])->name('bbm.index');
+    
 
 });
 
 // Route Admin
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/beranda', [BerandaController::class, 'admin'])->name('admin.beranda');
+    Route::get('/admin/beranda', [HomeController::class, 'berandaAdmin'])->name('admin.beranda');
     // Route::get('/admin/kendaraan', [KendaraanController::class, 'adminIndex'])->name('admin.kendaraan');
     // Route::get('/admin/pengajuan-peminjaman', [PeminjamanController::class, 'adminPengajuan'])->name('admin.peminjaman');
     // Route::get('/admin/pajak', [PajakController::class, 'index'])->name('admin.pajak');
     // Route::get('/admin/asuransi', [AsuransiController::class, 'index'])->name('admin.asuransi');
     // Route::get('/admin/servis-rutin', [ServisController::class, 'rutin'])->name('admin.servis-rutin');
     // Route::get('/admin/pengisian-bbm', [BBMController::class, 'adminIndex'])->name('admin.bbm');
+    // Route::get('/admin/cek-fisik', [CekFisikController::class, 'index'])->name('admin.cek-fisik');
     // Route::get('/admin/riwayat', [RiwayatController::class, 'index'])->name('admin.riwayat');
     Route::get('/admin/pengajuan-peminjaman', [PengajuanPeminjamanController::class, 'index'])->name('admin.pengajuan-peminjaman.index');
     Route::get('/admin/pengajuan-peminjaman/{id}', [PengajuanPeminjamanController::class, 'detail'])->name('admin.pengajuan-peminjaman.detail');
@@ -89,7 +95,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/riwayat/detail-asuransi/{id}', [RiwayatController::class, 'detailAsuransi'])->name('admin.riwayat.detail-asuransi');
     Route::get('/admin/riwayat/servis-rutin', [RiwayatController::class, 'servisRutin'])->name('admin.riwayat.servis-rutin');
     Route::get('/admin/riwayat/detail-servis-rutin/{id}', [RiwayatController::class, 'detailServisRutin'])->name('admin.riwayat.detail-servis-rutin');
-
 
     //PAJAK
     Route::get('/pajak', [PajakController::class, 'index'])->name('pajak.daftar_kendaraan_pajak');

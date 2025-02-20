@@ -79,15 +79,86 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
-    // Form submission handler
-// Form submission handler with correct form ID
+$.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+});
+
 $(document).ready(function() {
     // Cancel button handler
+    // let previousSelectedKendaraan = null;
+
+    function showWarning(input, warningElement) {
+        if (!input.val()) {
+            warningElement.removeClass("hidden");
+            input.addClass("border-red-500");
+        }
+    }
+
+    function hideWarning(input, warningElement) {
+        if (input.val()) {
+            warningElement.addClass("hidden");
+            input.removeClass("border-red-500");
+        }
+    }
+
+    function validateDateTime() {
+        let tglMulai = $("#tgl_mulai").val();
+        let jamMulai = $("#jam_mulai").val();
+        let tglSelesai = $("#tgl_selesai").val();
+        let jamSelesai = $("#jam_selesai").val();
+
+        let isValid = true;
+
+        if (tglMulai && tglSelesai) {
+            let startDate = new Date(tglMulai);
+            let endDate = new Date(tglSelesai);
+
+            // Validasi tanggal selesai
+            if (endDate < startDate) {
+                $("#warning-tgl-selesai").removeClass("hidden");
+                $("#tgl_selesai").addClass("border-red-500");
+                isValid = false;
+            } else {
+                $("#warning-tgl-selesai").addClass("hidden");
+                $("#tgl_selesai").removeClass("border-red-500");
+            }
+
+            // Validasi jam selesai (hanya jika tanggal sama)
+            if (startDate.getTime() === endDate.getTime() && jamMulai && jamSelesai) {
+                let startTime = new Date(`2000-01-01T${jamMulai}`);
+                let endTime = new Date(`2000-01-01T${jamSelesai}`);
+
+                if (endTime <= startTime) {
+                    $("#warning-jam-selesai").removeClass("hidden");
+                    $("#jam_selesai").addClass("border-red-500");
+                    isValid = false;
+                } else {
+                    $("#warning-jam-selesai").addClass("hidden");
+                    $("#jam_selesai").removeClass("border-red-500");
+                }
+            } else {
+                $("#warning-jam-selesai").addClass("hidden");
+                $("#jam_selesai").removeClass("border-red-500");
+            }
+        }
+
+        return isValid;
+    }
+    $("input").on("blur", function () {
+        showWarning($(this), $(`#warning-${this.id}`));
+    });
+    
+    $("input").on("input change", function () {
+        hideWarning($(this), $(`#warning-${this.id}`));
+
+        // Jalankan validasi hanya jika input tanggal/jam berubah
+        if (["tgl_mulai", "jam_mulai", "tgl_selesai", "jam_selesai"].includes(this.id)) {
+            validateDateTime();
+            fetchAvailableKendaraan();
+        }
+    }); 
     $("#btn-batal").on("click", function () {
         Swal.fire({
             title: "Yakin ingin membatalkan?",
@@ -158,58 +229,48 @@ $(document).ready(function() {
                         });
                     },
                     error: function (xhr) {
-                        let errorMessage = "Terjadi kesalahan pada server";
-                        
-                        if (xhr.responseJSON) {
-                            if (xhr.responseJSON.type === 'conflict') {
-                                // Format conflicts for display
-                                let conflictDetails = '<div class="text-left">';
-                                conflictDetails += '<p class="mb-2">Kendaraan sudah dibooking pada periode:</p>';
-                                
-                                xhr.responseJSON.conflicts.forEach(conflict => {
-                                    conflictDetails += `
-                                        <div class="mb-2 p-2 bg-gray-100 rounded">
-                                            <p><strong>Tanggal:</strong> ${conflict.tanggal}</p>
-                                            <p><strong>Waktu:</strong> ${conflict.waktu}</p>
-                                            <p><strong>Status:</strong> ${conflict.status}</p>
-                                            <p><strong>Peminjam:</strong> ${conflict.peminjam}</p>
-                                        </div>
-                                    `;
-                                });
-                                
-                                conflictDetails += '</div>';
+                    let errorMessage = "Terjadi kesalahan pada server";
+                    
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.type === 'conflict') {
+                            // Format conflicts for display
+                            let conflictDetails = '<div class="text-left">';
+                            conflictDetails += '<p class="mb-2">Kendaraan sudah dibooking pada periode:</p>';
+                            
+                            xhr.responseJSON.conflicts.forEach(conflict => {
+                                conflictDetails += `
+                                    <div class="mb-2 p-2 bg-gray-100 rounded">
+                                        <p><strong>Tanggal:</strong> ${conflict.tanggal}</p>
+                                        <p><strong>Waktu:</strong> ${conflict.waktu}</p>
+                                        <p><strong>Status:</strong> ${conflict.status}</p>
+                                        <p><strong>Peminjam:</strong> ${conflict.peminjam}</p>
+                                    </div>
+                                `;
+                            });
+                            
+                            conflictDetails += '</div>';
 
-                                Swal.fire({
-                                    title: "Bentrok Jadwal!",
-                                    html: conflictDetails,
-                                    icon: "error",
-                                    confirmButtonText: "OK",
-                                    width: '600px'
-                                });
-                            } else if (xhr.responseJSON.type === 'validation') {
-                                // For validation errors
-                                errorMessage = Object.values(xhr.responseJSON.errors || {})
-                                    .flat()
-                                    .join('\n');
-                                
-                                Swal.fire({
-                                    title: "Validasi Gagal!",
-                                    text: errorMessage,
-                                    icon: "error",
-                                    confirmButtonText: "OK"
-                                });
-                            } else {
-                                // For other errors
-                                errorMessage = xhr.responseJSON.message || errorMessage;
-                                
-                                Swal.fire({
-                                    title: "Gagal!",
-                                    text: errorMessage,
-                                    icon: "error",
-                                    confirmButtonText: "OK"
-                                });
-                            }
+                            Swal.fire({
+                                title: "Bentrok Jadwal!",
+                                html: conflictDetails,
+                                icon: "error",
+                                confirmButtonText: "OK",
+                                width: '600px'
+                            });
+                        } else if (xhr.responseJSON.type === 'validation') {
+                            // Handle validation errors
+                            errorMessage = Object.values(xhr.responseJSON.errors || {})
+                                .flat()
+                                .join('\n');
+                            
+                            Swal.fire({
+                                title: "Validasi Gagal!",
+                                text: errorMessage,
+                                icon: "error",
+                                confirmButtonText: "OK"
+                            });
                         } else {
+                            errorMessage = xhr.responseJSON.message || errorMessage;
                             Swal.fire({
                                 title: "Gagal!",
                                 text: errorMessage,
@@ -217,44 +278,21 @@ $(document).ready(function() {
                                 confirmButtonText: "OK"
                             });
                         }
+                    } else {
+                        Swal.fire({
+                            title: "Gagal!",
+                            text: errorMessage,
+                            icon: "error",
+                            confirmButtonText: "OK"
+                        });
                     }
+                }
+
                 });
             }
         });
     });
 });
-
-// Date/time validation function
-function validateDateTime() {
-    const tglSelesai = document.getElementById('tgl_selesai');
-    const jamSelesai = document.getElementById('jam_selesai');
-    const tglMulai = document.getElementById('tgl_mulai');
-    const jamMulai = document.getElementById('jam_mulai');
-    const warningTglSelesai = document.getElementById('warning-tgl-selesai');
-    const warningJamSelesai = document.getElementById('warning-jam-selesai');
-    
-    const startDateTime = new Date(tglMulai.value + ' ' + jamMulai.value);
-    const endDateTime = new Date(tglSelesai.value + ' ' + jamSelesai.value);
-    
-    let isValid = true;
-    
-    // Reset warnings
-    warningTglSelesai.classList.add('hidden');
-    warningJamSelesai.classList.add('hidden');
-    
-    // Validate dates
-    if (endDateTime <= startDateTime) {
-        if (tglSelesai.value <= tglMulai.value) {
-            warningTglSelesai.classList.remove('hidden');
-        }
-        if (tglSelesai.value === tglMulai.value && jamSelesai.value <= jamMulai.value) {
-            warningJamSelesai.classList.remove('hidden');
-        }
-        isValid = false;
-    }
-    
-    return isValid;
-}
 </script>
 </html>
 

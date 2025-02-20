@@ -22,42 +22,44 @@
 
                 <!-- Grid untuk Detail Kendaraan -->
                 <div class="space-y-3">
-                    <!-- Plat Nomor -->
+                    <!-- Mulai Peminjaman -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Mulai Peminjaman</p>
-                        <p class="font-normal text-gray-900 dark:text-white">{{ $peminjaman->tgl_mulai }} {{ $peminjaman->jam_mulai }}</p>
+                        <p class="font-normal text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($peminjaman->tgl_mulai)->format('d-m-y') }} {{ $peminjaman->jam_mulai }}</p>
                     </div>
 
-                    <!-- Warna -->
+                    <!-- Selesai -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Selesai Peminjaman</p>
-                        <p class="font-normal text-gray-900 dark:text-white">{{ $peminjaman->tgl_selesai }} {{ $peminjaman->jam_selesai }}</p>
+                        <p class="font-normal text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($peminjaman->tgl_selesai)->format('d-m-y') }} {{ $peminjaman->jam_selesai }}</p>
                     </div>
 
+
+                    <!-- Tujuan -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Tujuan</p>
                         <p class="font-normal text-gray-900 dark:text-white">{{ $peminjaman->tujuan }}</p>
                     </div>
 
-                    <!-- Jenis Kendaraan -->
+                    <!-- Waktu pengembalian -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Waktu Pengembalian Real</p>
                         <p class="font-normal text-gray-900 dark:text-white">{{ $peminjaman->tgl_kembali_real ?? '-'}} {{ $peminjaman->jam_kembali_real }}</p>
                     </div>
 
-                    <!-- Kapasitas -->
+                    <!-- Kondisi -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Kondisi Kendaraan</p>
                         <p class="font-normal text-gray-900 dark:text-white">{{ $peminjaman->kondisi_kendaraan ?? '-' }}</p>
                     </div>
 
-                    <!-- Bahan Bakar -->
+                    <!-- Insiden -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Detail Insiden</p>
                         <p class="font-normal text-gray-900 dark:text-white">{{ $peminjaman->detail_insiden ?? '-' }}</p>
                     </div>
 
-                    <!-- Nomor Rangka -->
+                    <!-- Status Pinjam -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Status Pinjam</p>
                         <p class="font-normal text-gray-900 dark:text-white">{{ $peminjaman->status_pinjam }}</p>

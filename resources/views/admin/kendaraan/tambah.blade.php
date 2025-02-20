@@ -1,6 +1,6 @@
-{{-- <x-app-layout> --}}
-@extends('layouts.sidebar')
-@section('content')
+<x-app-layout>
+{{-- @extends('layouts.sidebar')
+@section('content') --}}
     <div class="min-h-screen flex items-center justify-center py-16 px-8">
         <div class="max-w-4xl w-full bg-white p-12 rounded-lg shadow-lg">
             <h2 class="text-2xl font-bold mb-6 text-center">Form Tambah Kendaraan</h2>
@@ -292,5 +292,5 @@
             });
         });
     </script>
-{{-- </x-app-layout> --}}
-@endsection
+</x-app-layout>
+{{-- @endsection --}}
