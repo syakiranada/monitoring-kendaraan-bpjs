@@ -16,7 +16,7 @@ use App\Http\Controllers\PajakController;
 use App\Http\Controllers\DaftarKendaraanAdminController;
 use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\IsiBBMPenggunaController;
-use App\Http\Controllers\ServisInsidentalPenggunaControllerr;
+use App\Http\Controllers\ServisInsidentalPenggunaController;
 
 
 Route::get('/', function () {
