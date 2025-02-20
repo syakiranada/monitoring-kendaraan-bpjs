@@ -55,13 +55,14 @@ Route::middleware(['auth', 'user'])->group(function () {
     // Route::get('/kendaraan', [KendaraanController::class, 'index'])->name('kendaraan.index');
     // Route::get('/peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
     // Route::get('/servis-insidental', [ServisController::class, 'insidental'])->name('servis.insidental');
+    // Route::get('/pengisian-bbm', [BBMController::class, 'index'])->name('bbm.index');
     
 
 });
 
 // Route Admin
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/beranda', [HomeController::class, 'berandaAdmin'])->name('admin.beranda');
+    Route::get('/admin/beranda', [BerandaController::class, 'admin'])->name('admin.beranda');
     // Route::get('/admin/kendaraan', [KendaraanController::class, 'adminIndex'])->name('admin.kendaraan');
     // Route::get('/admin/pengajuan-peminjaman', [PeminjamanController::class, 'adminPengajuan'])->name('admin.peminjaman');
     // Route::get('/admin/pajak', [PajakController::class, 'index'])->name('admin.pajak');
