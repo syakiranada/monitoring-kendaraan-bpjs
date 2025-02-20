@@ -7,6 +7,10 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PeminjamanPenggunaController;
 use App\Http\Controllers\DaftarKendaraanPenggunaController;
+use App\Http\Controllers\ServisRutinController;
+use App\Http\Controllers\ServisInsidentalController;
+use App\Http\Controllers\ServisInsidentalPenggunaController;
+use App\Http\Controllers\IsiBBMPenggunaController;
 
 use App\Http\Controllers\PengajuanPeminjamanController;
 
@@ -29,11 +33,19 @@ Route::middleware(['auth', 'user'])->group(function () {
     Route::get('/kendaraan/{id}', [DaftarKendaraanPenggunaController::class, 'detail'])->name('kendaraan.detail');
     Route::get('/formPeminjaman', [PeminjamanPenggunaController::class, 'form'])->name('peminjaman.form');
 
+    Route::get('/pengisianBBM', [IsiBBMPenggunaController::class, 'index'])->name('pengisianBBM');
+
+    Route::get('/servisInsidental', [ServisInsidentalPenggunaController::class, 'index'])->name('servisInsidental');
+    Route::get('/servisInsidental/create', [ServisInsidentalPenggunaController::class, 'create'])->name('servisInsidental.create');
+    Route::post('/servisInsidental', [ServisInsidentalPenggunaController::class, 'store'])->name('servisInsidental.store');
+    Route::get('/servisInsidental/{id}', [ServisInsidentalPenggunaController::class, 'detail'])->name('servisInsidental.detail');
+
+
 
     // Route::get('/kendaraan', [KendaraanController::class, 'index'])->name('kendaraan.index');
     // Route::get('/peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
     // Route::get('/servis-insidental', [ServisController::class, 'insidental'])->name('servis.insidental');
-    // Route::get('/pengisian-bbm', [BBMController::class, 'index'])->name('bbm.index');
+    
 
 
 });
@@ -41,14 +53,20 @@ Route::middleware(['auth', 'user'])->group(function () {
 // Route Admin
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/beranda', [HomeController::class, 'berandaAdmin'])->name('admin.beranda');
-    // Route::get('/admin/kendaraan', [KendaraanController::class, 'adminIndex'])->name('admin.kendaraan');
-    // Route::get('/admin/pengajuan-peminjaman', [PeminjamanController::class, 'adminPengajuan'])->name('admin.peminjaman');
-    // Route::get('/admin/pajak', [PajakController::class, 'index'])->name('admin.pajak');
-    // Route::get('/admin/asuransi', [AsuransiController::class, 'index'])->name('admin.asuransi');
-    // Route::get('/admin/servis-rutin', [ServisController::class, 'rutin'])->name('admin.servis-rutin');
-    // Route::get('/admin/pengisian-bbm', [BBMController::class, 'adminIndex'])->name('admin.bbm');
-    // Route::get('/admin/cek-fisik', [CekFisikController::class, 'index'])->name('admin.cek-fisik');
-    // Route::get('/admin/riwayat', [RiwayatController::class, 'index'])->name('admin.riwayat');
+
+    Route::get('/admin/servisRutin', [ServisRutinController::class, 'index'])->name('admin.servisRutin');
+    Route::get('/admin/servisRutin/create', [ServisRutinController::class, 'create'])->name('admin.servisRutin.create');
+    Route::post('/admin/servisRutin', [ServisRutinController::class, 'store'])->name('admin.servisRutin.store');
+    Route::get('/admin/servisRutin/{id}', [ServisRutinController::class, 'detail'])->name('admin.servisRutin.detail');
+    Route::get('/api/kendaraan/{id}', [ServisRutinController::class, 'getKendaraan']);
+    Route::get('/api/servis_terbaru/{id_kendaraan}', [ServisRutinController::class, 'getServisTerbaru']);
+    Route::get('/api/frekuensi/{id_kendaraan}', [ServisRutinController::class, 'getFrekuensi']);
+
+    Route::get('/admin/servisInsidental', [ServisInsidentalController::class, 'index'])->name('admin.servisInsidental');
+    Route::get('/admin/servisInsidental/create', [ServisInsidentalController::class, 'create'])->name('admin.servisInsidental.create');
+    Route::post('/admin/servisInsidental', [ServisInsidentalController::class, 'store'])->name('admin.servisInsidental.store');
+    Route::get('/admin/servisInsidental/{id}', [ServisInsidentalController::class, 'detail'])->name('admin.servisInsidental.detail');
+
     Route::get('/admin/pengajuan-peminjaman', [PengajuanPeminjamanController::class, 'index'])->name('admin.pengajuan-peminjaman.index');
     Route::get('/admin/pengajuan-peminjaman/{id}', [PengajuanPeminjamanController::class, 'detail'])->name('admin.pengajuan-peminjaman.detail');
     Route::post('/admin/pengajuan-peminjaman/setujui/{id}', [PengajuanPeminjamanController::class, 'setujui'])->name('admin.pengajuan-peminjaman.setujui');

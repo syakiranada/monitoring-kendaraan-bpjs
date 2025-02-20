@@ -15,11 +15,10 @@ return new class extends Migration
             $table->id('id_servis_insidental');
             $table->unsignedBigInteger('id_kendaraan');
             $table->unsignedBigInteger('user_id');
-            // $table->string('tipe', 10);
+            $table->unsignedBigInteger('id_peminjaman')->nullable(); // Tambahkan kolom untuk relasi ke peminjaman
             $table->integer('harga');
             $table->string('lokasi', 100);
-            // $table->binary('bukti_bayar')->nullable();
-            // $table->binary('bukti_fisik')->nullable();
+            $table->string('deskripsi', 200);
             $table->string('bukti_bayar')->nullable(); // simpan path di sini
             $table->string('bukti_fisik')->nullable(); // simpan path di sini
             $table->date('tgl_servis');
@@ -27,6 +26,7 @@ return new class extends Migration
             // Foreign Key Constraints
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('id_kendaraan')->references('id_kendaraan')->on('kendaraan')->onDelete('cascade');
+            $table->foreign('id_peminjaman')->references('id_peminjaman')->on('peminjaman')->onDelete('cascade'); // Relasi ke tabel peminjaman
 
             $table->timestamps();
         });

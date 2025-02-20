@@ -30,6 +30,7 @@ class ServisInsidentalSeeder extends Seeder
                 'user_id' => $peminjaman->user_id,
                 'harga' => $faker->numberBetween(500000, 5000000), // Harga random antara 500 ribu - 5 juta
                 'lokasi' => $faker->city,
+                'deskripsi' => $faker->sentence,
                 'bukti_bayar' => null,
                 'bukti_fisik' => null,
                 'tgl_servis' => $peminjaman->tgl_kembali_real, // Gunakan tanggal kembali sebagai tanggal servis

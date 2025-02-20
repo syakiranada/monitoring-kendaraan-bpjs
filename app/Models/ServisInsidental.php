@@ -17,6 +17,7 @@ class ServisInsidental extends Model
         // 'tipe',
         'harga',
         'lokasi',
+        'deskripsi',
         'bukti_bayar',
         'bukti_fisik',
         'tgl_servis',
@@ -32,5 +33,10 @@ class ServisInsidental extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    public function peminjaman()
+    {
+        return $this->belongsTo(Peminjaman::class, 'id_peminjaman', 'id');
     }
 }
