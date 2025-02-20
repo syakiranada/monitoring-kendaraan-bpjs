@@ -7,13 +7,13 @@
         <a href="{{ route('admin.riwayat.peminjaman') }}" class="bg-green-500 hover:bg-green-700 text-white p-4 rounded-lg text-center font-semibold transition">
             Riwayat Peminjaman Kendaraan
         </a>
-        <a href="#" class="bg-green-500 text-white p-4 rounded-lg text-center font-semibold hover:bg-green-700 transition">
+        <a href="{{ route('admin.riwayat.pajak') }}" class="bg-green-500 text-white p-4 rounded-lg text-center font-semibold hover:bg-green-700 transition">
             Riwayat Pembayaran Pajak
         </a>
-        <a href="#" class="bg-green-500 text-white p-4 rounded-lg text-center font-semibold hover:bg-green-700 transition">
+        <a href="{{ route('admin.riwayat.asuransi') }}" class="bg-green-500 text-white p-4 rounded-lg text-center font-semibold hover:bg-green-700 transition">
             Riwayat Pembayaran Asuransi
         </a>
-        <a href="#" class="bg-green-500 text-white p-4 rounded-lg text-center font-semibold hover:bg-green-700 transition">
+        <a href="{{ route('admin.riwayat.servis-rutin') }}" class="bg-green-500 text-white p-4 rounded-lg text-center font-semibold hover:bg-green-700 transition">
             Riwayat Servis Rutin
         </a>
         <a href="#" class="bg-green-500 text-white p-4 rounded-lg text-center font-semibold hover:bg-green-700 transition">

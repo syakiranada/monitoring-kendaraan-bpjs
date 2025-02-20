@@ -16,7 +16,7 @@
 
         <div class="grid grid-cols-2 gap-6">
             <!-- Informasi Peminjaman -->
-            <a href="#" class="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+            <div class="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                 <h3 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">Informasi Peminjaman</h3>
                 <div class="grid grid-cols-2 gap-y-2 text-gray-700 dark:text-gray-400">
                     <p class="font-semibold">Nama Peminjam</p>
@@ -34,15 +34,15 @@
                     <p class="font-semibold">Status Peminjaman</p>
                     <p class="ml-4">
                         <span class="px-2 py-1 text-white text-sm rounded 
-                            {{ $peminjaman->status_pinjam == 'Disetujui' ? 'bg-green-500' : 'bg-yellow-500' }}">
+                            {{ $peminjaman->status_pinjam == 'Telah Dikembalikan' ? 'bg-green-500' : 'bg-yellow-500' }}">
                             {{ ucfirst($peminjaman->status_pinjam) }}
                         </span>
                     </p>
                 </div>
-            </a>
+            </div>
 
             <!-- Informasi Kendaraan -->
-            <a href="#" class="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+            <div class="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                 <h3 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">Informasi Kendaraan</h3>
                 <div class="grid grid-cols-2 gap-y-2 text-gray-700 dark:text-gray-400">
                     <p class="font-semibold">Merek & Tipe</p>
@@ -54,12 +54,12 @@
                     <p class="font-semibold">Warna</p>
                     <p class="ml-4">{{ $peminjaman->kendaraan->warna }}</p>
                 </div>
-            </a>
+            </div>
         </div>
 
-        {{-- @if ($peminjaman->tgl_kembali_real)
+        @if ($peminjaman->tgl_kembali_real)
             <!-- Card Pengembalian Kendaraan -->
-            <a href="#" class="block p-6 mt-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+            <div class="block p-6 mt-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                 <h3 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">Pengembalian Kendaraan</h3>
                 <div class="grid grid-cols-2 gap-y-2 text-gray-700 dark:text-gray-400">
                     <p class="font-semibold">Tanggal Kembali Real</p>
@@ -74,8 +74,8 @@
                     <p class="font-semibold">Detail Insiden</p>
                     <p class="ml-4">{{ $peminjaman->detail_insiden ?? '-' }}</p>
                 </div>
-            </a>
-        @endif --}}
+            </div>
+        @endif
     </div>
 {{-- </x-app-layout> --}}
 @endsection

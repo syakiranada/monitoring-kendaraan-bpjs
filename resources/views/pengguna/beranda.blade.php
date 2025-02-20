@@ -1,4 +1,4 @@
-@extends('layouts.sidebar')
+<x-app-layout>
 
 @section('content')
 <!DOCTYPE html>
@@ -100,6 +100,4 @@
             </div>
         </div>
     </div>
-</body>
-</html>
-@endsection
+</x-app-layout>
