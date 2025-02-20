@@ -13,7 +13,7 @@ class Peminjaman extends Model {
     protected $fillable = [
         'user_id', 'id_kendaraan', 'tgl_mulai', 'tgl_selesai', 
         'jam_mulai', 'jam_selesai', 'tujuan', 'tgl_kembali_real',
-        'jam_kembali_real', 'kondisi_kendaraan', 'status_pinjam', 'detail_insiden'
+        'jam_kembali_real', 'kondisi_kendaraan', 'status_pinjam', 'perpanjangan_dari', 'detail_insiden'
     ];
 
     public function user() {

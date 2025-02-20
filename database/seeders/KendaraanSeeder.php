@@ -160,7 +160,7 @@ class KendaraanSeeder extends Seeder
                 'nilai_buku' => 150000000,
                 'tgl_pembelian' => '2019-01-15',
                 'aset' => 'Tidak Guna',
-                'status_ketersediaan' => ' Tidak Tersedia',
+                'status_ketersediaan' => 'Tidak Tersedia',
                 'bahan_bakar' => 'Pertamax Turbo',
                 'frekuensi_servis' => 5,
                 'no_mesin' => Str::random(17),

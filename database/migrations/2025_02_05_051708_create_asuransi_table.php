@@ -18,13 +18,12 @@ return new class extends Migration
             $table->integer('tahun'); // Tahun asuransi (buat generate id)
             $table->date('tgl_bayar'); // Tanggal pembayaran
             $table->string('polis')->nullable(); // Polis asuransi
-            $table->string('bukti_bayar')->nullable(); // Bukti pembayaran
+            $table->string('bukti_bayar_asuransi')->nullable(); // Bukti pembayaran
             //$table->string('status', 25); // Status (varchar 10)
             $table->date('tgl_perlindungan_awal'); // Tanggal awal perlindungan
             $table->date('tgl_perlindungan_akhir'); // Tanggal akhir perlindungan
             $table->integer('nominal')->nullable(); // Nominal pembayaran
             $table->integer('biaya_asuransi_lain')->nullable(); // Biaya lain-lain
-            $table->integer('jml_bayar')->nullable(); // Jumlah total yang dibayarkan
             $table->timestamps(); // Created_at & Updated_at
 
             // Foreign Key Constraint

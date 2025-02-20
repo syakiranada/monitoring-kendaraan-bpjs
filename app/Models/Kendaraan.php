@@ -32,6 +32,10 @@ class Kendaraan extends Model
         'kapasitas',
     ];
 
+    protected $casts = [
+        'tgl_pembelian' => 'date',
+    ];
+
     public function peminjaman()
     {
         return $this->hasMany(Peminjaman::class, 'id_kendaraan', 'id_kendaraan');
@@ -66,4 +70,5 @@ class Kendaraan extends Model
     {
         return $this->hasMany(Pajak::class, 'id_kendaraan', 'id_kendaraan');
     }
+    
 }

@@ -21,6 +21,7 @@ return new class extends Migration
             $table->date('tgl_kembali_real')->nullable(); // Nullable untuk kasus belum kembali
             $table->string('kondisi_kendaraan', 30)->nullable(); // Nullable jika kondisi belum di-update
             $table->string('status_pinjam', 30);
+            $table->unsignedBigInteger('perpanjangan_dari')->nullable();
             $table->string('detail_insiden', 100)->nullable(); // Nullable untuk insiden opsional
             $table->time('jam_mulai');
             $table->time('jam_selesai');

@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id('id_bbm'); // Primary Key
             $table->unsignedBigInteger('user_id'); // Foreign Key untuk pengguna
             $table->unsignedBigInteger('id_kendaraan'); // Foreign Key untuk kendaraan
-            $table->integer('nominal'); // Jumlah nominal pengisian BBM
-            $table->string('jenis_bbm', 25); // Jenis BBM (varchar 25)
-            $table->date('tgl_isi'); // Tanggal pengisian BBM
+            $table->integer('nominal')->nullable(); // Jumlah nominal pengisian BBM
+            $table->string('jenis_bbm', 25)->nullable();// Jenis BBM (varchar 25)
+            $table->date('tgl_isi')->nullable(); // Tanggal pengisian BBM
             $table->timestamps(); // Created_at & Updated_at
 
             // Foreign Key Constraints

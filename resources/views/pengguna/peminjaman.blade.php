@@ -1,7 +1,3 @@
-@extends('layouts.sidebar')
-
-@section('content')
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,12 +13,15 @@
             <h1 class="mt-10 text-xl font-semibold text-gray-900 dark:text-white mb-4">Daftar Peminjaman Kendaraan</h1>
            
             <!-- Wrapper untuk tombol dan search -->
-            <a href="{{ route('peminjaman.form')}}"
+            
             <div class="flex justify-between items-center mb-4"> 
+                <!-- Tambah -->
+                <div>
+                    <a href="{{ route('peminjaman.showForm')}}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                        + Tambah
+                    </a>
+                </div>
                 
-                <button type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-                    + Tambah
-                </button>
 
                 <!-- Search -->
                 <label for="input-group-search" class="sr-only">Search</label>
@@ -54,38 +53,33 @@
                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                         <td class="px-6 py-4">{{ $peminjaman->kendaraan->merk }} {{ $peminjaman->kendaraan->tipe }}</td>
                         <td class="px-6 py-4">{{ $peminjaman->kendaraan->plat_nomor }}</td>
-                        <td class="px-6 py-4">{{ $peminjaman->tgl_mulai }}</td>
-                        <td class="px-6 py-4">{{ $peminjaman->tgl_selesai }}</td>
+                        <td class="px-6 py-4">{{ \Carbon\Carbon::parse($peminjaman->tgl_mulai)->format('d-m-Y') }}</td>
+                        <td class="px-6 py-4">{{ \Carbon\Carbon::parse($peminjaman->tgl_selesai)->format('d-m-Y') }}</td>
                         <td class="px-6 py-4">{{ $peminjaman->status_pinjam }}</td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-5">
                             <!-- Tombol Detail (selalu tampil) -->
-                            <a 
-                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-                            Detail
-                            </a>
-
+                            <a href="{{ route('peminjaman.detail', ['id' => $peminjaman->id_peminjaman]) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Detail</a>
+                            
                             <!-- Jika status Menunggu Persetujuan -->
                             @if($peminjaman->status_pinjam == 'Menunggu Persetujuan')
-                                <a 
-                                class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800">
-                                Batal
-                                </a>
+                                <a href="javascript:void(0);"onclick="confirmBatal({{ $peminjaman->id_peminjaman }})" class="font-medium text-red-600 dark:text-red-500 hover:underline ms-3">Batal</a>
                             @endif
 
                             <!-- Jika status Disetujui -->
                             @if($peminjaman->status_pinjam == 'Disetujui')
-                                <a 
-                                class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800">
-                                Batal
-                                </a>
-                                <a
+                                <a href="javascript:void(0);" onclick="confirmBatal({{ $peminjaman->id_peminjaman }})" class="font-medium text-red-600 dark:text-red-500 hover:underline ms-3">Batal</a>
+                                
+                                <!-- <a href="{{ route('peminjaman.showFormPerpanjangan', $peminjaman->id_peminjaman) }}"
                                 class="text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-yellow-500 dark:hover:bg-yellow-600 focus:outline-none dark:focus:ring-yellow-800">
                                 Perpanjang
-                                </a>
-                                <a 
+                                </a> -->
+                                <a href="{{ route('peminjaman.showFormPerpanjangan', $peminjaman->id_peminjaman) }}" class="font-medium text-yellow-500 dark:text-yellow-600 hover:underline">Perpanjang</a>
+
+                                <!-- <a href="{{ route('peminjaman.showFormPengembalian', $peminjaman->id_peminjaman) }}"
                                 class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 focus:outline-none dark:focus:ring-green-800">
                                 Selesai
-                                </a>
+                                </a> -->
+                                <a href="{{ route('peminjaman.showFormPengembalian', $peminjaman->id_peminjaman) }}" class="font-medium text-green-500 dark:text-green-600 hover:underline">Selesai</a>
                             @endif
 
                             <!-- Jika status Ditolak -->
@@ -119,5 +113,48 @@
     </div>
 </body>
 </html>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-@endsection
+<script>
+    function confirmBatal(id) {
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Anda tidak akan dapat mengembalikan perubahan ini!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Batalkan!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Redirect ke URL pembatalan
+                window.location.href = `/peminjaman/${id}/batal`;
+            }
+        });
+    }
+    @if(session('success'))
+    <script>
+        Swal.fire({
+            title: 'Berhasil!',
+            text: "{{ session('success') }}",
+            icon: 'success',
+            confirmButtonText: 'OK'
+        });
+    </script>
+    @endif
+
+    @if(session('error'))
+        <script>
+            Swal.fire({
+                title: 'Gagal!',
+                text: "{{ session('error') }}",
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        </script>
+    @endif
+
+    
+</script>
+

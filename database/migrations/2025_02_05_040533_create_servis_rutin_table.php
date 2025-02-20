@@ -16,16 +16,16 @@ return new class extends Migration
             $table->unsignedBigInteger('id_kendaraan');
             $table->unsignedBigInteger('user_id');
             // $table->string('tipe', 10);
-            $table->integer('harga');
-            $table->integer('kilometer');
-            $table->string('lokasi', 100);
+            $table->integer('harga')->nullable();
+            $table->integer('kilometer')->nullable();
+            $table->string('lokasi', 100)->nullable();
             // $table->binary('bukti_bayar')->nullable();
             // $table->binary('bukti_fisik')->nullable();
             $table->string('bukti_bayar')->nullable(); // Simpan path di sini
             $table->string('bukti_fisik')->nullable(); // Simpan path di sini
             // $table->string('status', 20);
-            $table->date('tgl_servis_real');
-            $table->date('tgl_servis_selanjutnya');
+            $table->date('tgl_servis_real')->nullable();
+            $table->date('tgl_servis_selanjutnya')->nullable();
             
             // Foreign Key Constraints
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

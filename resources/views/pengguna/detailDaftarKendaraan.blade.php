@@ -66,7 +66,7 @@
                     <!-- Nilai Perolehan -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Nilai Perolehan</p>
-                        <p class="font-normal text-gray-900 dark:text-white">{{ $kendaraan->nilai_perolehan }}</p>
+                        <p class="font-normal text-gray-900 dark:text-white">Rp.{{ number_format($kendaraan->nilai_perolehan, 0, ',', '.') }}</p>
                     </div>
 
                     <!-- Tanggal Pembelian -->
@@ -90,31 +90,67 @@
                     <!-- Nilai Buku -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Nilai Buku</p>
-                        <p class="font-normal text-gray-900 dark:text-white">{{ $kendaraan->nilai_buku }}</p>
+                        <p class="font-normal text-gray-900 dark:text-white">Rp.{{ number_format($kendaraan->nilai_buku, 0, ',', '.') }}</p>
                     </div>
 
                     <!-- Status Pajak -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Status Pajak</p>
-                        <p class="font-normal text-gray-900 dark:text-white">{{ $kendaraan->status_pajak }}</p>
+                        <p class="font-normal 
+                            @if($statusPajak == 'SUDAH DIBAYAR')
+                                text-green-600 dark:text-green-400
+                            @elseif($statusPajak == 'JATUH TEMPO')
+                                text-red-600 dark:text-red-400
+                            @elseif($statusPajak == 'MENDEKATI JATUH TEMPO')
+                                text-yellow-600 dark:text-yellow-400
+                            @else
+                                text-gray-900 dark:text-white
+                            @endif
+                        ">
+                            {{ $statusPajak }}
+                        </p>
                     </div>
 
                     <!-- Status Asuransi -->
                     <div class="flex justify-between">
-                        <p class="font-normal text-gray-700 dark:text-gray-400">Status Asuransi</p>
-                        <p class="font-normal text-gray-900 dark:text-white">{{ $kendaraan->status_asuransi }}</p>
-                    </div>
+                    <p class="font-normal text-gray-700 dark:text-gray-400">Status Asuransi</p>
+                    <p class="font-normal 
+                        @if($statusAsuransi == 'SUDAH DIBAYAR')
+                            text-green-600 dark:text-green-400
+                        @elseif($statusAsuransi == 'JATUH TEMPO')
+                            text-red-600 dark:text-red-400
+                        @elseif($statusAsuransi == 'MENDEKATI JATUH TEMPO')
+                            text-yellow-600 dark:text-yellow-400
+                        @else
+                            text-gray-900 dark:text-white
+                        @endif
+                    ">
+                        {{ $statusAsuransi }}
+                    </p>
+                </div>
 
                     <!-- Status Servis Rutin -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Status Servis Rutin</p>
-                        <p class="font-normal text-gray-900 dark:text-white">{{ $kendaraan->status_servis_rutin }}</p>
+                        <p class="font-normal 
+                            @if($statusServisRutin == 'SUDAH SERVIS')
+                                text-green-600 dark:text-green-400
+                            @elseif($statusServisRutin == 'WAKTUNYA SERVIS')
+                                text-red-600 dark:text-red-400
+                            @elseif($statusServisRutin == 'MENDEKATI JADWAL SERVIS')
+                                text-yellow-600 dark:text-yellow-400
+                            @else
+                                text-gray-900 dark:text-white
+                            @endif
+                        ">
+                            {{ $statusServisRutin }}
+                        </p>
                     </div>
 
                     <!-- Pengisian BBM Terakhir -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Pengisian BBM Terakhir</p>
-                        <p class="font-normal text-gray-900 dark:text-white">{{ $bbm->tgl_isi }} - {{$bbm->nominal}}</p>
+                        <p class="font-normal text-gray-900 dark:text-white">{{ $bbm->tgl_isi }} - Rp.{{ number_format($bbm->nominal, 0, ',', '.') }}</p>
                     </div>
 
                     <!-- Status Peminjaman -->
