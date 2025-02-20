@@ -1,3 +1,4 @@
+<x-app-layout>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -295,4 +296,5 @@ $(document).ready(function() {
 });
 </script>
 </html>
+</x-app-layout>
 

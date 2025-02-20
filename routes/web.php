@@ -37,7 +37,7 @@ Route::middleware(['auth', 'user'])->group(function () {
 
     Route::get('/peminjaman', [PeminjamanPenggunaController::class, 'peminjamanPage'])->name('peminjaman');
     Route::get('/kendaraan', [DaftarKendaraanPenggunaController::class, 'daftarKendaraan'])->name('kendaraan');
-    Route::get('/kendaraan/{id}', [DaftarKendaraanPenggunaController::class, 'detail'])->name('kendaraan.detail');
+    Route::get('/kendaraan/{id}', [DaftarKendaraanPenggunaController::class, 'detail'])->name('kendaraan.getDetail');
     Route::get('/peminjaman/form', [PeminjamanPenggunaController::class, 'showForm'])->name('peminjaman.showForm');
     Route::post('/peminjaman/simpan', [PeminjamanPenggunaController::class, 'simpan'])->name('peminjaman.simpan');
     Route::get('/get-kendaraan', [PeminjamanPenggunaController::class, 'getAvailableKendaraan'])->name('peminjaman.getKendaraan');
