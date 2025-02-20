@@ -1,5 +1,4 @@
 @extends('layouts.sidebar')
-
 @section('content')
 <!DOCTYPE html>
 <html lang="en">
@@ -12,8 +11,6 @@
 <body class="bg-gray-100">
     <div class="max-w-6xl mx-auto p-8">
         <h1 class="text-2xl font-bold mb-6">Selamat Datang, {{ $user->name }}!</h1>
-
-        {{-- Alert Merah untuk Kendaraan yang Terlambat --}}
         @if(count($latePeminjaman) > 0)
         <div class="p-4 mb-6 text-red-800 border border-red-300 rounded-lg bg-red-50" role="alert">
             <div class="flex items-center gap-2 mb-2">
@@ -43,8 +40,7 @@
             </div>
         </div>
         @endif
-
-        {{-- Card Daftar Peminjaman --}}
+        
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div class="flex items-center gap-2 mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">

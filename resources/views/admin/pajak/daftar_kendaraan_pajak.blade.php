@@ -1,11 +1,7 @@
 {{-- <x-app-layout> --}}
-    @extends('layouts.sidebar')
-
+@extends('layouts.sidebar')
 @section('content')
-
-    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
         <h2 class="custom-text font-extrabold mb-6 ml-16 pt-6">Daftar Kendaraan</h2>
-
         <style>
             .custom-text {
                 font-size: 2rem; 
@@ -46,45 +42,42 @@
                         <td class="px-6 py-3">{{ $item->merk ?? '-' }} {{ $item->tipe ?? '-' }}</td>
                         <td class="px-6 py-3">{{ $item->plat_nomor ?? '-' }}</td>
                         <td class="px-6 py-3">
-                            {{ $item->tgl_jatuh_tempo_seharusnya ? \Carbon\Carbon::parse($item->tgl_jatuh_tempo_seharusnya)->format('d/m/Y') : '-' }}
+                            {{ $item->tgl_jatuh_tempo_seharusnya ? \Carbon\Carbon::parse($item->tgl_jatuh_tempo_seharusnya)->format('d-m-Y') : '-' }}
                         </td>
                         <td class="px-6 py-3">
-                            {{ $item->tgl_bayar ? \Carbon\Carbon::parse($item->tgl_bayar)->format('d/m/Y') : '-' }}
+                            {{ $item->tgl_bayar ? \Carbon\Carbon::parse($item->tgl_bayar)->format('d-m-Y') : '-' }}
                         </td>
-                        <td class="px-6 py-3">
+                        <td class="px-6 py-3 whitespace-nowrap">
                             @if ($item->status === 'JATUH TEMPO')
-                                <span class="text-red-500">{{ $item->status }}</span>  
+                                <span class="text-red-500">{{ $item->status }}</span>
                             @elseif ($item->status === 'MENDEKATI JATUH TEMPO')
-                                <span class="text-orange-500">{{ $item->status }}</span>  
+                                <span class="text-orange-500">{{ $item->status }}</span>
                             @elseif ($item->status === 'SUDAH DIBAYAR')
-                                <span class="text-green-500">{{ $item->status }}</span>  
+                                <span class="text-green-500">{{ $item->status }}</span>
                             @else
-                                <span>-</span> 
+                                <span>-</span>
                             @endif
                         </td>
                         
-                        <td class="px-6 py-3">
-                            @if (!empty($item->id_pajak)) 
+                        <td class="px-6 py-3 whitespace-nowrap">
+                            @if (!empty($item->id_pajak))
                                 @if ($item->status === 'JATUH TEMPO' || $item->status === 'MENDEKATI JATUH TEMPO')
-                                   <a href="{{ route('pajak.kelola', ['id_kendaraan' => $item->id_kendaraan,'page' => request()->query('page', 1)]) }}" class="font-medium text-gray-600 dark:text-gray-500 hover:underline">Kelola</a>
+                                    <a href="{{ route('pajak.kelola', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1)]) }}" class="font-medium text-gray-600 dark:text-gray-500 hover:underline">Kelola</a>
                                 @elseif ($item->status === 'SUDAH DIBAYAR')
-                                    <a href="{{ route('pajak.detail', ['id_pajak' => $item->id_pajak, 'page' => request()->query('page', 1)]) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Detail</a>
-                                    <a href="{{ route('pajak.edit', ['id_pajak' => $item->id_pajak, 'page' => request()->query('page', 1)]) }}" class="font-medium text-yellow-600 dark:text-yellow-500 hover:underline">Edit</a>
-                                    <form id="delete-form-{{ $item->id_pajak }}" action="{{ route('pajak.hapus', $item->id_pajak) }}" method="POST" style="display: none;">
+                                    <a href="{{ route('pajak.detail', ['id_pajak' => $item->id_pajak, 'page' => request()->query('page', 1)]) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline mr-1">Detail</a>
+                                    <a href="{{ route('pajak.edit', ['id_pajak' => $item->id_pajak, 'page' => request()->query('page', 1)]) }}" class="font-medium text-yellow-600 dark:text-yellow-500 hover:underline mr-1">Edit</a>
+                                    <button class="font-medium text-red-600 dark:text-red-500 hover:underline" onclick="event.preventDefault(); confirmDelete({{ $item->id_pajak }})">Hapus</button>
+                                    <form id="delete-form-{{ $item->id_pajak }}" action="{{ route('pajak.hapus', $item->id_pajak) }}" method="POST" class="hidden">
                                         @csrf
                                         @method('DELETE')
                                     </form>
-                                    <button class="font-medium text-red-600 dark:text-red-500 hover:underline"
-                                            onclick="confirmDelete({{ $item->id_pajak }})">
-                                        Hapus
-                                    </button>
                                 @else
-                                    <span>-</span> 
+                                    <span>-</span>
                                 @endif
                             @else
-                                <a href="{{ route('pajak.kelola', ['id_kendaraan' => $item->id_kendaraan,'page' => request()->query('page', 1)]) }}" class="font-medium text-gray-600 dark:text-gray-500 hover:underline">Kelola</a>
+                                <a href="{{ route('pajak.kelola', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1)]) }}" class="font-medium text-gray-600 dark:text-gray-500 hover:underline">Kelola</a>
                             @endif
-                        </td>
+                        </td>            
                     </tr>
                 @empty
                     <tr>
@@ -99,8 +92,7 @@
                 {{ $dataKendaraan->onEachSide(1)->links() }}
             </div>
         </nav>        
-    </div>
-
+        
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
       function confirmDelete(id_pajak) {

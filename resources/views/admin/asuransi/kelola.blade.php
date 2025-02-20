@@ -1,6 +1,5 @@
 {{-- <x-app-layout> --}}
-    @extends('layouts.sidebar')
-
+@extends('layouts.sidebar')
 @section('content')
 
     <div class="min-h-screen flex items-center justify-center py-12 px-4">
@@ -132,141 +131,160 @@
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Modified formatRupiah function to store clean numbers
-function formatRupiah(input) {
-    // Remove any non-digit characters from the input
-    let value = input.value.replace(/[^\d]/g, '');
-    
-    // Store the raw number value in a hidden input
-    let hiddenInput = document.getElementById(input.id + '_hidden');
-    if (!hiddenInput) {
-        hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = input.name;
-        hiddenInput.id = input.id + '_hidden';
-        input.parentNode.appendChild(hiddenInput);
-    }
-    
-    // Store raw value in hidden input
-    hiddenInput.value = value;
-    
-    // Format the visible input with commas
-    if (value.length > 0) {
-        value = parseInt(value).toLocaleString('id-ID');
-    }
-    input.value = value ? value : '';
-}
-
-document.getElementById('save-form').addEventListener('submit', function(event) {
-    event.preventDefault();
-    let tanggalBayar = document.querySelector('input[name="tanggal_bayar"]').value;
-    let nominalTagihan = document.querySelector('input[name="nominal_tagihan"]').value;
-    let tanggalAwalPerlindungan = document.querySelector('input[name="tgl_perlindungan_awal"]').value;
-    let tanggalAkhirPerlindungan = document.querySelector('input[name="tgl_perlindungan_akhir"]').value;
-    let fotoPolis = document.getElementById('fotoInputPolis').files[0];
-    let fotoPembayaran = document.getElementById('fotoInputPembayaran').files[0];
-
-    // Get alert div
-    let alertDiv = document.getElementById('alertMessage');
-
-    // Validation checks - file tidak wajib saat edit
-    if (!tanggalBayar || !nominalTagihan || !tanggalAwalPerlindungan || !tanggalAkhirPerlindungan || !fotoPolis || !fotoPembayaran) {
-        let alertDiv = document.getElementById('alertMessage');
-            alertDiv.classList.remove('hidden');
-            setTimeout(() => alertDiv.classList.add('hidden'), 10000);
-            return;
-    }
-
-    // Date validation
-    if (new Date(tanggalAwalPerlindungan) > new Date(tanggalAkhirPerlindungan)) {
-        alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Tanggal perlindungan awal tidak boleh lebih besar dari tanggal perlindungan akhir.';
-        alertDiv.classList.remove('hidden');
-        alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setTimeout(() => alertDiv.classList.add('hidden'), 5000);
-        return false;
-    }
-
-    // Clean currency format before submitting
-    let nominalInput = document.querySelector('input[name="nominal_tagihan"]');
-    let biayaLainInput = document.querySelector('input[name="biaya_lain"]');
-    
-    nominalInput.value = nominalInput.value.replace(/[^\d]/g, '');
-    biayaLainInput.value = biayaLainInput.value.replace(/[^\d]/g, '');
-
-    // Show confirmation dialog
-    Swal.fire({
-        title: "Konfirmasi",
-        text: "Apakah Anda yakin ingin menyimpan perubahan data pembayaran asuransi ini?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Ya",
-        cancelButtonText: "Tidak"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Simulate form submission
-            setTimeout(() => {
-                Swal.fire({
-                    title: "Sukses!",
-                    text: "Data pembayaran asuransi berhasil disimpan.",
-                    icon: "success",
-                    confirmButtonColor: "#3085d6",
-                    confirmButtonText: "OK"
-                }).then(() => {
-                    document.getElementById('save-form').submit();
-                });
-            }, 500);
+        function formatRupiah(input) {
+            let value = input.value.replace(/[^\d]/g, '');
+            let hiddenInput = document.getElementById(input.id + '_hidden');
+            if (!hiddenInput) {
+                hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = input.name;
+                hiddenInput.id = input.id + '_hidden';
+                input.parentNode.appendChild(hiddenInput);
+            }
+            
+            hiddenInput.value = value;
+            
+            if (value.length > 0) {
+                value = parseInt(value).toLocaleString('id-ID');
+            }
+            input.value = value ? value : '';
         }
-    });
-});
-// Function to show alert message
-function showAlert(message, duration = 5000) {
-    let alertDiv = document.getElementById('alertMessage');
-    alertDiv.innerHTML = `<span class="font-medium">Peringatan!</span> ${message}`;
-    alertDiv.classList.remove('hidden');
-    alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    
-    setTimeout(() => {
-        alertDiv.classList.add('hidden');
-    }, duration);
-}
-function shortenFileName(fileName, maxLength = 15) {
-    if (fileName.length > maxLength) {
-        return fileName.substring(0, maxLength) + '...';
-    }
-    return fileName;
-}
 
-document.getElementById('fotoInputPolis').addEventListener('change', function(event) {
-    let fileName = event.target.files[0] ? event.target.files[0].name : "Upload File";
-    let shortFileName = shortenFileName(fileName);
-    document.getElementById('uploadTextPolis').textContent = shortFileName;
-    document.getElementById('removeFilePolis').classList.remove('hidden');
-});
+        document.getElementById('save-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            let tanggalBayar = document.querySelector('input[name="tanggal_bayar"]').value;
+            let nominalTagihan = document.querySelector('input[name="nominal_tagihan"]').value;
+            let tanggalAwalPerlindungan = document.querySelector('input[name="tgl_perlindungan_awal"]').value;
+            let tanggalAkhirPerlindungan = document.querySelector('input[name="tgl_perlindungan_akhir"]').value;
+            let fotoPolis = document.getElementById('fotoInputPolis').files[0];
+            let fotoPembayaran = document.getElementById('fotoInputPembayaran').files[0];
+            let alertDiv = document.getElementById('alertMessage');
 
-document.getElementById('removeFilePolis').addEventListener('click', function() {
-    let fileInput = document.getElementById('fotoInputPolis');
-    fileInput.value = ""; 
-    document.getElementById('uploadTextPolis').textContent = "Upload File";
-    this.classList.add('hidden');
-});
+            if (!tanggalBayar || !nominalTagihan || !tanggalAwalPerlindungan || !tanggalAkhirPerlindungan) {
+                showAlert("Harap isi semua kolom yang wajib!", 7000);
+                return;
+            }
 
-document.getElementById('fotoInputPembayaran').addEventListener('change', function(event) {
-    let fileName = event.target.files[0] ? event.target.files[0].name : "Upload File";
-    let shortFileName = shortenFileName(fileName);
-    document.getElementById('uploadTextPembayaran').textContent = shortFileName;
-    document.getElementById('removeFilePembayaran').classList.remove('hidden');
-});
+            let tglAwal = new Date(tanggalAwalPerlindungan);
+            let tglAkhir = new Date(tanggalAkhirPerlindungan);
 
-document.getElementById('removeFilePembayaran').addEventListener('click', function() {
-    let fileInput = document.getElementById('fotoInputPembayaran');
-    fileInput.value = ""; 
-    document.getElementById('uploadTextPembayaran').textContent = "Upload File";
-    this.classList.add('hidden');
-});
+            if (tglAkhir <= tglAwal) {
+                showAlert("Tanggal perlindungan akhir harus lebih besar dari tanggal perlindungan awal!", 7000);
+                return; 
+            }
 
-        
+            let nominalInput = document.querySelector('input[name="nominal_tagihan"]');
+            let biayaLainInput = document.querySelector('input[name="biaya_lain"]');
+
+            nominalInput.value = nominalInput.value.replace(/[^\d]/g, '');
+            biayaLainInput.value = biayaLainInput.value.replace(/[^\d]/g, '');
+
+            Swal.fire({
+                title: "Konfirmasi",
+                text: "Apakah Anda yakin ingin menyimpan data pembayaran asuransi ini?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Ya",
+                cancelButtonText: "Tidak"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    setTimeout(() => {
+                        Swal.fire({
+                            title: "Sukses!",
+                            text: "Data pembayaran asuransi berhasil disimpan.",
+                            icon: "success",
+                            confirmButtonColor: "#3085d6",
+                            confirmButtonText: "OK"
+                        }).then(() => {
+                            document.getElementById('save-form').submit();
+                        });
+                    }, 500);
+                }
+            });
+        });
+
+        function showAlert(message, duration = 5000) {
+            let alertDiv = document.getElementById('alertMessage');
+            alertDiv.innerHTML = `<span class="font-medium">Peringatan!</span> ${message}`;
+            alertDiv.classList.remove('hidden');
+            alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            setTimeout(() => {
+                alertDiv.classList.add('hidden');
+            }, duration);
+        }
+
+        function showAlert(message, duration = 5000) {
+            let alertDiv = document.getElementById('alertMessage');
+            alertDiv.innerHTML = `<span class="font-medium">Peringatan!</span> ${message}`;
+            alertDiv.classList.remove('hidden');
+            alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            setTimeout(() => {
+                alertDiv.classList.add('hidden');
+            }, duration);
+        }
+        function shortenFileName(fileName, maxLength = 13) {
+            if (fileName.length > maxLength) {
+                return fileName.substring(0, maxLength) + '...';
+            }
+            return fileName;
+        }
+
+        document.getElementById('fotoInputPolis').addEventListener('change', function(event) {
+            let fileName = event.target.files[0] ? event.target.files[0].name : "Upload File";
+            let shortFileName = shortenFileName(fileName);
+            document.getElementById('uploadTextPolis').textContent = shortFileName;
+            document.getElementById('removeFilePolis').classList.remove('hidden');
+        });
+
+        document.getElementById('removeFilePolis').addEventListener('click', function() {
+            let fileInput = document.getElementById('fotoInputPolis');
+            fileInput.value = ""; 
+            document.getElementById('uploadTextPolis').textContent = "Upload File";
+            this.classList.add('hidden');
+        });
+
+        function validateFileInput(fileInput, allowedTypes, uploadTextId, removeButtonId) {
+            let file = fileInput.files[0];
+
+            if (file) {
+                if (!allowedTypes.includes(file.type)) {
+                    showAlert("File yang diupload harus berupa JPG, PNG, atau PDF!");
+                    resetFileInput(fileInput, uploadTextId, removeButtonId);
+                    return;
+                }
+
+                if (file.size > 5 * 1024 * 1024) {
+                    showAlert("Ukuran file tidak boleh lebih dari 5MB!");
+                    resetFileInput(fileInput, uploadTextId, removeButtonId);
+                    return;
+                }
+
+                let shortFileName = shortenFileName(file.name);
+                document.getElementById(uploadTextId).textContent = shortFileName;
+                document.getElementById(removeButtonId).classList.remove('hidden');
+            }
+        }
+
+        function resetFileInput(fileInput, uploadTextId, removeButtonId) {
+            fileInput.value = ''; 
+            document.getElementById(uploadTextId).textContent = "Upload File"; 
+            document.getElementById(removeButtonId).classList.add('hidden'); 
+        }
+
+        document.getElementById('fotoInputPolis').addEventListener('change', function(event) {
+            let allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+            validateFileInput(this, allowedTypes, 'uploadTextPolis', 'removeFilePolis');
+        });
+
+        document.getElementById('fotoInputPembayaran').addEventListener('change', function(event) {
+            let allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+            validateFileInput(this, allowedTypes, 'uploadTextPembayaran', 'removeFilePembayaran');
+        });
     </script>
 {{-- </x-app-layout> --}}
 @endsection

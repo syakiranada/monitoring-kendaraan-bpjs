@@ -1,8 +1,6 @@
 {{-- <x-app-layout> --}}
-    @extends('layouts.sidebar')
-
+@extends('layouts.sidebar')
 @section('content')
-
     <div class="min-h-screen flex items-center justify-center py-12 px-4">
         <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-lg">
             <h2 class="text-2xl font-bold mb-6 text-center">Form Edit Pembayaran Asuransi Kendaraan</h2>
@@ -100,7 +98,6 @@
                 
                     <div class="h-20 bg-gray-300" style="width: 0.5px;"></div>
 
-                    <!-- Center Column -->
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Upload bukti Pembayaran Asuransi</label>
                         <div class="flex flex-col items-center">
@@ -113,9 +110,7 @@
                             <a href="#" id="removeFilePembayaran" class="{{ $asuransi->bukti_bayar_asuransi ? '' : 'hidden' }} text-red-600 font-medium text-sm mt-2 hover:underline text-center">Hapus</a>
                         </div>
                     </div>
-            
                     <div class="w-px h-20 bg-gray-300"></div>
-                    <!-- Right Column -->
                     <div class="mb-4">
                         <p class="font-medium text-gray-700">File requirements:</p>
                         <ul class="text-sm text-gray-600">
@@ -145,242 +140,241 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function formatRupiah(input) {
-    // Remove any non-digit characters from the input
-    let value = input.value.replace(/[^\d]/g, '');
-    
-    // Store the raw number value in a hidden input
-    let hiddenInput = document.getElementById(input.id + '_hidden');
-    if (!hiddenInput) {
-        hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = input.name;
-        hiddenInput.id = input.id + '_hidden';
-        input.parentNode.appendChild(hiddenInput);
-    }
-    
-    // Store raw value in hidden input
-    hiddenInput.value = value;
-    
-    // Format the visible input with commas
-    if (value.length > 0) {
-        value = parseInt(value).toLocaleString('id-ID');
-    }
-    input.value = value ? value : '';
-}
-
-document.getElementById('save-form').addEventListener('submit', function(event) {
-    event.preventDefault();
-
-    // Basic validation
-    let tanggalBayar = document.querySelector('input[name="tanggal_bayar"]').value;
-    let nominalTagihan = document.querySelector('input[name="nominal_tagihan"]').value;
-    let tanggalAwalPerlindungan = document.querySelector('input[name="tgl_perlindungan_awal"]').value;
-    let tanggalAkhirPerlindungan = document.querySelector('input[name="tgl_perlindungan_akhir"]').value;
-
-    // Menyimpan nilai file yang diupload atau yang sudah ada
-    let fotoPolis = document.getElementById('fotoInputPolis').files[0];
-    let fotoPembayaran = document.getElementById('fotoInputPembayaran').files[0];
-
-    // Nilai yang sudah ada di server (untuk pengecekan jika file belum dihapus)
-    let existingPolis = "{{ $asuransi->polis }}";
-    let existingPembayaran = "{{ $asuransi->bukti_bayar_asuransi }}";
-
-    // Get alert div
-    let alertDiv = document.getElementById('alertMessage');
-
-    // Memeriksa kondisi file yang dihapus
-    let isPolisFileDeleted = !fotoPolis && !existingPolis;
-    let isPembayaranFileDeleted = !fotoPembayaran && !existingPembayaran;
-
-    // Logging untuk melihat apa yang terjadi pada file
-    console.log("Foto Polis Baru: ", fotoPolis);
-    console.log("Foto Pembayaran Baru: ", fotoPembayaran);
-    console.log("File Polis Sudah Ada di Server: ", existingPolis);
-    console.log("File Pembayaran Sudah Ada di Server: ", existingPembayaran);
-    console.log("Is Polis File Deleted: ", isPolisFileDeleted);
-    console.log("Is Pembayaran File Deleted: ", isPembayaranFileDeleted);
-
-    // Pengecekan validasi untuk fotoPolis dan fotoPembayaran
-    if (!tanggalBayar || !nominalTagihan || !tanggalAwalPerlindungan || !tanggalAkhirPerlindungan || 
-        isPolisFileDeleted || 
-        isPembayaranFileDeleted) {
-        
-        alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Mohon isi semua kolom yang wajib sebelum menyimpan.';
-        alertDiv.classList.remove('hidden');
-        alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setTimeout(() => alertDiv.classList.add('hidden'), 5000);
-        return false;
-    }
-
-    // Validasi tanggal perlindungan
-    if (new Date(tanggalAwalPerlindungan) > new Date(tanggalAkhirPerlindungan)) {
-        alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Tanggal perlindungan awal tidak boleh lebih besar dari tanggal perlindungan akhir.';
-        alertDiv.classList.remove('hidden');
-        alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setTimeout(() => alertDiv.classList.add('hidden'), 5000);
-        return false;
-    }
-
-    // Clean currency format before submitting
-    let nominalInput = document.querySelector('input[name="nominal_tagihan"]');
-    let biayaLainInput = document.querySelector('input[name="biaya_lain"]');
-    
-    nominalInput.value = nominalInput.value.replace(/[^\d]/g, '');
-    biayaLainInput.value = biayaLainInput.value.replace(/[^\d]/g, '');
-
-    // Show confirmation dialog
-    Swal.fire({
-        title: "Konfirmasi",
-        text: "Apakah Anda yakin ingin menyimpan perubahan data pembayaran asuransi ini?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Ya",
-        cancelButtonText: "Tidak"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Simulate form submission
-            setTimeout(() => {
-                Swal.fire({
-                    title: "Sukses!",
-                    text: "Data pembayaran asuransi berhasil disimpan.",
-                    icon: "success",
-                    confirmButtonColor: "#3085d6",
-                    confirmButtonText: "OK"
-                }).then(() => {
-                    document.getElementById('save-form').submit();
-                });
-            }, 500);
+            let value = input.value.replace(/[^\d]/g, '');
+            let hiddenInput = document.getElementById(input.id + '_hidden');
+            if (!hiddenInput) {
+                hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = input.name;
+                hiddenInput.id = input.id + '_hidden';
+                input.parentNode.appendChild(hiddenInput);
+            }
+            hiddenInput.value = value;
+            if (value.length > 0) {
+                value = parseInt(value).toLocaleString('id-ID');
+            }
+            input.value = value ? value : '';
         }
-    });
-});
 
-function shortenFileName(fileName, maxLength = 15) {
-    if (fileName.length > maxLength) {
-        return fileName.substring(0, maxLength) + '...';
-    }
-    return fileName;
-}
-
-document.getElementById('fotoInputPolis').addEventListener('change', function(event) {
-    let fileName = event.target.files[0] ? event.target.files[0].name : "Upload File";
-    let shortFileName = shortenFileName(fileName);
-    document.getElementById('uploadTextPolis').textContent = shortFileName;
-    document.getElementById('removeFilePolis').classList.remove('hidden');
-});
-
-// Hapus file polis langsung ke server
-// Hapus file polis langsung ke server
-document.getElementById('removeFilePolis').addEventListener('click', function(event) {
-    event.preventDefault();
-    let asuransiIdElement = document.querySelector('input[name="id_asuransi"]');
-    if (!asuransiIdElement) {
-        console.error("Elemen input[name='id_asuransi'] tidak ditemukan!");
-        return;
-    }
-
-    let asuransiId = asuransiIdElement.value;
-
-    fetch('/asuransi/delete-file', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({ id: asuransiId, file_type: 'polis' })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Setelah berhasil menghapus, setel status bahwa file telah dihapus
-            console.log("File Polis berhasil dihapus.");
-            document.getElementById('fotoInputPolis').value = '';
-            document.getElementById('uploadTextPolis').textContent = "Upload File";
-            document.getElementById('removeFilePolis').classList.add('hidden');
-            location.reload();
+        document.getElementById('save-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            let tanggalBayar = document.querySelector('input[name="tanggal_bayar"]').value;
+            let nominalTagihan = document.querySelector('input[name="nominal_tagihan"]').value;
+            let tanggalAwalPerlindungan = document.querySelector('input[name="tgl_perlindungan_awal"]').value;
+            let tanggalAkhirPerlindungan = document.querySelector('input[name="tgl_perlindungan_akhir"]').value;
+            let fotoPolis = document.getElementById('fotoInputPolis').files[0];
+            let fotoPembayaran = document.getElementById('fotoInputPembayaran').files[0];
+            let existingPolis = "{{ $asuransi->polis }}";
+            let existingPembayaran = "{{ $asuransi->bukti_bayar_asuransi }}";
+            let alertDiv = document.getElementById('alertMessage');
+            let isPolisFileDeleted = !fotoPolis && !existingPolis;
+            let isPembayaranFileDeleted = !fotoPembayaran && !existingPembayaran;
             
-            // Update status untuk validasi
-            isPolisFileDeleted = true; // Menetapkan bahwa file telah dihapus
-            console.log("Status Polis Setelah Dihapus: ", isPolisFileDeleted);
-        } else {
-            alert(data.error);
-        }
-    })
-    .catch(error => console.error('Error:', error));
-});
+            if (!tanggalBayar || !nominalTagihan || !tanggalAwalPerlindungan || !tanggalAkhirPerlindungan || 
+                isPolisFileDeleted || 
+                isPembayaranFileDeleted) {
+                
+                alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Mohon isi semua kolom yang wajib sebelum menyimpan.';
+                alertDiv.classList.remove('hidden');
+                alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => alertDiv.classList.add('hidden'), 5000);
+                return false;
+            }
 
-document.getElementById('removeFilePembayaran').addEventListener('click', function(event) {
-    event.preventDefault();
-    let asuransiIdElement = document.querySelector('input[name="id_asuransi"]');
-    if (!asuransiIdElement) {
-        console.error("Elemen input[name='id_asuransi'] tidak ditemukan!");
-        return;
-    }
+            if (new Date(tanggalAwalPerlindungan) > new Date(tanggalAkhirPerlindungan)) {
+                alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Tanggal perlindungan awal tidak boleh lebih besar dari tanggal perlindungan akhir.';
+                alertDiv.classList.remove('hidden');
+                alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => alertDiv.classList.add('hidden'), 5000);
+                return false;
+            }
 
-    let asuransiId = asuransiIdElement.value;
-
-    fetch('/asuransi/delete-file', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({ id: asuransiId, file_type: 'bukti_bayar_asuransi' })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Setelah berhasil menghapus, setel status bahwa file telah dihapus
-            console.log("File Pembayaran berhasil dihapus.");
-            document.getElementById('fotoInputPembayaran').value = '';
-            document.getElementById('uploadTextPembayaran').textContent = "Upload File";
-            document.getElementById('removeFilePembayaran').classList.add('hidden');
-            location.reload();
+            let nominalInput = document.querySelector('input[name="nominal_tagihan"]');
+            let biayaLainInput = document.querySelector('input[name="biaya_lain"]');
             
-            // Update status untuk validasi
-            isPembayaranFileDeleted = true; // Menetapkan bahwa file telah dihapus
-            console.log("Status Pembayaran Setelah Dihapus: ", isPembayaranFileDeleted);
-        } else {
-            alert(data.error);
+            nominalInput.value = nominalInput.value.replace(/[^\d]/g, '');
+            biayaLainInput.value = biayaLainInput.value.replace(/[^\d]/g, '');
+
+            Swal.fire({
+                title: "Konfirmasi",
+                text: "Apakah Anda yakin ingin menyimpan perubahan data pembayaran asuransi ini?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Ya",
+                cancelButtonText: "Tidak"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    setTimeout(() => {
+                        Swal.fire({
+                            title: "Sukses!",
+                            text: "Data pembayaran asuransi berhasil disimpan.",
+                            icon: "success",
+                            confirmButtonColor: "#3085d6",
+                            confirmButtonText: "OK"
+                        }).then(() => {
+                            document.getElementById('save-form').submit();
+                        });
+                    }, 500);
+                }
+            });
+        });
+
+        function shortenFileName(fileName, maxLength = 15) {
+            if (fileName.length > maxLength) {
+                return fileName.substring(0, maxLength) + '...';
+            }
+            return fileName;
         }
-    })
-    .catch(error => console.error('Error:', error));
-});
 
+        document.getElementById('fotoInputPolis').addEventListener('change', function(event) {
+            let fileName = event.target.files[0] ? event.target.files[0].name : "Upload File";
+            let shortFileName = shortenFileName(fileName);
+            document.getElementById('uploadTextPolis').textContent = shortFileName;
+            document.getElementById('removeFilePolis').classList.remove('hidden');
+        });
 
-document.getElementById('fotoInputPembayaran').addEventListener('change', function(event) {
-    let fileName = event.target.files[0] ? event.target.files[0].name : "Upload File";
-    let shortFileName = shortenFileName(fileName);
-    document.getElementById('uploadTextPembayaran').textContent = shortFileName;
-    document.getElementById('removeFilePembayaran').classList.remove('hidden');
-});
+        document.getElementById('removeFilePolis').addEventListener('click', function(event) {
+            event.preventDefault();
+            let asuransiIdElement = document.querySelector('input[name="id_asuransi"]');
+            if (!asuransiIdElement) {
+                console.error("Elemen input[name='id_asuransi'] tidak ditemukan!");
+                return;
+            }
 
+            let asuransiId = asuransiIdElement.value;
 
-// Initialize filename shortening for both upload sections
-document.addEventListener("DOMContentLoaded", function () {
-    // For Polis
-    let polisSpan = document.getElementById('uploadTextPolis');
-    if (polisSpan) {
-        let fullPolisFileName = polisSpan.textContent.trim();
-        let shortPolisFileName = fullPolisFileName.replace("foto_polis/", "");
-        if (shortPolisFileName.length > 7) {
-            shortPolisFileName = shortPolisFileName.substring(0, 4) + "...";
+            fetch('/asuransi/delete-file', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ id: asuransiId, file_type: 'polis' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log("File Polis berhasil dihapus.");
+                    document.getElementById('fotoInputPolis').value = '';
+                    document.getElementById('uploadTextPolis').textContent = "Upload File";
+                    document.getElementById('removeFilePolis').classList.add('hidden');
+                    location.reload();
+                    isPolisFileDeleted = true; 
+                    console.log("Status Polis Setelah Dihapus: ", isPolisFileDeleted);
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('removeFilePembayaran').addEventListener('click', function(event) {
+            event.preventDefault();
+            let asuransiIdElement = document.querySelector('input[name="id_asuransi"]');
+            if (!asuransiIdElement) {
+                console.error("Elemen input[name='id_asuransi'] tidak ditemukan!");
+                return;
+            }
+
+            let asuransiId = asuransiIdElement.value;
+
+            fetch('/asuransi/delete-file', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ id: asuransiId, file_type: 'bukti_bayar_asuransi' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log("File Pembayaran berhasil dihapus.");
+                    document.getElementById('fotoInputPembayaran').value = '';
+                    document.getElementById('uploadTextPembayaran').textContent = "Upload File";
+                    document.getElementById('removeFilePembayaran').classList.add('hidden');
+                    location.reload();
+                    
+                    isPembayaranFileDeleted = true; 
+                    console.log("Status Pembayaran Setelah Dihapus: ", isPembayaranFileDeleted);
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('fotoInputPembayaran').addEventListener('change', function(event) {
+            let fileName = event.target.files[0] ? event.target.files[0].name : "Upload File";
+            let shortFileName = shortenFileName(fileName);
+            document.getElementById('uploadTextPembayaran').textContent = shortFileName;
+            document.getElementById('removeFilePembayaran').classList.remove('hidden');
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            let polisSpan = document.getElementById('uploadTextPolis');
+            if (polisSpan) {
+                let fullPolisFileName = polisSpan.textContent.trim();
+                let shortPolisFileName = fullPolisFileName.replace("foto_polis/", "");
+                if (shortPolisFileName.length > 7) {
+                    shortPolisFileName = shortPolisFileName.substring(0, 4) + "...";
+                }
+                polisSpan.textContent = "foto_polis/" + shortPolisFileName;
+            }
+
+            let pembayaranSpan = document.getElementById('uploadTextPembayaran');
+            if (pembayaranSpan) {
+                let fullPembayaranFileName = pembayaranSpan.textContent.trim();
+                let shortPembayaranFileName = fullPembayaranFileName.replace("bukti_bayar/", "");
+                if (shortPembayaranFileName.length > 7) {
+                    shortPembayaranFileName = shortPembayaranFileName.substring(0, 4) + "...";
+                }
+                pembayaranSpan.textContent = "bukti_bayar/" + shortPembayaranFileName;
+            }
+        });
+
+        function showAlert(message) {
+            let alertDiv = document.getElementById('alertMessage');
+            alertDiv.innerHTML = `<span class="font-medium">Peringatan!</span> ${message}`;
+            alertDiv.classList.remove('hidden');
+            alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => alertDiv.classList.add('hidden'), 5000);
         }
-        polisSpan.textContent = "foto_polis/" + shortPolisFileName;
-    }
 
-    // For Pembayaran
-    let pembayaranSpan = document.getElementById('uploadTextPembayaran');
-    if (pembayaranSpan) {
-        let fullPembayaranFileName = pembayaranSpan.textContent.trim();
-        let shortPembayaranFileName = fullPembayaranFileName.replace("bukti_bayar/", "");
-        if (shortPembayaranFileName.length > 7) {
-            shortPembayaranFileName = shortPembayaranFileName.substring(0, 4) + "...";
+        function validateFileInput(fileInput, allowedTypes, uploadTextId, removeButtonId) {
+            let file = fileInput.files[0];
+
+            if (file) {
+                if (!allowedTypes.includes(file.type)) {
+                    showAlert("File yang diupload harus berupa JPG, PNG, atau PDF!");
+                    resetFileInput(fileInput, uploadTextId, removeButtonId);
+                    return;
+                }*
+                if (file.size > 5 * 1024 * 1024) {
+                    showAlert("Ukuran file tidak boleh lebih dari 5MB!");
+                    resetFileInput(fileInput, uploadTextId, removeButtonId);
+                    return;
+                }
+                let shortFileName = shortenFileName(file.name);
+                document.getElementById(uploadTextId).textContent = shortFileName;
+                document.getElementById(removeButtonId).classList.remove('hidden');
+            }
         }
-        pembayaranSpan.textContent = "bukti_bayar/" + shortPembayaranFileName;
-    }
-});
+        function resetFileInput(fileInput, uploadTextId, removeButtonId) {
+            fileInput.value = ''; 
+            document.getElementById(uploadTextId).textContent = "Upload File"; 
+            document.getElementById(removeButtonId).classList.add('hidden'); 
+        }
+        document.getElementById('fotoInputPolis').addEventListener('change', function(event) {
+            let allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+            validateFileInput(this, allowedTypes, 'uploadTextPolis', 'removeFilePolis');
+        });
+        document.getElementById('fotoInputPembayaran').addEventListener('change', function(event) {
+            let allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+            validateFileInput(this, allowedTypes, 'uploadTextPembayaran', 'removeFilePembayaran');
+        });
     </script>
 {{-- </x-app-layout> --}}
 @endsection

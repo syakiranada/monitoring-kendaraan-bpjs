@@ -1,17 +1,12 @@
 {{-- <x-app-layout> --}}
     @extends('layouts.sidebar')
-
-@section('content')
-
-    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+    @section('content')
         <h2 class="custom-text font-extrabold mb-6 ml-16 pt-6">Daftar Kendaraan </h2>
-
         <style>
             .custom-text {
                 font-size: 2rem; 
             }
         </style>
-
         <form action="{{ route('kendaraan.daftar_kendaraan') }}" method="GET" class="flex justify-end pb-4">
             <div class="relative me-14">
                 <input 
@@ -28,9 +23,7 @@
                 </div>
             </div>
         </form>
-    
         <div class="flex justify-between items-center pb-4 px-6">
-            <!-- This container will push the button to the right -->
             <div class="relative ml-8"> 
                 <a href="{{ route('kendaraan.tambah', ['page' => request()->query('page', 1)]) }}" 
                     class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
@@ -74,19 +67,19 @@
                         
                             @if ($item->aset !== 'Lelang' && $item->aset !== 'LELANG')
                                 <a href="{{ route('kendaraan.edit', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1)]) }}" 
-                                   class="font-medium text-yellow-600 dark:text-yellow-500 hover:underline ml-2">
+                                   class="font-medium text-yellow-600 dark:text-yellow-500 hover:underline">
                                     Edit
-                                </a>
-                                    <form id="delete-form-{{ $item->id_kendaraan }}" action="{{ route('kendaraan.hapus', $item->id_kendaraan) }}" method="POST" style="display: none;">
-                                        @csrf
-                                        @method('DELETE') 
-                                    </form>
-                                    <button class="font-medium text-red-600 dark:text-red-500 hover:underline ml-2" 
-                                            onclick="confirmDelete({{ $item->id_kendaraan }})">
-                                        Hapus
-                                    </button>
+                                </a> 
+                                <form id="delete-form-{{ $item->id_kendaraan }}" action="{{ route('kendaraan.hapus', $item->id_kendaraan) }}" method="POST" style="display: none;">
+                                    @csrf
+                                    @method('DELETE') 
+                                </form>
+                                <button class="font-medium text-red-600 dark:text-red-500 hover:underline" 
+                                        onclick="confirmDelete({{ $item->id_kendaraan }})">
+                                    Hapus
+                                </button>
                             @endif
-                        </td>                                      
+                        </td>                                                              
                     </tr>
                 @empty
                     <tr>
@@ -101,49 +94,46 @@
                 {{ $dataKendaraan->onEachSide(1)->links() }}
             </div>
         </nav>        
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
        function confirmDelete(id_kendaraan) {
-    Swal.fire({
-        title: "Konfirmasi",
-        text: "Apakah Anda yakin ingin menghapus kendaraan ini? Tindakan ini tidak dapat dibatalkan!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Ya, hapus!",
-        cancelButtonText: "Batal"
-    }).then((result) => {
-        console.log("Result dari Swal:", result);
-
-        if (result.isConfirmed) {
-            console.log("User mengonfirmasi penghapusan, mencari form dengan ID:", 'delete-form-' + id_kendaraan);
-
-            let form = document.getElementById('delete-form-' + id_kendaraan);
-            if (!form) {
-                console.error("Form tidak ditemukan! Pastikan ID form benar.");
-                return;
-            }
-
-            let currentPage = new URLSearchParams(window.location.search).get('page') || 1;
-            let actionUrl = form.getAttribute('action') + "?page=" + currentPage;
-            form.setAttribute('action', actionUrl);
-
             Swal.fire({
-                title: "Berhasil!",
-                text: "Kendaraan berhasil dihapus.",
-                icon: "success"
-            }).then(() => {
-                console.log("Mengirim form untuk menghapus kendaraan.");
-                form.submit();
+                title: "Konfirmasi",
+                text: "Apakah Anda yakin ingin menghapus kendaraan ini? Tindakan ini tidak dapat dibatalkan!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Ya, hapus!",
+                cancelButtonText: "Batal"
+            }).then((result) => {
+                console.log("Result dari Swal:", result);
+
+                if (result.isConfirmed) {
+                    console.log("User mengonfirmasi penghapusan, mencari form dengan ID:", 'delete-form-' + id_kendaraan);
+
+                    let form = document.getElementById('delete-form-' + id_kendaraan);
+                    if (!form) {
+                        console.error("Form tidak ditemukan! Pastikan ID form benar.");
+                        return;
+                    }
+
+                    let currentPage = new URLSearchParams(window.location.search).get('page') || 1;
+                    let actionUrl = form.getAttribute('action') + "?page=" + currentPage;
+                    form.setAttribute('action', actionUrl);
+
+                    Swal.fire({
+                        title: "Berhasil!",
+                        text: "Kendaraan berhasil dihapus.",
+                        icon: "success"
+                    }).then(() => {
+                        console.log("Mengirim form untuk menghapus kendaraan.");
+                        form.submit();
+                    });
+                }
             });
         }
-    });
-}
-
-
     </script>
 {{-- </x-app-layout> --}}
 @endsection

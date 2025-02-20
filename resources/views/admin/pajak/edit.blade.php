@@ -1,8 +1,6 @@
 {{-- <x-app-layout> --}}
-    @extends('layouts.sidebar')
-
+@extends('layouts.sidebar')
 @section('content')
-
     <div class="min-h-screen flex items-center justify-center py-12 px-4">
         <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-lg">
             <h2 class="text-2xl font-bold mb-6 text-center">Form Edit Pembayaran Pajak Kendaraan</h2>
@@ -137,56 +135,49 @@
         });
     
         document.getElementById('save-form').addEventListener('submit', function (event) {
-    event.preventDefault(); // Prevent form submission
+            event.preventDefault(); 
+            let tanggalBayar = document.querySelector('input[name="tanggal_bayar"]').value;
+            let tanggalJatuhTempo = document.querySelector('input[name="tanggal_jatuh_tempo"]').value;
+            let nominalTagihan = document.querySelector('input[name="nominal_tagihan"]').value.replace(/\D/g, ''); // Ambil angka saja
+            let alertDiv = document.getElementById('alertMessage');
+            let fotoPembayaran = document.getElementById('fotoInput').files[0];
+            let existingPembayaran = "{{ $pajak->bukti_bayar_pajak }}";
+            let isPembayaranFileDeleted = !fotoPembayaran && !existingPembayaran;
 
-    // Collect values from the form
-    let tanggalBayar = document.querySelector('input[name="tanggal_bayar"]').value;
-    let tanggalJatuhTempo = document.querySelector('input[name="tanggal_jatuh_tempo"]').value;
-    let nominalTagihan = document.querySelector('input[name="nominal_tagihan"]').value.replace(/\D/g, ''); // Ambil angka saja
-    let alertDiv = document.getElementById('alertMessage');
+            if (!tanggalBayar || !tanggalJatuhTempo || !nominalTagihan || parseInt(nominalTagihan) === 0 || 
+            isPembayaranFileDeleted) {
+                alertDiv.classList.remove('hidden'); 
+                setTimeout(() => alertDiv.classList.add('hidden'), 10000); 
+                return; 
+            }
 
-    let fotoPembayaran = document.getElementById('fotoInput').files[0];
-    let existingPembayaran = "{{ $pajak->bukti_bayar_pajak }}";
+            let nominalInput = document.querySelector('input[name="nominal_tagihan"]');
+            let biayaLainInput = document.querySelector('input[name="biaya_lain"]');
+            
+            nominalInput.value = nominalInput.value.replace(/[^\d]/g, '');
+            biayaLainInput.value = biayaLainInput.value.replace(/[^\d]/g, '');
 
-    // Memeriksa kondisi file yang dihapus
-    let isPembayaranFileDeleted = !fotoPembayaran && !existingPembayaran;
-    // Validate inputs
-    if (!tanggalBayar || !tanggalJatuhTempo || !nominalTagihan || parseInt(nominalTagihan) === 0 || 
-    isPembayaranFileDeleted) {
-        alertDiv.classList.remove('hidden'); // Tampilkan alert
-        setTimeout(() => alertDiv.classList.add('hidden'), 10000); // Hide alert after 10 seconds
-        return; // Prevent form submission
-    }
-
-    let nominalInput = document.querySelector('input[name="nominal_tagihan"]');
-    let biayaLainInput = document.querySelector('input[name="biaya_lain"]');
-    
-    nominalInput.value = nominalInput.value.replace(/[^\d]/g, '');
-    biayaLainInput.value = biayaLainInput.value.replace(/[^\d]/g, '');
-    // Show confirmation dialog using SweetAlert
-    Swal.fire({
-        title: "Konfirmasi",
-        text: "Apakah Anda yakin ingin menyimpan perubahan data pembayaran pajak ini?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Ya",
-        cancelButtonText: "Tidak"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // If user confirmed, show success message and submit form
             Swal.fire({
-                title: "Berhasil!",
-                text: "Data pembayaran pajak berhasil diperbarui.",
-                icon: "success"
-            }).then(() => {
-                // Submit the form after success message
-                event.target.submit();
+                title: "Konfirmasi",
+                text: "Apakah Anda yakin ingin menyimpan perubahan data pembayaran pajak ini?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Ya",
+                cancelButtonText: "Tidak"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: "Berhasil!",
+                        text: "Data pembayaran pajak berhasil diperbarui.",
+                        icon: "success"
+                    }).then(() => {
+                        event.target.submit();
+                    });
+                }
             });
-        }
-    });
-});
+        });
 
         document.getElementById('fotoInput').addEventListener('change', function(event) {
         let fileName = event.target.files[0] ? event.target.files[0].name : "Upload Photo";
@@ -195,42 +186,42 @@
         });
 
         document.getElementById('removeFile').addEventListener('click', function(event) {
-    event.preventDefault();
-    let pajakIdElement = document.querySelector('input[name="id_pajak"]');
-    if (!pajakIdElement) {
-        console.error("Elemen input[name='id_pajak'] tidak ditemukan!");
-        return;
-    }
-
-    let pajakId =pajakIdElement.value;
-
-    fetch('/pajak/delete-file', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({ id: pajakId, file_type: 'bukti_bayar_pajak' })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Setelah berhasil menghapus, setel status bahwa file telah dihapus
-            console.log("File Pembayaran berhasil dihapus.");
-            document.getElementById('fotoInput').value = '';
-            document.getElementById('fileName').textContent = "Upload File";
-            document.getElementById('removeFile').classList.add('hidden');
-            location.reload();
-            
-            // Update status untuk validasi
-            isPembayaranFileDeleted = true; // Menetapkan bahwa file telah dihapus
-            console.log("Status Pembayaran Setelah Dihapus: ", isPembayaranFileDeleted);
-        } else {
-            alert(data.error);
+        event.preventDefault();
+        let pajakIdElement = document.querySelector('input[name="id_pajak"]');
+        if (!pajakIdElement) {
+            console.error("Elemen input[name='id_pajak'] tidak ditemukan!");
+            return;
         }
-    })
-    .catch(error => console.error('Error:', error));
-});
+
+        let pajakId =pajakIdElement.value;
+
+            fetch('/pajak/delete-file', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ id: pajakId, file_type: 'bukti_bayar_pajak' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Setelah berhasil menghapus, setel status bahwa file telah dihapus
+                    console.log("File Pembayaran berhasil dihapus.");
+                    document.getElementById('fotoInput').value = '';
+                    document.getElementById('fileName').textContent = "Upload File";
+                    document.getElementById('removeFile').classList.add('hidden');
+                    location.reload();
+                    
+                    // Update status untuk validasi
+                    isPembayaranFileDeleted = true; // Menetapkan bahwa file telah dihapus
+                    console.log("Status Pembayaran Setelah Dihapus: ", isPembayaranFileDeleted);
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
 
         document.addEventListener("DOMContentLoaded", function () {
             let fileSpan = document.getElementById("fileName"); 
@@ -243,6 +234,81 @@
             }
             fileSpan.textContent = "bukti_bayar/" + shortFileName;
         });
+
+        function showAlert(message) {
+            let alertDiv = document.getElementById('alertMessage');
+            alertDiv.innerHTML = `<span class="font-medium">Peringatan!</span> ${message}`;
+            alertDiv.classList.remove('hidden');
+            alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            setTimeout(() => alertDiv.classList.add('hidden'), 5000);
+        }
+
+            function validateFileInput(fileInput, allowedTypes, maxSizeMB, uploadTextId, removeButtonId) {
+                let file = fileInput.files[0];
+
+                if (file) {
+                    if (!allowedTypes.includes(file.type)) {
+                        showAlert("File yang diupload harus berupa JPG, PNG, atau PDF!");
+                        fileInput.value = ''; // Reset input file agar tidak tersimpan
+                        return;
+                    }
+
+                    if (file.size > maxSizeMB * 1024 * 1024) {
+                        showAlert(`Ukuran file tidak boleh lebih dari ${maxSizeMB}MB!`);
+                        fileInput.value = ''; // Reset input file
+                        return;
+                    }
+
+                    // Jika valid, tampilkan nama file
+                    let shortFileName = shortenFileName(file.name);
+                    document.getElementById(uploadTextId).textContent = shortFileName;
+                    document.getElementById(removeButtonId).classList.remove('hidden');
+                }
+            }
+
+            document.getElementById('fotoInput').addEventListener('change', function() {
+                let allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                let maxSizeMB = 5; 
+                validateFileInput(this, allowedTypes, maxSizeMB, 'uploadText', 'removeFile');
+            });
+
+            document.getElementById('removeFile').addEventListener('click', function(event) {
+                event.preventDefault();
+                let pajakIdElement = document.querySelector('input[name="id_pajak"]');
+                if (!pajakIdElement) {
+                    console.error("Elemen input[name='id_pajak'] tidak ditemukan!");
+                    return;
+                }
+
+                let pajakId = pajakIdElement.value;
+
+                fetch('/pajak/delete-file', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ id: pajakId, file_type: 'bukti_bayar_pajak' })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log("File Pembayaran berhasil dihapus.");
+                        document.getElementById('fotoInput').value = '';
+                        document.getElementById('uploadText').textContent = "Upload File";
+                        document.getElementById('removeFile').classList.add('hidden');
+                        location.reload();
+                    } else {
+                        showAlert(data.error);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+
+            function shortenFileName(fileName, maxLength = 15) {
+                return fileName.length > maxLength ? fileName.substring(0, maxLength) + '...' : fileName;
+            }
     </script>
 {{-- </x-app-layout> --}}
 @endsection

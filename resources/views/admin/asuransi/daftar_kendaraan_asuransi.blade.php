@@ -1,17 +1,12 @@
 {{-- <x-app-layout> --}}
-    @extends('layouts.sidebar')
-
+@extends('layouts.sidebar')
 @section('content')
-
-    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
         <h2 class="custom-text font-extrabold mb-6 ml-16 pt-6">Daftar Kendaraan Asuransi</h2>
-
         <style>
             .custom-text {
                 font-size: 2rem; 
             }
         </style>
-
         <form action="{{ route('asuransi.daftar_kendaraan_asuransi') }}" method="GET" class="flex justify-end pb-4">
             <div class="relative me-14">
                 <input 
@@ -46,40 +41,36 @@
                         <td class="px-6 py-3">{{ $item->merk ?? '-' }} {{ $item->tipe ?? '-' }}</td>
                         <td class="px-6 py-3">{{ $item->plat_nomor ?? '-' }}</td>
                         <td class="px-6 py-3">
-                            {{ $item->tgl_jatuh_tempo ? \Carbon\Carbon::parse($item->tgl_jatuh_tempo)->format('d/m/Y') : '-' }}
+                            {{ $item->tgl_jatuh_tempo ? \Carbon\Carbon::parse($item->tgl_jatuh_tempo)->format('d-m-Y') : '-' }}
                         </td>
                         <td class="px-6 py-3">
-                            {{ $item->tgl_bayar ? \Carbon\Carbon::parse($item->tgl_bayar)->format('d/m/Y') : '-' }}
+                            {{ $item->tgl_bayar ? \Carbon\Carbon::parse($item->tgl_bayar)->format('d-m-Y') : '-' }}
                         </td>
                         <td class="px-6 py-3">
                             @if ($item->status === 'JATUH TEMPO')
-                                <span class="text-red-500">{{ $item->status }}</span>  
+                                <span class="text-red-500 whitespace-nowrap">{{ $item->status }}</span>
                             @elseif ($item->status === 'MENDEKATI JATUH TEMPO')
-                                <span class="text-orange-500">{{ $item->status }}</span>  
+                                <span class="text-orange-500">{{ $item->status }}</span>
                             @elseif ($item->status === 'SUDAH DIBAYAR')
-                                <span class="text-green-500">{{ $item->status }}</span>  
+                                <span class="text-green-500 whitespace-nowrap">{{ $item->status }}</span>
                             @else
-                                <span>-</span> 
+                                <span>-</span>
                             @endif
                         </td>
-                        
-                        <td class="px-6 py-3">
-                            @if (!empty($item->id_asuransi)) 
+                        <td class="px-6 py-3 whitespace-nowrap">
+                            @if (!empty($item->id_asuransi))
                                 @if ($item->status === 'JATUH TEMPO' || $item->status === 'MENDEKATI JATUH TEMPO')
-                                   <a href="{{ route('asuransi.kelola', ['id_kendaraan' => $item->id_kendaraan,'page' => request()->query('page', 1)]) }}" class="font-medium text-gray-600 dark:text-gray-500 hover:underline">Kelola</a>
+                                    <a href="{{ route('asuransi.kelola', ['id_kendaraan' => $item->id_kendaraan,'page' => request()->query('page', 1)]) }}" class="font-medium text-gray-600 dark:text-gray-500 hover:underline">Kelola</a>
                                 @elseif ($item->status === 'SUDAH DIBAYAR')
-                                    <a href="{{ route('asuransi.detail', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1)]) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Detail</a>
-                                    <a href="{{ route('asuransi.edit', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1)]) }}" class="font-medium text-yellow-600 dark:text-yellow-500 hover:underline">Edit</a>
-                                    <form id="delete-form-{{ $item->id_asuransi }}" action="{{ route('asuransi.hapus', $item->id_asuransi) }}" method="POST" style="display: none;">
+                                    <a href="{{ route('asuransi.detail', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1)]) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline mr-1">Detail</a>
+                                    <a href="{{ route('asuransi.edit', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1)]) }}" class="font-medium text-yellow-600 dark:text-yellow-500 hover:underline mr-1">Edit</a>
+                                    <button class="font-medium text-red-600 dark:text-red-500 hover:underline" onclick="confirmDelete({{ $item->id_asuransi }})">Hapus</button>
+                                    <form id="delete-form-{{ $item->id_asuransi }}" action="{{ route('asuransi.hapus', $item->id_asuransi) }}" method="POST" class="hidden">
                                         @csrf
                                         @method('DELETE')
                                     </form>
-                                    <button class="font-medium text-red-600 dark:text-red-500 hover:underline"
-                                            onclick="confirmDelete({{ $item->id_asuransi }})">
-                                        Hapus
-                                    </button>
                                 @else
-                                    <span>-</span> 
+                                    <span>-</span>
                                 @endif
                             @else
                                 <a href="{{ route('asuransi.kelola', ['id_kendaraan' => $item->id_kendaraan,'page' => request()->query('page', 1)]) }}" class="font-medium text-gray-600 dark:text-gray-500 hover:underline">Kelola</a>
@@ -99,8 +90,6 @@
                 {{$dataKendaraan->onEachSide(1)->links() }}
             </div>
         </nav>        
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
       function confirmDelete(id_asuransi) {

@@ -1,7 +1,14 @@
 {{-- <x-app-layout> --}}
-    @extends('layouts.sidebar')
-
-    @section('content')
+@extends('layouts.sidebar')
+@section('content')
+    <style>
+        #imageModal {
+            z-index: 40;
+        }
+        #closeModal {
+            z-index: 50;
+        }
+    </style>
     
     <div class="flex justify-center items-center min-h-screen">
         <div class="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 
@@ -60,6 +67,17 @@
                             <span class="text-gray-400">Tidak ada bukti</span>
                         @endif
                     </div>
+                    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-50 justify-center items-center hidden z-40">
+                        <div class="relative bg-white p-4 rounded-lg shadow-lg w-auto max-w-3xl">
+                            <button id="closeModal" class="absolute top-1.5 right-3 bg-white text-black text-sm w-7 h-7 flex items-center justify-center rounded-full shadow-md hover:bg-gray-300 z-50 border border-black">
+                                <span style="color: black !important;"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg></span>
+                            </button>
+                            <div id="filePreviewContainer" class="max-h-[80vh] overflow-auto">
+                            </div>
+                        </div>
+                    </div>
                     <button type="button" onclick="window.location.href='{{ route('pajak.daftar_kendaraan_pajak', ['page' => $currentPage]) }}'" class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
                         Kembali
                     </button>  
@@ -67,8 +85,6 @@
             </div>
         </div>
     </div>
-
-    {{-- Modal untuk bukti pembayaran --}}
     @if($pajak->bukti_bayar_pajak)
     <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="relative bg-white p-4 rounded-lg max-w-2xl mx-4">
@@ -77,54 +93,66 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </button>
-            <img src="{{ asset('storage/' . trim($pajak->bukti_bayar_pajak)) }}" 
-                 alt="Bukti Pembayaran" 
-                 class="max-h-[80vh] max-w-full object-contain rounded-lg">
+            
+            <div id="filePreviewContainer">
+            </div>
         </div>
     </div>
-    @endif
+@endif
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const lihatBukti = document.getElementById("lihatBukti");
-            const imageModal = document.getElementById("imageModal");
-            const closeModal = document.getElementById("closeModal");
+         document.addEventListener("DOMContentLoaded", function() {
+        const lihatBukti = document.getElementById("lihatBukti");
+        const imageModal = document.getElementById("imageModal");
+        const closeModal = document.getElementById("closeModal");
+        const filePreviewContainer = document.getElementById("filePreviewContainer");
 
-            if (lihatBukti && imageModal) {
-                // Buka modal
-                lihatBukti.addEventListener("click", function(e) {
-                    e.preventDefault();
-                    imageModal.classList.remove('hidden');
-                    imageModal.classList.add('flex');
-                    document.body.style.overflow = 'hidden';
-                });
+        if (lihatBukti && imageModal) {
+            lihatBukti.addEventListener("click", function(e) {
+                e.preventDefault();
+                let filePath = "{{ asset('storage/' . trim($pajak->bukti_bayar_pajak)) }}";
+                let fileExtension = filePath.split('.').pop().toLowerCase();
 
-                // Tutup modal dengan tombol close
-                closeModal?.addEventListener("click", function() {
+                filePreviewContainer.innerHTML = ""; 
+
+                if (fileExtension === "pdf") {
+                    filePreviewContainer.innerHTML = `
+                        <iframe src="${filePath}" class="w-full h-[80vh]" frameborder="0"></iframe>
+                    `;
+                } else {
+                    filePreviewContainer.innerHTML = `
+                        <img src="${filePath}" alt="Bukti Pembayaran" class="max-h-[80vh] max-w-full object-contain rounded-lg">
+                    `;
+                }
+
+                imageModal.classList.remove('hidden');
+                imageModal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            });
+
+            closeModal?.addEventListener("click", function() {
+                imageModal.classList.add('hidden');
+                imageModal.classList.remove('flex');
+                document.body.style.overflow = '';
+            });
+
+            imageModal.addEventListener("click", function(e) {
+                if (e.target === imageModal) {
                     imageModal.classList.add('hidden');
                     imageModal.classList.remove('flex');
                     document.body.style.overflow = '';
-                });
+                }
+            });
 
-                // Tutup modal dengan klik di luar gambar
-                imageModal.addEventListener("click", function(e) {
-                    if (e.target === imageModal) {
-                        imageModal.classList.add('hidden');
-                        imageModal.classList.remove('flex');
-                        document.body.style.overflow = '';
-                    }
-                });
-
-                // Tutup modal dengan tombol ESC
-                document.addEventListener("keydown", function(e) {
-                    if (e.key === "Escape" && !imageModal.classList.contains('hidden')) {
-                        imageModal.classList.add('hidden');
-                        imageModal.classList.remove('flex');
-                        document.body.style.overflow = '';
-                    }
-                });
-            }
-        });
+            document.addEventListener("keydown", function(e) {
+                if (e.key === "Escape" && !imageModal.classList.contains('hidden')) {
+                    imageModal.classList.add('hidden');
+                    imageModal.classList.remove('flex');
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+    });
     </script>
 {{-- </x-app-layout> --}}
 @endsection

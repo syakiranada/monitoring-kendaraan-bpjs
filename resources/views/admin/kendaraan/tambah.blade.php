@@ -1,8 +1,6 @@
 {{-- <x-app-layout> --}}
-    @extends('layouts.sidebar')
-
+@extends('layouts.sidebar')
 @section('content')
-
     <div class="min-h-screen flex items-center justify-center py-16 px-8">
         <div class="max-w-4xl w-full bg-white p-12 rounded-lg shadow-lg">
             <h2 class="text-2xl font-bold mb-6 text-center">Form Tambah Kendaraan</h2>
@@ -209,12 +207,8 @@
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Modified formatRupiah function to store clean numbers
         function formatRupiah(input) {
-            // Remove any non-digit characters from the input
             let value = input.value.replace(/[^\d]/g, '');
-            
-            // Store the raw number value in a hidden input
             let hiddenInput = document.getElementById(input.id + '_hidden');
             if (!hiddenInput) {
                 hiddenInput = document.createElement('input');
@@ -223,11 +217,7 @@
                 hiddenInput.id = input.id + '_hidden';
                 input.parentNode.appendChild(hiddenInput);
             }
-            
-            // Store raw value in hidden input
             hiddenInput.value = value;
-            
-            // Format the visible input with commas
             if (value.length > 0) {
                 value = parseInt(value).toLocaleString('id-ID');
             }
@@ -236,8 +226,6 @@
 
         document.getElementById('save-form').addEventListener('submit', function(event) {
             event.preventDefault();
-
-            // Get all form inputs
             let fields = [
                 'merk', 'tipe', 'plat_nomor', 'warna', 'jenis_kendaraan', 'aset_guna',
                 'kapasitas', 'tanggal_beli', 'nilai_perolehan', 'nilai_buku', 
@@ -247,8 +235,6 @@
             ];
 
             let missingFields = [];
-
-            // Validate if any required fields are empty
             fields.forEach(function(field) {
                 let input = document.querySelector('[name="' + field + '"]');
                 if (!input || !input.value.trim()) {
@@ -256,7 +242,6 @@
                 }
             });
 
-            // Check if there are any missing fields
             if (missingFields.length > 0) {
                 let alertDiv = document.getElementById('alertMessage');
                 alertDiv.classList.remove('hidden');
@@ -264,7 +249,6 @@
                 return;
             }
 
-            // Validate dates
             let tanggalAwalPerlindungan = document.querySelector('input[name="tanggal_perlindungan_awal"]').value;
             let tanggalAkhirPerlindungan = document.querySelector('input[name="tanggal_perlindungan_akhir"]').value;
 
@@ -277,13 +261,11 @@
                 return false;
             }
 
-            // Clean currency format before submitting
             let nominalInput = document.querySelector('input[name="nilai_perolehan"]');
             let biayaLainInput = document.querySelector('input[name="nilai_buku"]');
             nominalInput.value = nominalInput.value.replace(/[^\d]/g, '');
             biayaLainInput.value = biayaLainInput.value.replace(/[^\d]/g, '');
 
-            // Show confirmation dialog
             Swal.fire({
                 title: "Konfirmasi",
                 text: "Apakah Anda yakin ingin menyimpan data kendaraan ini?",
@@ -295,7 +277,6 @@
                 cancelButtonText: "Tidak"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Simulate form submission
                     setTimeout(() => {
                         Swal.fire({
                             title: "Sukses!",

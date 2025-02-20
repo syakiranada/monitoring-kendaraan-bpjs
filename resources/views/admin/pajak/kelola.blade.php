@@ -1,6 +1,5 @@
 {{-- <x-app-layout> --}}
-    @extends('layouts.sidebar')
-
+@extends('layouts.sidebar')
 @section('content')
 
     <div class="min-h-screen flex items-center justify-center py-12 px-4">
@@ -120,62 +119,62 @@
         }
     
        document.getElementById('save-form').addEventListener('submit', function (event) {
-        console.log('Button clicked');
+            console.log('Button clicked');
 
-        let tanggalBayar = document.querySelector('input[name="tanggal_bayar"]').value;
-        let tanggalJatuhTempo = document.querySelector('input[name="tanggal_jatuh_tempo"]').value;
-        let nominalTagihan = document.querySelector('input[name="nominal_tagihan"]').value;
-        let buktiBayar = document.querySelector('input[name="foto"]').files.length;
+            let tanggalBayar = document.querySelector('input[name="tanggal_bayar"]').value;
+            let tanggalJatuhTempo = document.querySelector('input[name="tanggal_jatuh_tempo"]').value;
+            let nominalTagihan = document.querySelector('input[name="nominal_tagihan"]').value;
+            let buktiBayar = document.querySelector('input[name="foto"]').files.length;
 
-        console.log('Form values:', {
-            tanggalBayar,
-            tanggalJatuhTempo,
-            nominalTagihan,
-            buktiBayar
-        });
+            console.log('Form values:', {
+                tanggalBayar,
+                tanggalJatuhTempo,
+                nominalTagihan,
+                buktiBayar
+            });
 
-        if (!tanggalBayar || !tanggalJatuhTempo || !nominalTagihan || buktiBayar === 0) {
-            console.log('Validation failed');
-            let alertDiv = document.getElementById('alertMessage');
-            alertDiv.classList.remove('hidden');
-            setTimeout(() => alertDiv.classList.add('hidden'), 10000);
-            return;
-        }
-
-        console.log('Validation passed, showing SweetAlert');
-
-        Swal.fire({
-            title: "Konfirmasi",
-            text: "Apakah Anda yakin ingin menyimpan data pembayaran pajak ini?",
-            icon: "warning", 
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Ya",
-            cancelButtonText: "Tidak"
-        }).then((result) => {
-            console.log('SweetAlert result:', result);
-            if (result.isConfirmed) {
-                console.log('User confirmed, showing success message');
-                Swal.fire({
-                    title: "Berhasil!",
-                    text: "Data pembayaran pajak berhasil disimpan.",
-                    icon: "success"
-                }).then(() => {
-                    console.log('Submitting form');
-                    event.target.submit();  
-                    console.log('Form submitted');
-                });
-            } else {
-                console.log('User cancelled');
+            if (!tanggalBayar || !tanggalJatuhTempo || !nominalTagihan || buktiBayar === 0) {
+                console.log('Validation failed');
+                let alertDiv = document.getElementById('alertMessage');
+                alertDiv.classList.remove('hidden');
+                setTimeout(() => alertDiv.classList.add('hidden'), 10000);
+                return;
             }
+
+            console.log('Validation passed, showing SweetAlert');
+
+            Swal.fire({
+                title: "Konfirmasi",
+                text: "Apakah Anda yakin ingin menyimpan data pembayaran pajak ini?",
+                icon: "warning", 
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Ya",
+                cancelButtonText: "Tidak"
+            }).then((result) => {
+                console.log('SweetAlert result:', result);
+                if (result.isConfirmed) {
+                    console.log('User confirmed, showing success message');
+                    Swal.fire({
+                        title: "Berhasil!",
+                        text: "Data pembayaran pajak berhasil disimpan.",
+                        icon: "success"
+                    }).then(() => {
+                        console.log('Submitting form');
+                        event.target.submit();  
+                        console.log('Form submitted');
+                    });
+                } else {
+                    console.log('User cancelled');
+                }
+            });
         });
-    });
 
         document.getElementById('fotoInput').addEventListener('change', function(event) {
             let fileName = event.target.files[0] ? event.target.files[0].name : "Upload Photo";
-        document.getElementById('uploadText').textContent = fileName;
-        document.getElementById('removeFile').classList.remove('hidden');
+            document.getElementById('uploadText').textContent = fileName;
+            document.getElementById('removeFile').classList.remove('hidden');
         });
 
         document.getElementById('removeFile').addEventListener('click', function(event) {
@@ -186,6 +185,78 @@
 
             this.classList.add('hidden');
         });
+
+        function showAlert(message) {
+            let alertDiv = document.getElementById('alertMessage');
+            alertDiv.innerHTML = `<span class="font-medium">Peringatan!</span> ${message}`;
+            alertDiv.classList.remove('hidden');
+            alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            setTimeout(() => alertDiv.classList.add('hidden'), 5000);
+        }
+
+        function validateFileInput(fileInput, allowedTypes, maxSizeMB, uploadTextId, removeButtonId) {
+            let file = fileInput.files[0];
+
+            if (file) {
+                if (!allowedTypes.includes(file.type)) {
+                    showAlert("File yang diupload harus berupa JPG, PNG, atau PDF!");
+                    fileInput.value = '';
+                    return;
+                }
+                if (file.size > maxSizeMB * 1024 * 1024) {
+                    showAlert(`Ukuran file tidak boleh lebih dari ${maxSizeMB}MB!`);
+                    fileInput.value = '';
+                    return;
+                }
+                let shortFileName = shortenFileName(file.name);
+                document.getElementById(uploadTextId).textContent = shortFileName;
+                document.getElementById(removeButtonId).classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('fotoInput').addEventListener('change', function() {
+            let allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+            let maxSizeMB = 5; 
+            validateFileInput(this, allowedTypes, maxSizeMB, 'uploadText', 'removeFile');
+        });
+
+        document.getElementById('removeFile').addEventListener('click', function(event) {
+            event.preventDefault();
+            let pajakIdElement = document.querySelector('input[name="id_pajak"]');
+            if (!pajakIdElement) {
+                console.error("Elemen input[name='id_pajak'] tidak ditemukan!");
+                return;
+            }
+
+            let pajakId = pajakIdElement.value;
+
+            fetch('/pajak/delete-file', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ id: pajakId, file_type: 'bukti_bayar_pajak' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log("File Pembayaran berhasil dihapus.");
+                    document.getElementById('fotoInput').value = '';
+                    document.getElementById('uploadText').textContent = "Upload File";
+                    document.getElementById('removeFile').classList.add('hidden');
+                    location.reload();
+                } else {
+                    showAlert(data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        function shortenFileName(fileName, maxLength = 15) {
+            return fileName.length > maxLength ? fileName.substring(0, maxLength) + '...' : fileName;
+        }
     </script>
 {{-- </x-app-layout> --}}
 @endsection
