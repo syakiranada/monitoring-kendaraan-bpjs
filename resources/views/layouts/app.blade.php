@@ -102,10 +102,11 @@
             if ($user->peran === 'admin') {
                 $menuItems = array_merge($menuItems, [
                     ['icon' => 'home', 'title' => 'Beranda', 'route' => 'admin.beranda'],
+                    ['icon' => 'car', 'title' => 'Daftar Kendaraan', 'route' => 'kendaraan.daftar_kendaraan'],
+                    ['icon' => 'money-bill', 'title' => 'Pajak', 'route' => 'pajak.daftar_kendaraan_pajak'],
+                    ['icon' => 'shield', 'title' => 'Asuransi', 'route' => 'asuransi.daftar_kendaraan_asuransi'],
                     ['icon' => 'screwdriver-wrench', 'title' => 'Servis Rutin', 'route' => 'admin.servisRutin'],
                     ['icon' => 'gears', 'title' => 'Servis Insidental', 'route' => 'admin.servisInsidental'],
-
-                    
                 ]);
             } elseif ($user->peran === 'pengguna') {
                 $menuItems = array_merge($menuItems, [

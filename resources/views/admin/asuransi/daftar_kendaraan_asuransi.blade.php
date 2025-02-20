@@ -1,7 +1,7 @@
 <x-app-layout>
 {{-- @extends('layouts.sidebar')
 @section('content') --}}
-        <h2 class="custom-text font-extrabold mb-6 ml-16 pt-6">Daftar Kendaraan Asuransi</h2>
+        <h2 class="custom-text font-extrabold mb-6 ml-16 pt-6">Daftar Asuransi Kendaraan</h2>
         <style>
             .custom-text {
                 font-size: 2rem; 
