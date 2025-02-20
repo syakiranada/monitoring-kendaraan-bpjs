@@ -11,7 +11,7 @@
             display: flex !important;
         }
     </style>
-    <div class="flex justify-center items-center min-h-screen bg-gray-50">
+     <h1 class="text-2xl font-bold mb-6">Detail Asuransi</h1>
         <div class="w-full max-w-md p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
             @php 
                 $currentPage = request()->query('page');
@@ -100,7 +100,7 @@
             </button>
             <div class="filePreviewContainer max-h-[80vh] overflow-auto"></div>
         </div>
-    </div>
+    
     <script>
        function showModal(modalId, filePath) {
             const modal = document.getElementById(modalId);

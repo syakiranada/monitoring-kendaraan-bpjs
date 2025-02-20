@@ -1,9 +1,6 @@
-{{-- <x-app-layout> --}}
-@extends('layouts.sidebar')
-@section('content')
-
-    <div class="flex justify-center items-center min-h-screen bg-gray-50">
-        <div class="w-full max-w-7xl p-6 bg-gray-50 border-gray-200 rounded-lg shadow-sm">
+<x-app-layout>
+{{-- @extends('layouts.sidebar')
+@section('content') --}}
             @php 
                 $currentPage = request()->query('page');
             @endphp
@@ -119,10 +116,11 @@
                 </div>
                 <div class="flex items-start">
                     <span class="text-sm text-gray-600 w-48">Ketersediaan</span>
-                    <span class="text-sm text-green-600 flex-1">
-                        {{ isset($kendaraan) && $kendaraan->status_ketersediaan ? $kendaraan->status_ketersediaan : '-' }}
+                    <span class="text-sm flex-1 
+                        {{ isset($kendaraan) && $kendaraan->status_ketersediaan == 'TERSEDIA' ? 'text-green-600' : 'text-red-600' }}">
+                        {{ isset($kendaraan) && $kendaraan->status_ketersediaan ? ucwords(strtolower($kendaraan->status_ketersediaan)) : '-' }}
                     </span>
-                </div>
+                </div>                              
             </div>
         </div>
 
@@ -174,8 +172,6 @@
                     <span class="text-sm text-gray-900 flex-1">{{ isset($cekFisik) && isset($cekFisik->catatan) ? $cekFisik->catatan : '-' }}</span>
                 </div>
             </div>
-        </div>
-    </div>
             <button type="button" onclick="window.location.href='{{ route('kendaraan.daftar_kendaraan', ['page' => $currentPage]) }}'" class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition mt-6">
                 Kembali
             </button>

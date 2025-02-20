@@ -10,7 +10,7 @@
         }
     </style>
     
-    <div class="flex justify-center items-center min-h-screen">
+    <h1 class="text-2xl font-bold mb-6">Detail Pajak</h1>
         <div class="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 
                     dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                     @php 
@@ -31,17 +31,17 @@
                     </div>
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-600 dark:text-gray-400">Tanggal Jatuh Tempo Pembayaran Pajak</span>
-                        <span class="text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($pajak->tgl_jatuh_tempo)->format('d/m/Y') }}</span>
+                        <span class="text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($pajak->tgl_jatuh_tempo)->format('d-m-Y') }}</span>
                     </div>
                     
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-600 dark:text-gray-400">Tanggal Pembayaran Pajak</span>
-                        <span class="text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($pajak->tgl_bayar)->format('d/m/Y') }}</span>
+                        <span class="text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($pajak->tgl_bayar)->format('d-m-Y') }}</span>
                     </div>
                     
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-600 dark:text-gray-400">Tanggal Pembayaran Pajak Selanjutnya</span>
-                        <span class="text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($pajak->tgl_jatuh_tempo_tahun_depan)->format('d/m/Y') }}</span>
+                        <span class="text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($pajak->tgl_jatuh_tempo_tahun_depan)->format('d-m-Y') }}</span>
                     </div>
                     
                     <div class="flex justify-between text-sm">
@@ -84,7 +84,6 @@
                 </div>
             </div>
         </div>
-    </div>
     @if($pajak->bukti_bayar_pajak)
     <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="relative bg-white p-4 rounded-lg max-w-2xl mx-4">

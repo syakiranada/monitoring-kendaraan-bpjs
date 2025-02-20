@@ -82,7 +82,6 @@
                 </div>
 
                 <div class="mb-6 flex justify-start space-x-4">
-                    <!-- Left Column -->
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Upload Polis Asuransi</label>
                         <div class="flex flex-col items-center">
@@ -318,7 +317,7 @@
             if (polisSpan) {
                 let fullPolisFileName = polisSpan.textContent.trim();
                 let shortPolisFileName = fullPolisFileName.replace("foto_polis/", "");
-                if (shortPolisFileName.length > 7) {
+                if (shortPolisFileName.length > 6) {
                     shortPolisFileName = shortPolisFileName.substring(0, 4) + "...";
                 }
                 polisSpan.textContent = "foto_polis/" + shortPolisFileName;
@@ -328,7 +327,7 @@
             if (pembayaranSpan) {
                 let fullPembayaranFileName = pembayaranSpan.textContent.trim();
                 let shortPembayaranFileName = fullPembayaranFileName.replace("bukti_bayar/", "");
-                if (shortPembayaranFileName.length > 7) {
+                if (shortPembayaranFileName.length > 6) {
                     shortPembayaranFileName = shortPembayaranFileName.substring(0, 4) + "...";
                 }
                 pembayaranSpan.textContent = "bukti_bayar/" + shortPembayaranFileName;
@@ -342,26 +341,50 @@
             alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             setTimeout(() => alertDiv.classList.add('hidden'), 5000);
         }
-
+        
         function validateFileInput(fileInput, allowedTypes, uploadTextId, removeButtonId) {
             let file = fileInput.files[0];
 
             if (file) {
-                if (!allowedTypes.includes(file.type)) {
+                let fileExtension = file.name.split('.').pop().toLowerCase();
+                let validExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
+                
+                if (!validExtensions.includes(fileExtension)) {
                     showAlert("File yang diupload harus berupa JPG, PNG, atau PDF!");
                     resetFileInput(fileInput, uploadTextId, removeButtonId);
-                    return;
-                }*
+                    return false;
+                }
+                
                 if (file.size > 5 * 1024 * 1024) {
                     showAlert("Ukuran file tidak boleh lebih dari 5MB!");
                     resetFileInput(fileInput, uploadTextId, removeButtonId);
-                    return;
+                    return false;
                 }
+                
                 let shortFileName = shortenFileName(file.name);
                 document.getElementById(uploadTextId).textContent = shortFileName;
                 document.getElementById(removeButtonId).classList.remove('hidden');
+                return true;
             }
+            return true; 
         }
+
+        function showAlert(message) {
+            let alertDiv = document.getElementById('alertMessage');
+            alertDiv.innerHTML = `<span class="font-medium">Peringatan!</span> ${message}`;
+            alertDiv.classList.remove('hidden');
+
+            alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            alertDiv.style.border = "2px solid #ef4444";
+
+            setTimeout(() => {
+                alertDiv.classList.add('hidden');
+                alertDiv.style.border = "";
+            }, 7000);
+            console.log("Alert shown: " + message);
+        }
+
         function resetFileInput(fileInput, uploadTextId, removeButtonId) {
             fileInput.value = ''; 
             document.getElementById(uploadTextId).textContent = "Upload File"; 

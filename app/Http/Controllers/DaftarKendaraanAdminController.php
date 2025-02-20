@@ -303,7 +303,7 @@ class DaftarKendaraanAdminController extends Controller
 
             $kendaraan = Kendaraan::findOrFail($id);
 
-            $statusKetersediaan = $request->aset_guna;
+            $statusKetersediaan = 'Tersedia';
             
             Log::info('DEBUG: Status kendaraan yang diterima', ['status_pinjam' => $request->aset_guna]);
 

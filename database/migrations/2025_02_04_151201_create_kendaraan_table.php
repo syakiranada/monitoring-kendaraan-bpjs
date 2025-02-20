@@ -23,7 +23,7 @@ return new class extends Migration
             $table->date('tgl_pembelian'); // Tanggal pembelian kendaraan (date)
             $table->string('aset', 10); // Aset (varchar 10)
             $table->string('status_ketersediaan', 20); // Status ketersediaan (varchar 20)
-            $table->string('bahan_bakar', 25); // Jenis bahan bakar (varchar 25)
+            $table->string('bahan_bakar', 75); // Jenis bahan bakar (varchar 25)
             $table->integer('frekuensi_servis'); // Frekuensi servis (int)
             $table->char('no_mesin', 17); // Nomor mesin (char 17)
             $table->string('no_rangka', 20); // Nomor rangka (varchar 20)
