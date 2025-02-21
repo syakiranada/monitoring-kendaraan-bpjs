@@ -26,6 +26,6 @@ class Peminjaman extends Model {
 
     public function servisInsidental()
     {
-        return $this->hasMany(ServisInsidental::class, 'id_peminjaman', 'id');
+        return $this->hasMany(ServisInsidental::class, 'id_peminjaman', 'id_peminjaman');
     }
 }

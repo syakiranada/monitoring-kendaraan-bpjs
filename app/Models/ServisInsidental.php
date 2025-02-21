@@ -14,6 +14,7 @@ class ServisInsidental extends Model
     protected $fillable = [
         'id_kendaraan',
         'user_id',
+        'id_peminjaman',
         // 'tipe',
         'harga',
         'lokasi',
@@ -37,6 +38,6 @@ class ServisInsidental extends Model
 
     public function peminjaman()
     {
-        return $this->belongsTo(Peminjaman::class, 'id_peminjaman', 'id');
+        return $this->belongsTo(Peminjaman::class, 'id_peminjaman', 'id_peminjaman');
     }
 }

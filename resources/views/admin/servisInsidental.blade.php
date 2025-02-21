@@ -22,26 +22,40 @@
                 <table class="min-w-full bg-white">
                     <thead class="bg-gray-100 text-gray-600">
                         <tr>
-                            <th class="py-3 px-4 text-left">Merek dan Tipe</th>
-                            <th class="py-3 px-4 text-left">Plat</th>
-                            <th class="py-3 px-4 text-left">Status Ketersediaan</th>
-                            <th class="py-3 px-4 text-left">Aksi</th>
+                            <th class="py-3 px-4 text-left">MEREK DAN TIPE</th>
+                            <th class="py-3 px-4 text-left">PLAT</th>
+                            <th class="py-3 px-4 text-left">STATUS KETERSEDIAAN</th>
+                            <th class="py-3 px-4 text-left">AKSI</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($kendaraanTersedia as $kendaraan)
                         <tr class="kendaraan-row cursor-pointer" data-id="{{ $kendaraan->id_kendaraan }}">
                             <td class="py-3 px-4 border-b">
-                                <div>{{ $kendaraan->tipe ?? 'Tidak Diketahui' }}</div>
-                                <div class="text-sm text-gray-500">{{ $kendaraan->merk ?? 'Tidak Diketahui' }}</div>
+                                <div>{{ ($kendaraan->merk ?? 'Tidak Diketahui') . ' ' . ($kendaraan->tipe ?? '') }}</div>
                             </td>
                             <td class="py-3 px-4 border-b">{{ $kendaraan->plat_nomor ?? '-' }}</td>
-                            <td class="py-3 px-4 border-b text-green-500">
-                                {{ strtoupper($kendaraan->status_ketersediaan) }}
-                            </td>
                             <td class="py-3 px-4 border-b">
-                                <a href="{{ route('admin.servisInsidental.create', ['kendaraan_id' => $kendaraan->id_kendaraan]) }}" 
-                                    class="text-blue-500 hover:underline">Input</a>
+                                <span class="text-xs font-medium px-2.5 py-0.5 rounded text-{{
+                                    $kendaraan->status_ketersediaan == 'Tersedia' ? 'green' : 
+                                    ($kendaraan->status_ketersediaan == 'Tidak Tersedia' ? 'red' : 'gray') 
+                                }}-500 bg-{{
+                                    $kendaraan->status_ketersediaan == 'Tersedia' ? 'green' : 
+                                    ($kendaraan->status_ketersediaan == 'Tidak Tersedia' ? 'red' : 'gray') 
+                                }}-100">
+                                    {{ strtoupper($kendaraan->status_ketersediaan) }}
+                                </span>
+                            </td>
+
+                            <td class="py-3 px-4 border-b">
+                                <a href="{{ route('admin.servisInsidental.create', [
+                                            'id_kendaraan'   => $kendaraan->id_kendaraan ?? '',
+                                            'merk'           => $kendaraan->merk ?? 'Tidak Diketahui',
+                                            'tipe'           => $kendaraan->tipe ?? '',
+                                            'plat'           => $kendaraan->plat_nomor ?? '-'
+                                        ]) }}" class="text-blue-500 hover:underline">
+                                            Input
+                                        </a>
                             </td>
                         </tr>
                         @endforeach
@@ -63,24 +77,31 @@
                 <table class="min-w-full bg-white">
                     <thead class="bg-gray-100 text-gray-600">
                         <tr>
-                            <th class="py-3 px-4 text-left">Merek dan Tipe</th>
-                            <th class="py-3 px-4 text-left">Plat</th>
-                            <th class="py-3 px-4 text-left">Tanggal Servis Insidental</th>
-                            <th class="py-3 px-4 text-left">Status Ketersediaan</th>
-                            <th class="py-3 px-4 text-left">Aksi</th>
+                            <th class="py-3 px-4 text-left">MEREK DAN TIPE</th>
+                            <th class="py-3 px-4 text-left">PLAT</th>
+                            <th class="py-3 px-4 text-left">TANGGAL SERVIS INSIDENTAL</th>
+                            <th class="py-3 px-4 text-left">STATUS KETERSEDIAAN</th>
+                            <th class="py-3 px-4 text-left">AKSI</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($servisInsidentals as $servis)
                         <tr class="kendaraan-row cursor-pointer" data-id="{{ $servis->kendaraan->id_kendaraan ?? '' }}">
                             <td class="py-3 px-4 border-b">
-                                <div>{{ $servis->kendaraan->tipe ?? 'Tidak Diketahui' }}</div>
-                                <div class="text-sm text-gray-500">{{ $servis->kendaraan->merk ?? 'Tidak Diketahui' }}</div>
-                            </td>
+                                <div>{{ ($servis->kendaraan->merk ?? 'Tidak Diketahui') . ' ' . ($servis->kendaraan->tipe ?? '') }}</div>
+                            </td> 
                             <td class="py-3 px-4 border-b">{{ $servis->kendaraan->plat_nomor ?? '-' }}</td>
-                            <td class="py-3 px-4 border-b">{{ \Carbon\Carbon::parse($servis->tgl_servis_real)->locale('id')->format('d-m-Y') }}</td>
-                            <td class="py-3 px-4 border-b @php echo in_array($servis->kendaraan?->status_ketersediaan, ['Tersedia']) ? 'text-green-500' : 'text-red-500'; @endphp">
-                                {{ strtoupper($servis->kendaraan?->status_ketersediaan) }}
+                            <td class="py-3 px-4 border-b">{{ \Carbon\Carbon::parse($servis->tgl_servis)->locale('id')->format('d-m-Y') }}</td>
+                            <td class="py-3 px-4 border-b">
+                                <span class="text-xs font-medium px-2.5 py-0.5 rounded text-{{
+                                    $servis->kendaraan?->status_ketersediaan == 'Tersedia' ? 'green' : 
+                                    ($servis->kendaraan?->status_ketersediaan == 'Tidak Tersedia' ? 'red' : 'gray') 
+                                }}-500 bg-{{
+                                    $servis->kendaraan?->status_ketersediaan == 'Tersedia' ? 'green' : 
+                                    ($servis->kendaraan?->status_ketersediaan == 'Tidak Tersedia' ? 'red' : 'gray') 
+                                }}-100">
+                                    {{ strtoupper($servis->kendaraan?->status_ketersediaan) }}
+                                </span>
                             </td>
                             <td class="py-3 px-4 border-b">
                                 <a href="{{ route('admin.servisInsidental.detail', $servis->id_servis_insidental) }}" 

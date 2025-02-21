@@ -50,52 +50,64 @@ class ServisInsidentalController extends Controller
     public function create()
     {
         $kendaraan = Kendaraan::all(); // Ambil semua data kendaraan
-        return view('pengguna.servisInsidental-form', compact('kendaraan'));
+        return view('admin.servisInsidental-form', compact('kendaraan'));
     }
 
-    /**
-     * Menyimpan data servis insidental ke database.
-     */
     public function store(Request $request)
     {
-        // Validasi input
+        // Validasi input dari form
         $validated = $request->validate([
             'id_kendaraan' => 'required|exists:kendaraan,id_kendaraan',
+            'id_peminjaman' => 'nullable|exists:peminjaman,id_peminjaman',
             'tgl_servis' => 'required|date',
             'harga' => 'required|numeric|min:0',
             'lokasi' => 'required|string|max:100',
             'deskripsi' => 'required|string|max:200',
-            'bukti_bayar' => 'nullable|image|max:2048', // Maks 2MB
-            'bukti_fisik' => 'nullable|image|max:2048', // Maks 2MB
+            'bukti_bayar' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120', // Maksimal 5MB
+            'bukti_fisik' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120', // Maksimal 5MB
         ]);
-
-        // Simpan gambar bukti bayar jika ada
-        $buktiBayarPath = null;
-        if ($request->hasFile('bukti_bayar')) {
-            $buktiBayarPath = $request->file('bukti_bayar')->store('bukti-bayar', 'public');
+    
+        // Pastikan user login
+        $userId = Auth::id();
+        if (!$userId) {
+            return redirect()->back()->withErrors(['error' => 'User tidak terautentikasi.']);
         }
-
-        // Simpan gambar bukti fisik jika ada
-        $buktiFisikPath = null;
-        if ($request->hasFile('bukti_fisik')) {
-            $buktiFisikPath = $request->file('bukti_fisik')->store('bukti-fisik', 'public');
+    
+        try {
+            // Simpan bukti bayar jika ada
+            $buktiBayarPath = $request->hasFile('bukti_bayar') 
+                ? $request->file('bukti_bayar')->store('bukti-bayar', 'public') 
+                : null;
+    
+            // Simpan bukti fisik jika ada
+            $buktiFisikPath = $request->hasFile('bukti_fisik') 
+                ? $request->file('bukti_fisik')->store('bukti-fisik', 'public') 
+                : null;
+    
+            $data = [
+                'id_kendaraan' => $request->id_kendaraan,
+                'user_id' => $userId, // Use the authenticated user ID
+                'harga' => $request->harga,
+                'lokasi' => $request->lokasi,
+                'deskripsi' => $request->deskripsi,
+                'tgl_servis' => $request->tgl_servis,
+                'bukti_bayar' => $buktiBayarPath, // Add file paths to data array
+                'bukti_fisik' => $buktiFisikPath, // Add file paths to data array
+            ];
+            
+            // Tambahkan id_peminjaman hanya jika tidak null
+            if ($request->filled('id_peminjaman')) {
+                $data['id_peminjaman'] = $request->id_peminjaman;
+            }
+            
+            ServisInsidental::create($data);
+    
+            // Redirect ke halaman admin.servisInsidental setelah berhasil
+            return redirect()->route('admin.servisInsidental')
+                ->with('success', 'Data servis insidental berhasil disimpan.');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
-
-        // Simpan data ke database
-        ServisInsidental::create([
-            'id_kendaraan' => $validated['id_kendaraan'],
-            'user_id' => Auth::id(),
-            'harga' => $validated['harga'],
-            'lokasi' => $validated['lokasi'],
-            'deskripsi' => $validated['deskripsi'],
-            'bukti_bayar' => $buktiBayarPath,
-            'bukti_fisik' => $buktiFisikPath,
-            'tgl_servis' => $validated['tgl_servis'],
-        ]);
-
-        // Redirect ke halaman pengguna dengan pesan sukses
-        return redirect()->route('servisInsidental')
-            ->with('success', 'Data servis insidental berhasil disimpan.');
     }
 
     public function detail($id)

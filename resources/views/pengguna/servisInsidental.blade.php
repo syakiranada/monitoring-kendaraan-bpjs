@@ -22,39 +22,38 @@
                     <table class="min-w-full bg-white">
                         <thead class="bg-gray-100 text-gray-600">
                             <tr>
-                                <th class="py-3 px-4 text-left">Merek dan Tipe</th>
-                                <th class="py-3 px-4 text-left">Plat</th>
-                                <th class="py-3 px-4 text-left">Status Peminjaman</th>
-                                <th class="py-3 px-4 text-left">Aksi</th>
+                                <th class="py-3 px-4 text-left">MEREK DAN TIPE</th>
+                                <th class="py-3 px-4 text-left">PLAT</th>
+                                <th class="py-3 px-4 text-left">STATUS PEMINJAMAN</th>
+                                <th class="py-3 px-4 text-left">AKSI</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($peminjamans as $peminjaman)
-                            <tr class="kendaraan-row cursor-pointer" data-id="{{ $peminjaman->kendaraan->id_kendaraan ?? '' }}">
-                                <td class="py-3 px-4 border-b">
-                                    <div>{{ ($peminjaman->kendaraan->merk ?? 'Tidak Diketahui') . ' ' . ($peminjaman->kendaraan->tipe ?? '') }}</div>
-                                </td>      
-                                <td class="py-3 px-4 border-b">{{ $peminjaman->kendaraan->plat_nomor ?? '-' }}</td>
-                                <td class="py-3 px-4 border-b">
-                                    <span class="text-xs font-medium px-2.5 py-0.5 rounded text-{{ 
-                                        $peminjaman->status_pinjam == 'Telah Dikembalikan' ? 'green' : 
-                                        ($peminjaman->status_pinjam == 'Dibatalkan' ? 'red' : 
-                                        ($peminjaman->status_pinjam == 'Ditolak' ? 'red' : 
-                                        ($peminjaman->status_pinjam == 'Diperpanjang' ? 'yellow' : 
-                                        ($peminjaman->status_pinjam == 'Disetujui' ? 'blue' : 'gray')))) }}-500 bg-{{ 
-                                        $peminjaman->status_pinjam == 'Telah Dikembalikan' ? 'green' : 
-                                        ($peminjaman->status_pinjam == 'Dibatalkan' ? 'red' : 
-                                        ($peminjaman->status_pinjam == 'Ditolak' ? 'red' : 
-                                        ($peminjaman->status_pinjam == 'Diperpanjang' ? 'yellow' : 
-                                        ($peminjaman->status_pinjam == 'Disetujui' ? 'blue' : 'gray')))) }}-100">
-                                        {{ strtoupper($peminjaman->status_pinjam ?? 'TIDAK DIKETAHUI') }}
-                                    </span>
-                                </td>
-                                <td class="py-3 px-4 border-b">
-                                    <a href="{{ route('servisInsidental.create', ['id_peminjaman' => $peminjaman->id_peminjaman]) }}" 
-                                        class="text-blue-500 hover:underline">Input</a>
-                                </td>
-                            </tr>
+                                @if($peminjaman->status_pinjam == 'Disetujui')
+                                    <tr class="kendaraan-row cursor-pointer" data-id="{{ $peminjaman->kendaraan->id_kendaraan ?? '' }}">
+                                        <td class="py-3 px-4 border-b">
+                                            <div>{{ ($peminjaman->kendaraan->merk ?? 'Tidak Diketahui') . ' ' . ($peminjaman->kendaraan->tipe ?? '') }}</div>
+                                        </td>      
+                                        <td class="py-3 px-4 border-b">{{ $peminjaman->kendaraan->plat_nomor ?? '-' }}</td>
+                                        <td class="py-3 px-4 border-b">
+                                            <span class="text-xs font-medium px-2.5 py-0.5 rounded text-blue-500 bg-blue-100">
+                                                {{ strtoupper($peminjaman->status_pinjam ?? 'TIDAK DIKETAHUI') }}
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4 border-b">
+                                            <a href="{{ route('servisInsidental.create', [
+                                                'id_peminjaman' => $peminjaman->id_peminjaman,
+                                                'id_kendaraan'   => $peminjaman->kendaraan->id_kendaraan ?? '',
+                                                'merk'           => $peminjaman->kendaraan->merk ?? 'Tidak Diketahui',
+                                                'tipe'           => $peminjaman->kendaraan->tipe ?? '',
+                                                'plat'           => $peminjaman->kendaraan->plat_nomor ?? '-'
+                                            ]) }}" class="text-blue-500 hover:underline">
+                                                Input
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endif
                             @endforeach
                         </tbody>
                     </table>
@@ -74,40 +73,41 @@
                     <table class="min-w-full bg-white">
                         <thead class="bg-gray-100 text-gray-600">
                             <tr>
-                                <th class="py-3 px-4 text-left">Merek dan Tipe</th>
-                                <th class="py-3 px-4 text-left">Plat</th>
-                                <th class="py-3 px-4 text-left">Tanggal Servis Insidental</th>
-                                <th class="py-3 px-4 text-left">Status Peminjaman</th>
-                                <th class="py-3 px-4 text-left">Aksi</th>
+                                <th class="py-3 px-4 text-left">MEREK DAN TIPE</th>
+                                <th class="py-3 px-4 text-left">PLAT</th>
+                                <th class="py-3 px-4 text-left">TANGGAL SERVIS INSIDENTAL</th>
+                                <th class="py-3 px-4 text-left">STATUS PEMINJAMAN</th>
+                                <th class="py-3 px-4 text-left">AKSI</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($servisInsidentals as $servis)
                             <tr class="kendaraan-row cursor-pointer" data-id="{{ $servis->kendaraan->id_kendaraan ?? '' }}">
                                 <td class="py-3 px-4 border-b">
-                                    <div>{{ $servis->kendaraan->tipe ?? 'Tidak Diketahui' }}</div>
-                                    <div class="text-sm text-gray-500">{{ $servis->kendaraan->merk ?? 'Tidak Diketahui' }}</div>
-                                </td>
+                                    <div>{{ ($peminjaman->kendaraan->merk ?? 'Tidak Diketahui') . ' ' . ($peminjaman->kendaraan->tipe ?? '') }}</div>
+                                </td>  
                                 <td class="py-3 px-4 border-b">{{ $servis->kendaraan->plat_nomor ?? '-' }}</td>
                                 <td class="py-3 px-4 border-b">{{ \Carbon\Carbon::parse($servis->tgl_servis)->locale('id')->format('d-m-Y') }}</td>
                                 <td class="py-3 px-4 border-b">
-                                    <span class="text-xs font-medium px-2.5 py-0.5 rounded text-{{ 
-                                        $servis->peminjaman ? 
-                                            ($servis->peminjaman->status_pinjam == 'Telah Dikembalikan' ? 'green' : 
+                                    @if($servis->id_peminjaman && $servis->peminjaman)
+                                        <span class="text-xs font-medium px-2.5 py-0.5 rounded text-{{ 
+                                            $servis->peminjaman->status_pinjam == 'Telah Dikembalikan' ? 'green' : 
                                             ($servis->peminjaman->status_pinjam == 'Dibatalkan' ? 'red' : 
                                             ($servis->peminjaman->status_pinjam == 'Ditolak' ? 'red' : 
                                             ($servis->peminjaman->status_pinjam == 'Diperpanjang' ? 'yellow' : 
-                                            ($servis->peminjaman->status_pinjam == 'Disetujui' ? 'blue' : 'gray'))))) 
-                                        : 'gray' }}-500 bg-{{ 
-                                        $servis->peminjaman ? 
-                                            ($servis->peminjaman->status_pinjam == 'Telah Dikembalikan' ? 'green' : 
+                                            ($servis->peminjaman->status_pinjam == 'Disetujui' ? 'blue' : 'gray')))) }}-500 bg-{{ 
+                                            $servis->peminjaman->status_pinjam == 'Telah Dikembalikan' ? 'green' : 
                                             ($servis->peminjaman->status_pinjam == 'Dibatalkan' ? 'red' : 
                                             ($servis->peminjaman->status_pinjam == 'Ditolak' ? 'red' : 
                                             ($servis->peminjaman->status_pinjam == 'Diperpanjang' ? 'yellow' : 
-                                            ($servis->peminjaman->status_pinjam == 'Disetujui' ? 'blue' : 'gray'))))) 
-                                        : 'gray' }}-100">
-                                        {{ $servis->peminjaman ? strtoupper($servis->peminjaman->status_pinjam) : 'TIDAK TERKAIT PEMINJAMAN' }}
-                                    </span>
+                                            ($servis->peminjaman->status_pinjam == 'Disetujui' ? 'blue' : 'gray')))) }}-100">
+                                            {{ strtoupper($servis->peminjaman->status_pinjam) }}
+                                        </span>
+                                    @else
+                                        <span class="text-xs font-medium px-2.5 py-0.5 rounded text-gray-500 bg-gray-100">
+                                            TIDAK TERKAIT PEMINJAMAN
+                                        </span>
+                                    @endif
                                 </td>                                
                                 
                                 <td class="py-3 px-4 border-b">
@@ -123,12 +123,12 @@
                         </tbody>
                     </table>
                 </div>
-                <!-- Pagination -->
+                {{--  <!-- Pagination -->
                 <div class="flex justify-center items-center py-4">
                     <div class="bg-white rounded-lg shadow-md p-2">
                         {{ $servisInsidentals->appends(request()->query())->links('pagination::tailwind') }}
                     </div>
-                </div>
+                </div>  --}}
             </div>
         </div>
     </body>

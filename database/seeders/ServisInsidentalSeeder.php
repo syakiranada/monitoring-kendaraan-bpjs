@@ -25,18 +25,31 @@ class ServisInsidentalSeeder extends Seeder
             ->get();
 
         foreach ($peminjamanInsiden as $peminjaman) {
-            DB::table('servis_insidental')->insert([
+            // Langsung ambil peran dari users dengan join untuk menghindari query tambahan
+            $userRole = DB::table('users')
+                ->where('id', $peminjaman->user_id)
+                ->value('peran');
+            
+            $servisData = [
                 'id_kendaraan' => $peminjaman->id_kendaraan,
                 'user_id' => $peminjaman->user_id,
-                'harga' => $faker->numberBetween(500000, 5000000), // Harga random antara 500 ribu - 5 juta
+                'harga' => $faker->numberBetween(500000, 5000000),
                 'lokasi' => $faker->city,
                 'deskripsi' => $faker->sentence,
                 'bukti_bayar' => null,
                 'bukti_fisik' => null,
-                'tgl_servis' => $peminjaman->tgl_kembali_real, // Gunakan tanggal kembali sebagai tanggal servis
+                'tgl_servis' => $peminjaman->tgl_kembali_real,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]);
+            ];
+            
+            // Jika peran pengguna adalah "pengguna", tambahkan id_peminjaman
+            if ($userRole == 'pengguna') {
+                // Menggunakan id_peminjaman yang adalah property dari objek $peminjaman
+                $servisData['id_peminjaman'] = $peminjaman->id_peminjaman;
+            }
+            
+            DB::table('servis_insidental')->insert($servisData);
         }
     }
 }
