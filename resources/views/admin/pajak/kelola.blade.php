@@ -117,9 +117,12 @@
             }
             input.value = value ? value : '';
         }
+
+        
     
        document.getElementById('save-form').addEventListener('submit', function (event) {
-            console.log('Button clicked');
+        event.preventDefault(); // Cegah submit langsung sebelum validasi selesai
+        console.log('Button clicked');
 
             let tanggalBayar = document.querySelector('input[name="tanggal_bayar"]').value;
             let tanggalJatuhTempo = document.querySelector('input[name="tanggal_jatuh_tempo"]').value;
@@ -219,39 +222,6 @@
             let allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
             let maxSizeMB = 5; 
             validateFileInput(this, allowedTypes, maxSizeMB, 'uploadText', 'removeFile');
-        });
-
-        document.getElementById('removeFile').addEventListener('click', function(event) {
-            event.preventDefault();
-            let pajakIdElement = document.querySelector('input[name="id_pajak"]');
-            if (!pajakIdElement) {
-                console.error("Elemen input[name='id_pajak'] tidak ditemukan!");
-                return;
-            }
-
-            let pajakId = pajakIdElement.value;
-
-            fetch('/pajak/delete-file', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({ id: pajakId, file_type: 'bukti_bayar_pajak' })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log("File Pembayaran berhasil dihapus.");
-                    document.getElementById('fotoInput').value = '';
-                    document.getElementById('uploadText').textContent = "Upload File";
-                    document.getElementById('removeFile').classList.add('hidden');
-                    location.reload();
-                } else {
-                    showAlert(data.error);
-                }
-            })
-            .catch(error => console.error('Error:', error));
         });
 
         function shortenFileName(fileName, maxLength = 15) {

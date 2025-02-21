@@ -19,7 +19,7 @@ class HitungDepresiasiKendaraan extends Command
 
     $kendaraans = Kendaraan::all();
     // $tanggalSekarang = Carbon::now();
-    $tanggalSekarang = Carbon::createFromFormat('d/m/Y', '15/01/2025'); // Debug tanggal manual
+    $tanggalSekarang = Carbon::createFromFormat('d/m/Y', '16/11/2025'); // Debug tanggal manual
 
     foreach ($kendaraans as $kendaraan) {
         try {

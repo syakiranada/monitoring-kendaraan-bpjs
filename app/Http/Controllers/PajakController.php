@@ -13,96 +13,116 @@ use Illuminate\Support\Facades\Storage;
 class PajakController extends Controller
 {
     public function index(Request $request)
-    {
-        $search = $request->input('search');
-        $statusFilter = $request->input('status');
-        $dataKendaraanQuery = Kendaraan::select(
-            'kendaraan.*',
-            'pajak.id_pajak', 
-            'pajak.user_id', 
-            'pajak.tahun', 
-            'pajak.tgl_bayar', 
-            'pajak.tgl_jatuh_tempo', 
-            'pajak.bukti_bayar_pajak', 
-            'pajak.nominal', 
-            'pajak.biaya_pajak_lain', 
-            DB::raw('DATE_ADD(latest_pajak.max_jatuh_tempo, INTERVAL 1 YEAR) as tgl_jatuh_tempo_seharusnya')
-        )
-        ->distinct()
-        ->leftJoin(DB::raw('(SELECT id_kendaraan, MAX(tgl_bayar) as max_bayar, MAX(tgl_jatuh_tempo) as max_jatuh_tempo 
-                        FROM pajak GROUP BY id_kendaraan) as latest_pajak'), function ($join) {
-            $join->on('kendaraan.id_kendaraan', '=', 'latest_pajak.id_kendaraan');
-        })
-        ->leftJoin('pajak', function ($join) {
-            $join->on('kendaraan.id_kendaraan', '=', 'pajak.id_kendaraan')
-                ->on('pajak.tgl_bayar', '=', 'latest_pajak.max_bayar')
-                ->on('pajak.tgl_jatuh_tempo', '=', 'latest_pajak.max_jatuh_tempo');
-        });
-
-        $dataKendaraan = $dataKendaraanQuery->get();
-        foreach ($dataKendaraan as $item) {
-            $today = now(); 
-            $dueDate = $item->tgl_jatuh_tempo_seharusnya ? \Carbon\Carbon::parse($item->tgl_jatuh_tempo_seharusnya) : null;
-
-            if (!$dueDate) {
-                $item->status = 'BELUM ADA DATA PAJAK';
-            } elseif ($today->diffInDays($dueDate, false) <= 0) { 
-                $item->status = 'JATUH TEMPO';
-            } elseif ($today->diffInDays($dueDate, false) <= 30) {
-                $item->status = 'MENDEKATI JATUH TEMPO';
-            } else {
-                $item->status = 'SUDAH DIBAYAR';
-            }
-        }
-        if (!empty($search)) {
-            $dataKendaraan = $dataKendaraan->filter(function ($item) use ($search) {
-                $search = strtolower($search);
-                $formatTanggal = function ($tanggal) {
-                    return $tanggal ? \Carbon\Carbon::parse($tanggal)->format('d-m-Y') : null;
-                };
-        
-                $tgl_bayar = $formatTanggal($item->tgl_bayar);
-                $tgl_jatuh_tempo = $formatTanggal($item->tgl_jatuh_tempo);
-                $tgl_jatuh_tempo_seharusnya = $formatTanggal($item->tgl_jatuh_tempo_seharusnya);
+{
+    $search = $request->input('search');
+    $statusFilter = $request->input('status');
     
-                $kendaraanInfo = strtolower($item->merk . ' ' . $item->tipe . ' ' . $item->plat_nomor);
+    $dataKendaraanQuery = Kendaraan::select(
+        'kendaraan.*',
+        'pajak.id_pajak', 
+        'pajak.user_id', 
+        'pajak.tahun', 
+        'pajak.tgl_bayar', 
+        'pajak.tgl_jatuh_tempo', 
+        'pajak.bukti_bayar_pajak', 
+        'pajak.nominal', 
+        'pajak.biaya_pajak_lain', 
+        DB::raw('DATE_ADD(latest_pajak.max_jatuh_tempo, INTERVAL 1 YEAR) as tgl_jatuh_tempo_seharusnya')
+    )
+    ->distinct()
+    ->leftJoin(DB::raw('(SELECT id_kendaraan, MAX(tgl_bayar) as max_bayar, MAX(tgl_jatuh_tempo) as max_jatuh_tempo 
+                    FROM pajak GROUP BY id_kendaraan) as latest_pajak'), function ($join) {
+        $join->on('kendaraan.id_kendaraan', '=', 'latest_pajak.id_kendaraan');
+    })
+    ->leftJoin('pajak', function ($join) {
+        $join->on('kendaraan.id_kendaraan', '=', 'pajak.id_kendaraan')
+            ->on('pajak.tgl_bayar', '=', 'latest_pajak.max_bayar')
+            ->on('pajak.tgl_jatuh_tempo', '=', 'latest_pajak.max_jatuh_tempo');
+    });
 
-                $normalizeNumber = function ($number) {
-                    return preg_replace('/[.,]/', '', (string) $number); 
-                };
-        
-                $nominal = $normalizeNumber($item->nominal);
-                $biayaPajakLain = $normalizeNumber($item->biaya_pajak_lain);
-                $searchNumeric = $normalizeNumber($search); 
-        
-                return stripos($kendaraanInfo, $search) !== false ||
-                    stripos($item->status, $search) !== false ||
-                    stripos((string) $item->tahun, $search) !== false ||
-                    stripos((string) $tgl_bayar, $search) !== false ||
-                    stripos((string) $tgl_jatuh_tempo, $search) !== false ||
-                    stripos((string) $tgl_jatuh_tempo_seharusnya, $search) !== false ||
-                    stripos($nominal, $searchNumeric) !== false ||
-                    stripos($biayaPajakLain, $searchNumeric) !== false;
-            });
+    $dataKendaraan = $dataKendaraanQuery->get();
+
+    foreach ($dataKendaraan as $item) {
+        $today = now(); 
+        $dueDate = $item->tgl_jatuh_tempo_seharusnya ? \Carbon\Carbon::parse($item->tgl_jatuh_tempo_seharusnya) : null;
+
+        if (!$dueDate) {
+            $item->status = 'BELUM ADA DATA PAJAK';
+        } elseif ($today->diffInDays($dueDate, false) <= 0) { 
+            $item->status = 'JATUH TEMPO';
+        } elseif ($today->diffInDays($dueDate, false) <= 30) {
+            $item->status = 'MENDEKATI JATUH TEMPO';
+        } else {
+            $item->status = 'SUDAH DIBAYAR';
         }
-      
-        if (!empty($statusFilter)) {
-            $dataKendaraan = $dataKendaraan->filter(function ($item) use ($statusFilter) {
-                return strtolower($item->status) == strtolower($statusFilter);
-            });
-        }
-
-        $dataKendaraan = new \Illuminate\Pagination\LengthAwarePaginator(
-            $dataKendaraan->forPage($request->page, 10), 
-            $dataKendaraan->count(), 
-            10, 
-            $request->page, 
-            ['path' => $request->url(), 'query' => $request->query()] 
-        );
-
-        return view('admin.pajak.daftar_kendaraan_pajak', compact('dataKendaraan', 'search', 'statusFilter'));
     }
 
+    if (!empty($search)) {
+        $dataKendaraan = $dataKendaraan->filter(function ($item) use ($search) {
+            $search = strtolower($search);
+            $formatTanggal = function ($tanggal) {
+                return $tanggal ? \Carbon\Carbon::parse($tanggal)->format('d-m-Y') : null;
+            };
+
+            $tgl_bayar = $formatTanggal($item->tgl_bayar);
+            $tgl_jatuh_tempo = $formatTanggal($item->tgl_jatuh_tempo);
+            $tgl_jatuh_tempo_seharusnya = $formatTanggal($item->tgl_jatuh_tempo_seharusnya);
+
+            $normalizeNumber = function ($number) {
+                return preg_replace('/[.,]/', '', (string) $number);
+            };
+
+            $nominal = $normalizeNumber($item->nominal);
+            $biayaPajakLain = $normalizeNumber($item->biaya_pajak_lain);
+            $searchNumeric = $normalizeNumber($search);
+
+            $kombinasiPencarian = [
+                strtolower($item->merk . ' ' . $item->tipe . ' ' . $item->plat_nomor),
+                strtolower($item->tipe . ' ' . $item->plat_nomor),
+                strtolower($item->merk . ' ' . $item->tipe . ' ' . $item->tahun),
+                strtolower($item->merk . ' ' . $item->tipe . ' ' . $item->status),
+                strtolower($item->merk . ' ' . $item->plat_nomor),
+                strtolower($item->tipe . ' ' . $item->tahun),
+                strtolower($item->plat_nomor . ' ' . $item->tahun),
+                strtolower($item->merk . ' ' . $item->tipe . ' ' . $tgl_jatuh_tempo),
+                strtolower($item->merk . ' ' . $item->tipe . ' ' . $nominal),
+                strtolower($item->merk . ' ' . $item->tipe . ' ' . $biayaPajakLain),
+                strtolower($item->merk . ' ' . $item->tipe . ' ' . $tgl_bayar),
+                strtolower($item->merk . ' ' . $item->tipe . ' ' . $tgl_jatuh_tempo_seharusnya),
+            ];
+
+            foreach ($kombinasiPencarian as $kombinasi) {
+                if (stripos($kombinasi, $search) !== false) {
+                    return true;
+                }
+            }
+
+            return stripos($item->status, $search) !== false ||
+                stripos((string) $item->tahun, $search) !== false ||
+                stripos((string) $tgl_bayar, $search) !== false ||
+                stripos((string) $tgl_jatuh_tempo, $search) !== false ||
+                stripos((string) $tgl_jatuh_tempo_seharusnya, $search) !== false ||
+                stripos($nominal, $searchNumeric) !== false ||
+                stripos($biayaPajakLain, $searchNumeric) !== false;
+        });
+    }
+
+    if (!empty($statusFilter)) {
+        $dataKendaraan = $dataKendaraan->filter(function ($item) use ($statusFilter) {
+            return strtolower($item->status) == strtolower($statusFilter);
+        });
+    }
+
+    $dataKendaraan = new \Illuminate\Pagination\LengthAwarePaginator(
+        $dataKendaraan->forPage($request->page, 10), 
+        $dataKendaraan->count(), 
+        10, 
+        $request->page, 
+        ['path' => $request->url(), 'query' => $request->query()] 
+    );
+
+    return view('admin.pajak.daftar_kendaraan_pajak', compact('dataKendaraan', 'search', 'statusFilter'));
+}
 
     public function kelola($id_kendaraan)
     {

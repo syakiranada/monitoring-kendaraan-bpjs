@@ -152,34 +152,31 @@
 
         document.getElementById('save-form').addEventListener('submit', function(event) {
             event.preventDefault();
-            
+
             let tanggalBayar = document.querySelector('input[name="tanggal_bayar"]').value;
             let nominalTagihan = document.querySelector('input[name="nominal_tagihan"]').value;
             let tanggalAwalPerlindungan = document.querySelector('input[name="tgl_perlindungan_awal"]').value;
             let tanggalAkhirPerlindungan = document.querySelector('input[name="tgl_perlindungan_akhir"]').value;
-            let fotoPolis = document.getElementById('fotoInputPolis').files[0];
-            let fotoPembayaran = document.getElementById('fotoInputPembayaran').files[0];
-            let alertDiv = document.getElementById('alertMessage');
-
+            let fotoPolis = document.getElementById('fotoInputPolis').files.length;
+            let fotoPembayaran = document.getElementById('fotoInputPembayaran').files.length;
             if (!tanggalBayar || !nominalTagihan || !tanggalAwalPerlindungan || !tanggalAkhirPerlindungan) {
-                showAlert("Harap isi semua kolom yang wajib!", 7000);
+                showAlert("Mohon isi semua kolom yang wajib sebelum menyimpan", 7000);
                 return;
             }
-
+            if (fotoPolis === 0 || fotoPembayaran === 0) {
+                showAlert("Mohon unggah file Polis dan Bukti Pembayaran sebelum menyimpan!", 7000);
+                return;
+            }
             let tglAwal = new Date(tanggalAwalPerlindungan);
             let tglAkhir = new Date(tanggalAkhirPerlindungan);
-
             if (tglAkhir <= tglAwal) {
                 showAlert("Tanggal perlindungan akhir harus lebih besar dari tanggal perlindungan awal!", 7000);
-                return; 
+                return;
             }
-
             let nominalInput = document.querySelector('input[name="nominal_tagihan"]');
             let biayaLainInput = document.querySelector('input[name="biaya_lain"]');
-
             nominalInput.value = nominalInput.value.replace(/[^\d]/g, '');
             biayaLainInput.value = biayaLainInput.value.replace(/[^\d]/g, '');
-
             Swal.fire({
                 title: "Konfirmasi",
                 text: "Apakah Anda yakin ingin menyimpan data pembayaran asuransi ini?",
@@ -211,22 +208,12 @@
             alertDiv.innerHTML = `<span class="font-medium">Peringatan!</span> ${message}`;
             alertDiv.classList.remove('hidden');
             alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            setTimeout(() => {
-                alertDiv.classList.add('hidden');
-            }, duration);
-        }
-
-        function showAlert(message, duration = 5000) {
-            let alertDiv = document.getElementById('alertMessage');
-            alertDiv.innerHTML = `<span class="font-medium">Peringatan!</span> ${message}`;
-            alertDiv.classList.remove('hidden');
-            alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
             setTimeout(() => {
                 alertDiv.classList.add('hidden');
             }, duration);
         }
+
         function shortenFileName(fileName, maxLength = 13) {
             if (fileName.length > maxLength) {
                 return fileName.substring(0, maxLength) + '...';
@@ -241,11 +228,23 @@
             document.getElementById('removeFilePolis').classList.remove('hidden');
         });
 
-        document.getElementById('removeFilePolis').addEventListener('click', function() {
-            let fileInput = document.getElementById('fotoInputPolis');
+        function handleRemoveFile(fileInputId, uploadTextId, removeButtonId) {
+            let fileInput = document.getElementById(fileInputId);
             fileInput.value = ""; 
-            document.getElementById('uploadTextPolis').textContent = "Upload File";
-            this.classList.add('hidden');
+
+            document.getElementById(uploadTextId).textContent = "Upload File"; 
+
+            document.getElementById(removeButtonId).classList.add('hidden'); 
+        }
+
+        document.getElementById('removeFilePolis').addEventListener('click', function(event) {
+            event.preventDefault();
+            handleRemoveFile('fotoInputPolis', 'uploadTextPolis', 'removeFilePolis');
+        });
+        
+        document.getElementById('removeFilePembayaran').addEventListener('click', function(event) {
+            event.preventDefault();
+            handleRemoveFile('fotoInputPembayaran', 'uploadTextPembayaran', 'removeFilePembayaran');
         });
 
         function validateFileInput(fileInput, allowedTypes, uploadTextId, removeButtonId) {

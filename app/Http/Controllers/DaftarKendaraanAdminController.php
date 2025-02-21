@@ -18,7 +18,6 @@ use App\Http\Controllers\Controller;
 
 class DaftarKendaraanAdminController extends Controller
 {
-    
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -188,6 +187,7 @@ class DaftarKendaraanAdminController extends Controller
             ];
         }
     }
+
     $dataKendaraan = $dataKendaraanQuery->paginate(10);
     
         return view('admin.kendaraan.daftar_kendaraan', compact('dataKendaraan', 'search', 'statusKetersediaanFilter', 'alerts'));

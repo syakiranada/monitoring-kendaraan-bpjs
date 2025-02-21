@@ -48,20 +48,20 @@
                     <div>
                         <label for="jenis_kendaraan" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Jenis Kendaraan</label>
                         <select id="jenis_kendaraan" name="jenis_kendaraan" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                            <option {{ $kendaraan->jenis_kendaraan == 'Sedan' ? 'selected' : '' }}>Sedan</option>
-                            <option {{ $kendaraan->jenis_kendaraan == 'Non Sedan' ? 'selected' : '' }}>Non Sedan</option>
-                            <option {{ $kendaraan->jenis_kendaraan == 'Motor' ? 'selected' : '' }}>Motor</option>
+                            <option {{ $kendaraan->jenis == 'Sedan' ? 'selected' : '' }}>Sedan</option>
+                            <option {{ $kendaraan->jenis == 'Non Sedan' ? 'selected' : '' }}>Non Sedan</option>
+                            <option {{ $kendaraan->jenis == 'Motor' ? 'selected' : '' }}>Motor</option>
                         </select>
                     </div>
                     <div>
                         <label for="aset_guna" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Aset Guna</label>
                         <select id="aset_guna" name="aset_guna" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                            <option {{ $kendaraan->aset_guna == 'Guna' ? 'selected' : '' }}>Guna</option>
-                            <option {{ $kendaraan->aset_guna == 'Tidak Guna' ? 'selected' : '' }}>Tidak Guna</option>
-                            <option {{ $kendaraan->aset_guna == 'Jual' ? 'selected' : '' }}>Jual</option>
-                            <option {{ $kendaraan->aset_guna == 'Lelang' ? 'selected' : '' }}>Lelang</option>
+                            <option value="Guna" {{ $kendaraan->aset == 'Guna' ? 'selected' : '' }}>Guna</option>
+                            <option value="Tidak Guna" {{ $kendaraan->aset == 'Tidak Guna' ? 'selected' : '' }}>Tidak Guna</option>
+                            <option value="Jual" {{ $kendaraan->aset == 'Jual' ? 'selected' : '' }}>Jual</option>
+                            <option value="Lelang" {{ $kendaraan->aset == 'Lelang' ? 'selected' : '' }}>Lelang</option>
                         </select>
-                    </div>
+                    </div>                    
                 </div>
 
                 <div class="grid grid-cols-3 gap-4 mb-4">
@@ -193,8 +193,8 @@
                     <div>
                         <label for="status_pinjam" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Status Pinjam</label>
                         <select id="status_pinjam" name="status_pinjam" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                            <option {{ $kendaraan->status_pinjam == 'TERSEDIA' ? 'selected' : '' }}>TERSEDIA</option>
-                            <option {{ $kendaraan->status_pinjam == 'TIDAK TERSEDIA' ? 'selected' : '' }}>TIDAK TERSEDIA</option>
+                            <option {{ $kendaraan->status_ketersediaan == 'TERSEDIA' ? 'selected' : '' }}>TERSEDIA</option>
+                            <option {{ $kendaraan->status_ketersediaan == 'TIDAK TERSEDIA' ? 'selected' : '' }}>TIDAK TERSEDIA</option>
                         </select>
                     </div>
                 </div>

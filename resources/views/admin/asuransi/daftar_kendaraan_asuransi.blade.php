@@ -60,11 +60,17 @@
                         <td class="px-6 py-3 whitespace-nowrap">
                             @if (!empty($item->id_asuransi))
                                 @if ($item->status === 'JATUH TEMPO' || $item->status === 'MENDEKATI JATUH TEMPO')
-                                    <a href="{{ route('asuransi.kelola', ['id_kendaraan' => $item->id_kendaraan,'page' => request()->query('page', 1)]) }}" class="font-medium text-gray-600 dark:text-gray-500 hover:underline">Kelola</a>
+                                    <a href="{{ route('asuransi.kelola', ['id_kendaraan' => $item->id_kendaraan,'page' => request()->query('page', 1)]) }}" 
+                                       class="font-medium text-gray-600 dark:text-gray-500 hover:underline">Kelola</a>
                                 @elseif ($item->status === 'SUDAH DIBAYAR')
-                                    <a href="{{ route('asuransi.detail', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1)]) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline mr-1">Detail</a>
-                                    <a href="{{ route('asuransi.edit', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1)]) }}" class="font-medium text-yellow-600 dark:text-yellow-500 hover:underline mr-1">Edit</a>
-                                    <button class="font-medium text-red-600 dark:text-red-500 hover:underline" onclick="confirmDelete({{ $item->id_asuransi }})">Hapus</button>
+                                    <div class="flex space-x-1">
+                                        <a href="{{ route('asuransi.detail', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1)]) }}" 
+                                           class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Detail</a>
+                                        <a href="{{ route('asuransi.edit', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1)]) }}" 
+                                           class="font-medium text-yellow-600 dark:text-yellow-500 hover:underline">Edit</a>
+                                        <button class="font-medium text-red-600 dark:text-red-500 hover:underline" 
+                                                onclick="confirmDelete({{ $item->id_asuransi }})">Hapus</button>
+                                    </div>
                                     <form id="delete-form-{{ $item->id_asuransi }}" action="{{ route('asuransi.hapus', $item->id_asuransi) }}" method="POST" class="hidden">
                                         @csrf
                                         @method('DELETE')
@@ -73,9 +79,10 @@
                                     <span>-</span>
                                 @endif
                             @else
-                                <a href="{{ route('asuransi.kelola', ['id_kendaraan' => $item->id_kendaraan,'page' => request()->query('page', 1)]) }}" class="font-medium text-gray-600 dark:text-gray-500 hover:underline">Kelola</a>
+                                <a href="{{ route('asuransi.kelola', ['id_kendaraan' => $item->id_kendaraan,'page' => request()->query('page', 1)]) }}" 
+                                   class="font-medium text-gray-600 dark:text-gray-500 hover:underline">Kelola</a>
                             @endif
-                        </td>
+                        </td>                        
                     </tr>
                 @empty
                     <tr>
