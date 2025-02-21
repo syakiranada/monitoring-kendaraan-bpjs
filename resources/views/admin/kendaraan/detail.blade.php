@@ -117,10 +117,11 @@
                 <div class="flex items-start">
                     <span class="text-sm text-gray-600 w-48">Ketersediaan</span>
                     <span class="text-sm flex-1 
-                        {{ isset($kendaraan) && $kendaraan->status_ketersediaan == 'TERSEDIA' ? 'text-green-600' : 'text-red-600' }}">
+                        {{ isset($kendaraan) && strtoupper($kendaraan->status_ketersediaan) == 'TERSEDIA' ? 'text-green-600' : 'text-red-600' }}">
                         {{ isset($kendaraan) && $kendaraan->status_ketersediaan ? ucwords(strtolower($kendaraan->status_ketersediaan)) : '-' }}
                     </span>
-                </div>                              
+                </div>
+                                            
             </div>
         </div>
 
@@ -172,11 +173,11 @@
                     <span class="text-sm text-gray-900 flex-1">{{ isset($cekFisik) && isset($cekFisik->catatan) ? $cekFisik->catatan : '-' }}</span>
                 </div>
             </div>
-        </div>
-            <button type="button" onclick="window.location.href='{{ route('kendaraan.daftar_kendaraan', ['page' => $currentPage]) }}'" class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition mt-6">
+            </div>
+            <button type="button" onclick="window.location.href='{{ route('kendaraan.daftar_kendaraan', ['page' => $currentPage]) }}'" 
+                class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition mt-0 w-fit text-left">
                 Kembali
-            </button>
+            </button>            
         
-            
 </x-app-layout>
 {{-- @endsection --}}

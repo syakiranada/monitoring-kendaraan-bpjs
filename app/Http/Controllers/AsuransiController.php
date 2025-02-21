@@ -42,10 +42,13 @@ class AsuransiController extends Controller
         })
         ->groupBy('kendaraan.id_kendaraan', 'asuransi.id_asuransi', 'asuransi.user_id', 'asuransi.tahun', 'asuransi.tgl_bayar', 'asuransi.tgl_perlindungan_awal', 'asuransi.tgl_perlindungan_akhir', 'asuransi.polis', 'asuransi.bukti_bayar_asuransi', 'asuransi.nominal', 'asuransi.biaya_asuransi_lain'); // Pastikan semua kolom yang ada dalam select di group by
 
+
         $dataKendaraan = $dataKendaraanQuery->get();
+    
         foreach ($dataKendaraan as $item) {
             $today = now(); 
             $dueDate = $item->tgl_jatuh_tempo ? \Carbon\Carbon::parse($item->tgl_jatuh_tempo) : null;
+    
             if (!$dueDate) {
                 $item->status = 'BELUM ADA DATA ASURANSI';
             } elseif ($today->diffInDays($dueDate, false) <= 0) { 
@@ -56,58 +59,76 @@ class AsuransiController extends Controller
                 $item->status = 'SUDAH DIBAYAR';
             }
         }
+    
         if (!empty($search)) {
             $dataKendaraan = $dataKendaraan->filter(function ($item) use ($search) {
                 $search = strtolower($search);
-        
                 $formatTanggal = function ($tanggal) {
                     return $tanggal ? \Carbon\Carbon::parse($tanggal)->format('d-m-Y') : null;
                 };
-        
+    
                 $tgl_bayar = $formatTanggal($item->tgl_bayar);
                 $tgl_perlindungan_awal = $formatTanggal($item->tgl_perlindungan_awal);
                 $tgl_perlindungan_akhir = $formatTanggal($item->tgl_perlindungan_akhir);
-        
-                $kendaraanInfo = strtolower($item->merk . ' ' . $item->tipe . ' ' . $item->plat_nomor);
-        
+    
                 $normalizeNumber = function ($number) {
-                    return preg_replace('/[.,]/', '', (string) $number); 
+                    return preg_replace('/[.,]/', '', (string) $number);
                 };
-        
+    
                 $nominal = $normalizeNumber($item->nominal);
                 $biayaAsuransiLain = $normalizeNumber($item->biaya_asuransi_lain);
-                $searchNumeric = $normalizeNumber($search); 
-        
-                return stripos($kendaraanInfo, $search) !== false ||
-                       stripos($item->status, $search) !== false ||
-                       stripos((string) $item->tahun, $search) !== false ||
-                       stripos((string) $tgl_bayar, $search) !== false ||
-                       stripos((string) $tgl_perlindungan_awal, $search) !== false ||
-                       stripos((string) $tgl_perlindungan_akhir, $search) !== false ||
-                       stripos((string) $item->polis, $search) !== false ||
-                       stripos($nominal, $searchNumeric) !== false ||
-                       stripos($biayaAsuransiLain, $searchNumeric) !== false;
+                $searchNumeric = $normalizeNumber($search);
+    
+                $kombinasiPencarian = [
+                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $item->plat_nomor),
+                    strtolower($item->tipe . ' ' . $item->plat_nomor),
+                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $item->tahun),
+                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $item->status),
+                    strtolower($item->merk . ' ' . $item->plat_nomor),
+                    strtolower($item->tipe . ' ' . $item->tahun),
+                    strtolower($item->plat_nomor . ' ' . $item->tahun),
+                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $tgl_perlindungan_awal),
+                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $tgl_perlindungan_akhir),
+                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $nominal),
+                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $biayaAsuransiLain),
+                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $tgl_bayar),
+                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $item->polis),
+                ];
+    
+                foreach ($kombinasiPencarian as $kombinasi) {
+                    if (stripos($kombinasi, $search) !== false) {
+                        return true;
+                    }
+                }
+    
+                return stripos($item->status, $search) !== false ||
+                    stripos((string) $item->tahun, $search) !== false ||
+                    stripos((string) $tgl_bayar, $search) !== false ||
+                    stripos((string) $tgl_perlindungan_awal, $search) !== false ||
+                    stripos((string) $tgl_perlindungan_akhir, $search) !== false ||
+                    stripos((string) $item->polis, $search) !== false ||
+                    stripos($nominal, $searchNumeric) !== false ||
+                    stripos($biayaAsuransiLain, $searchNumeric) !== false;
             });
         }
-        
-        
+    
         if (!empty($statusFilter)) {
             $dataKendaraan = $dataKendaraan->filter(function ($item) use ($statusFilter) {
                 return strtolower($item->status) == strtolower($statusFilter);
             });
         }
+    
         $dataKendaraan = new \Illuminate\Pagination\LengthAwarePaginator(
             $dataKendaraan->forPage($request->page, 10), 
-            $dataKendaraan->count(),
-            10,
+            $dataKendaraan->count(), 
+            10, 
             $request->page, 
-            ['path' => $request->url(), 'query' => $request->query()]
+            ['path' => $request->url(), 'query' => $request->query()] 
         );
     
         return view('admin.asuransi.daftar_kendaraan_asuransi', compact('dataKendaraan', 'search', 'statusFilter'));
     }
     
-
     public function kelola($id_kendaraan)
     {
         $kendaraan = Kendaraan::findOrFail($id_kendaraan);
