@@ -11,7 +11,7 @@
 <body>
     <div class="relative p-6">
         <div class="relative overflow-x-auto sm:rounded-lg">
-            <h1 class="mt-10 text-xl font-semibold text-gray-900 dark:text-white mb-4">Daftar Peminjaman Kendaraan</h1>
+            <h1 class="text-2xl font-bold text-black dark:text-white mb-4">Daftar Peminjaman Kendaraan</h1>
            
             <!-- Wrapper untuk tombol dan search -->
             
@@ -41,22 +41,40 @@
             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
-                        <th scope="col" class="px-6 py-3">Merek dan Tipe</th>
-                        <th scope="col" class="px-6 py-3">Plat</th>
-                        <th scope="col" class="px-6 py-3">Tanggal Mulai</th>
-                        <th scope="col" class="px-6 py-3">Tanggal Selesai</th>
-                        <th scope="col" class="px-6 py-3">Status</th>
-                        <th scope="col" class="px-6 py-3">Aksi</th>
+                        <th scope="col" class="px-6 py-3 whitespace-nowrap">Merek dan Tipe</th>
+                        <th scope="col" class="px-6 py-3 whitespace-nowrap">Plat</th>
+                        <th scope="col" class="px-6 py-3 whitespace-nowrap">Tanggal Mulai</th>
+                        <th scope="col" class="px-6 py-3 whitespace-nowrap">Tanggal Selesai</th>
+                        <th scope="col" class="px-6 py-3 whitespace-nowrap">Status</th>
+                        <th scope="col" class="px-6 py-3 whitespace-nowrap">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($daftarPeminjaman as $peminjaman)
-                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                        <td class="px-6 py-4">{{ $peminjaman->kendaraan->merk }} {{ $peminjaman->kendaraan->tipe }}</td>
-                        <td class="px-6 py-4">{{ $peminjaman->kendaraan->plat_nomor }}</td>
-                        <td class="px-6 py-4">{{ \Carbon\Carbon::parse($peminjaman->tgl_mulai)->format('d-m-Y') }}</td>
-                        <td class="px-6 py-4">{{ \Carbon\Carbon::parse($peminjaman->tgl_selesai)->format('d-m-Y') }}</td>
-                        <td class="px-6 py-4">{{ $peminjaman->status_pinjam }}</td>
+                    <tr class="bg-white border-b hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <td class="px-6 py-4 whitespace-nowrap">{{ $peminjaman->kendaraan->merk }} {{ $peminjaman->kendaraan->tipe }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ $peminjaman->kendaraan->plat_nomor }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ \Carbon\Carbon::parse($peminjaman->tgl_mulai)->format('d-m-Y') }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ \Carbon\Carbon::parse($peminjaman->tgl_selesai)->format('d-m-Y') }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap uppercase">
+                            <span class="
+                                @if($peminjaman->status_pinjam == 'Menunggu Persetujuan') bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-blue-400 border border-blue-400
+                            
+                                @elseif($peminjaman->status_pinjam == 'Disetujui') bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-green-400 border border-green-400
+                                
+                                @elseif($peminjaman->status_pinjam == 'Dibatalkan') bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-red-400 border border-red-400
+
+                                @elseif($peminjaman->status_pinjam == 'Diperpanjang') bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-yellow-300 border border-yellow-300
+
+                                @elseif($peminjaman->status_pinjam == 'Telah Dikembalikan') bg-gray-100 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-gray-400 border border-gray-500
+    
+                                @endif">
+                                {{$peminjaman->status_pinjam}}
+                            </span>
+                            
+                        </td>
+                        
+
                         <td class="px-6 py-5">
                             <!-- Tombol Detail (selalu tampil) -->
                             <a href="{{ route('peminjaman.detail', ['id' => $peminjaman->id_peminjaman]) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Detail</a>
@@ -147,7 +165,32 @@
             });
         </script>
     @endif
-
     
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("input-group-search");
+    const tableRows = document.querySelectorAll("tbody tr");
+
+    searchInput.addEventListener("input", function () {
+      const searchValue = searchInput.value.toLowerCase();
+
+      tableRows.forEach(row => {
+        // Dapatkan semua <td> dalam baris, kecuali kolom aksi (asumsikan kolom terakhir)
+        const cells = row.querySelectorAll("td");
+        let rowText = "";
+        // Ambil semua cell kecuali cell terakhir
+        for (let i = 0; i < cells.length - 1; i++) {
+          rowText += cells[i].textContent.toLowerCase() + " ";
+        }
+        // Tampilkan atau sembunyikan baris berdasarkan apakah teks cocok
+        if (rowText.includes(searchValue)) {
+          row.style.display = "";
+        } else {
+          row.style.display = "none";
+        }
+      });
+    });
+  });
 </script>
 </x-app-layout>

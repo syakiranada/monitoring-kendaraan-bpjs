@@ -9,9 +9,8 @@
     <title>Form Peminjaman</title>
 </head>
 <body class="bg-gray-100">
-
-    <div class="relative min-h-screen flex items-center justify-center py-12 px-4">
-        <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-lg">
+    <div class="relative min-h-screen flex items-center justify-center py-12 px-4 top-[-50px]">
+        <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-lg mt-[-50px]">
             <h2 class="text-2xl font-bold mb-6 text-center">Form Peminjaman</h2>
 
             @if(session('success'))
@@ -56,7 +55,7 @@
                     <select id="pilih-kendaraan" name="kendaraan" class="w-full p-2.5 border rounded-lg bg-white" disabled>
                         <option value="" disabled selected>Pilih Kendaraan</option>
                     </select>
-                    <p id="warning-kendaraan" class="text-red font-bold text-sm mt-1 hidden">Silakan isi tanggal & jam terlebih dahulu</p>
+                    <p id="warning-kendaraan" class="text-yellow-600 text-sm mt-1 hidden">Silakan isi tanggal & jam terlebih dahulu sebelum memilih kendaraan</p>
                 </div>
 
                 <!-- Tujuan Peminjaman -->
@@ -73,7 +72,6 @@
             </form>
         </div>
     </div>
-
 </body>
 </html>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

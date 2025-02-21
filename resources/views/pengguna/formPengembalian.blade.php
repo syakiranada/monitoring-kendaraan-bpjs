@@ -25,19 +25,19 @@
                 <!-- Detail Kendaraan -->
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Detail Kendaraan</label>
-                    <input type="text" name="kendaraan" class="w-full p-2.5 border rounded-lg" disabled
+                    <input type="text" name="kendaraan" class="w-full p-2.5 border rounded-lg disabled:bg-gray-100" disabled
                         value="{{ $peminjaman->kendaraan->merk ?? 'Tidak ada kendaraan yang dipinjam' }} {{ $peminjaman->kendaraan->tipe }} - {{ $peminjaman->kendaraan->plat_nomor ?? '' }}">
                 </div>
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
                         <label for="tgl_mulai" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai Pinjam</label>
-                        <input type="date" id="tgl_mulai" name="tgl_mulai" class="w-full p-2.5 border rounded-lg bg-white-100" 
+                        <input type="date" id="tgl_mulai" name="tgl_mulai" class="w-full p-2.5 border rounded-lg disabled:bg-gray-100" 
                             value="{{ old('tgl_mulai', $peminjaman->tgl_mulai ? date('Y-m-d', strtotime($peminjaman->tgl_mulai)) : '') }}" 
                             disabled>
                     </div>
                     <div>
                         <label for="jam_mulai" class="block text-sm font-medium text-gray-700 mb-1">Jam Mulai Pinjam</label>
-                        <input type="time" id="jam_mulai" name="jam_mulai" class="w-full p-2.5 border rounded-lg bg-white-100" 
+                        <input type="time" id="jam_mulai" name="jam_mulai" class="w-full p-2.5 border rounded-lg disabled:bg-gray-100" 
                             value="{{ old('jam_mulai', $peminjaman->jam_mulai ?? '') }}" 
                             disabled>
                     </div>
@@ -48,13 +48,13 @@
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
                         <label for="tgl_selesai" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai Pinjam</label>
-                        <input type="date" id="tgl_selesai" name="tgl_selesai" class="w-full p-2.5 border rounded-lg bg-white-100" 
+                        <input type="date" id="tgl_selesai" name="tgl_selesai" class="w-full p-2.5 border rounded-lg disabled:bg-gray-100" 
                             value="{{ old('tgl_selesai', $peminjaman->tgl_selesai ? date('Y-m-d', strtotime($peminjaman->tgl_selesai)) : '') }}" 
                             disabled>
                     </div>
                     <div>
                         <label for="jam_selesai" class="block text-sm font-medium text-gray-700 mb-1">Jam Mulai Pinjam</label>
-                        <input type="time" id="jam_selesai" name="jam_selesai" class="w-full p-2.5 border rounded-lg bg-white-100" 
+                        <input type="time" id="jam_selesai" name="jam_selesai" class="w-full p-2.5 border rounded-lg disabled:bg-gray-100" 
                             value="{{ old('jam_selesai', $peminjaman->jam_selesai ?? '') }}" 
                             disabled>
                     </div>

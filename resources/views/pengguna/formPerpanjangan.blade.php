@@ -10,8 +10,8 @@
 </head>
 <body class="bg-gray-100">
 
-    <div class="relative min-h-screen flex items-center justify-center py-12 px-4">
-        <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-lg">
+    <div class="relative min-h-screen flex items-center justify-center py-12 px-4 top-[-50px]">
+        <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-lg mt-[-50px]">
             <h2 class="text-2xl font-bold mb-6 text-center">Form Perpanjangan</h2>
 
             @if(session('success'))
@@ -26,14 +26,14 @@
                 <!-- Tanggal & Jam Mulai Perpanjangan DISABLED OTOMATIS DARI TANGGAL SELESAI SEBELUMNYA --> 
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                        <label for="tgl_mulai" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai Pinjam</label>
-                        <input type="date" id="tgl_mulai" name="tgl_mulai" class="w-full p-2.5 border rounded-lg bg-white-100" 
+                        <label for="tgl_mulai" class="block text-sm font-medium text-gray-700  mb-1">Tanggal Mulai Pinjam</label>
+                        <input type="date" id="tgl_mulai" name="tgl_mulai" class="w-full p-2.5 border rounded-lg disabled:bg-gray-100" 
                             value="{{ old('tgl_mulai', $peminjaman->tgl_selesai ? date('Y-m-d', strtotime($peminjaman->tgl_selesai)) : '') }}" 
                             disabled>
                     </div>
                     <div>
                         <label for="jam_mulai" class="block text-sm font-medium text-gray-700 mb-1">Jam Mulai Pinjam</label>
-                        <input type="time" id="jam_mulai" name="jam_mulai" class="w-full p-2.5 border rounded-lg bg-white-100" 
+                        <input type="time" id="jam_mulai" name="jam_mulai" class="w-full p-2.5 border rounded-lg disabled:bg-gray-100" 
                             value="{{ old('jam_mulai', $peminjaman->jam_selesai ?? '') }}" 
                             disabled>
                     </div>
@@ -57,7 +57,7 @@
                <!-- Pilihan Kendaraan DISABLED OTOMATIS SAMA KAYA YG SEBELUMNYA-->
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Detail Kendaraan</label>
-                    <input type="text" name="kendaraan" class="w-full p-2.5 border rounded-lg" disabled
+                    <input type="text" name="kendaraan" class="w-full p-2.5 border disabled:bg-gray-100 rounded-lg" disabled
                         value="{{ $peminjaman->kendaraan->merk ?? 'Tidak ada kendaraan yang dipinjam' }} {{ $peminjaman->kendaraan->tipe }} - {{ $peminjaman->kendaraan->plat_nomor ?? '' }}">
                 </div>
 
