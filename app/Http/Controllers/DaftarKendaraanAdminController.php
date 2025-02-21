@@ -157,8 +157,40 @@ class DaftarKendaraanAdminController extends Controller
         }
         Log::info("Final SQL Query:", ['sql' => $dataKendaraanQuery->toSql(), 'bindings' => $dataKendaraanQuery->getBindings()]);
 
-        $dataKendaraan = $dataKendaraanQuery->paginate(10);
-        return view('admin.kendaraan.daftar_kendaraan', compact('dataKendaraan', 'search', 'statusKetersediaanFilter'));
+    $allKendaraan = $dataKendaraanQuery->get();
+    $alerts = []; 
+    foreach ($allKendaraan as $k) {
+        $incomplete = [];
+        $pajak = $k->pajak()->latest()->first();
+        if (!$pajak || !$pajak->nominal) {
+            $incomplete[] = "Pajak";
+        }
+
+        $asuransi = $k->asuransi()->latest()->first();
+        if (!$asuransi || !$asuransi->nominal) {
+            $incomplete[] = "Asuransi";
+        }
+
+        $cekFisik = $k->cekFisik()->latest()->first();
+        if (!$cekFisik || !$cekFisik->accu) {
+            $incomplete[] = "Cek Fisik";
+        }
+
+        $servisRutin = $k->servisRutin()->latest()->first();
+        if (!$servisRutin || !$servisRutin->tgl_servis_real) {
+            $incomplete[] = "Servis Rutin";
+        }
+
+        if (!empty($incomplete)) {
+            $alerts[] = [
+                'vehicle' => "{$k->merk} {$k->tipe} (Plat: {$k->plat_nomor})",
+                'incomplete' => $incomplete
+            ];
+        }
+    }
+    $dataKendaraan = $dataKendaraanQuery->paginate(10);
+    
+        return view('admin.kendaraan.daftar_kendaraan', compact('dataKendaraan', 'search', 'statusKetersediaanFilter', 'alerts'));
     }
 
 

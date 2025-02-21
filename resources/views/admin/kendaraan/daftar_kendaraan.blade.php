@@ -1,14 +1,36 @@
 <x-app-layout>
     {{-- @extends('layouts.sidebar')
     @section('content') --}}
-        <h2 class="custom-text font-extrabold mb-6 ml-16 pt-6">Daftar Kendaraan </h2>
+        <h2 class="custom-text font-extrabold mb-6 ml-9 pt-6">Daftar Kendaraan </h2>
         <style>
             .custom-text {
                 font-size: 2rem; 
             }
         </style>
+        @if(!empty($alerts))
+        <div class="flex items-center ml-9 mr-9 p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300" role="alert">
+            <svg class="shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+            </svg>
+            <span class="sr-only">Warning</span>
+            <div>
+                <span class="font-medium">Peringatan!</span><br>
+                <p>Tolong lengkapi form untuk kendaraan berikut:</p>
+                <ul class="list-disc pl-5">
+                    @foreach($alerts as $alert)
+                        <li>
+                            <strong>{{ $alert['vehicle'] }}</strong>: {{ implode(', ', $alert['incomplete']) }}
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+            <button type="button" class="close ml-auto" aria-label="Close" onclick="this.parentElement.style.display='none';">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
         <form action="{{ route('kendaraan.daftar_kendaraan') }}" method="GET" class="flex justify-end pb-4">
-            <div class="relative me-14">
+            <div class="relative me-10">
                 <input 
                     type="text" 
                     name="search"
@@ -23,8 +45,10 @@
                 </div>
             </div>
         </form>
+        
+    
         <div class="flex justify-between items-center pb-4 px-6">
-            <div class="relative ml-8"> 
+            <div class="relative ml-4"> 
                 <a href="{{ route('kendaraan.tambah', ['page' => request()->query('page', 1)]) }}" 
                     class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                      + Tambah

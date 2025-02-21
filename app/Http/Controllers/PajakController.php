@@ -219,8 +219,9 @@ class PajakController extends Controller
                 $pajak->nominal = preg_replace('/[^0-9]/', '', $request->nominal_tagihan);
             }
             if ($request->has('biaya_lain')) {
-                $pajak->biaya_pajak_lain = preg_replace('/[^0-9]/', '', $request->biaya_lain);
-            }
+                $biayaLain = preg_replace('/[^0-9]/', '', $request->biaya_lain);
+                $pajak->biaya_pajak_lain = $biayaLain !== '' ? $biayaLain : null; // Set null jika kosong
+            }            
 
             if ($request->hasFile('foto')) {
                 if ($pajak->bukti_bayar_pajak) {

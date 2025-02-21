@@ -71,7 +71,7 @@
                                class="w-full pl-8 p-2.5 border rounded-lg" 
                                oninput="formatRupiah(this)"> 
                     </div>
-                </div>
+                </div>                
                 
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Upload Bukti Pembayaran Pajak</label>
@@ -180,9 +180,11 @@
         });
 
         document.getElementById('fotoInput').addEventListener('change', function(event) {
-        let fileName = event.target.files[0] ? event.target.files[0].name : "Upload Photo";
-        document.getElementById('uploadText').textContent = fileName;
-        document.getElementById('removeFile').classList.remove('hidden');
+            let file = event.target.files[0];
+            if (file) {
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('removeFile').classList.remove('hidden');
+            }
         });
 
         document.getElementById('removeFile').addEventListener('click', function(event) {
@@ -250,17 +252,16 @@
                 if (file) {
                     if (!allowedTypes.includes(file.type)) {
                         showAlert("File yang diupload harus berupa JPG, PNG, atau PDF!");
-                        fileInput.value = ''; // Reset input file agar tidak tersimpan
+                        fileInput.value = '';
                         return;
                     }
 
                     if (file.size > maxSizeMB * 1024 * 1024) {
                         showAlert(`Ukuran file tidak boleh lebih dari ${maxSizeMB}MB!`);
-                        fileInput.value = ''; // Reset input file
+                        fileInput.value = ''; 
                         return;
                     }
 
-                    // Jika valid, tampilkan nama file
                     let shortFileName = shortenFileName(file.name);
                     document.getElementById(uploadTextId).textContent = shortFileName;
                     document.getElementById(removeButtonId).classList.remove('hidden');

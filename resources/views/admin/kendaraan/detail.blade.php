@@ -172,8 +172,11 @@
                     <span class="text-sm text-gray-900 flex-1">{{ isset($cekFisik) && isset($cekFisik->catatan) ? $cekFisik->catatan : '-' }}</span>
                 </div>
             </div>
+        </div>
             <button type="button" onclick="window.location.href='{{ route('kendaraan.daftar_kendaraan', ['page' => $currentPage]) }}'" class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition mt-6">
                 Kembali
             </button>
+        
+            
 </x-app-layout>
 {{-- @endsection --}}
