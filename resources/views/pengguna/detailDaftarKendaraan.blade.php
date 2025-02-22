@@ -106,7 +106,7 @@
                     <!-- Status Pajak -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Status Pajak</p>
-                        <p class="font-normal text-right
+                        <p class="font-normal text-right 
                             @if($statusPajak == 'SUDAH DIBAYAR')
                                 bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-green-400 border border-green-400
                             @elseif($statusPajak == 'JATUH TEMPO')
@@ -114,7 +114,7 @@
                             @elseif($statusPajak == 'MENDEKATI JATUH TEMPO')
                                 bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-yellow-300 border border-yellow-300
                             @else
-                                bg-gray-100 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-gray-400 border border-gray-500
+                                bg-gray-100 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-gray-400 border border-gray-500 
                             @endif
                         ">
                             {{ $statusPajak }}
@@ -140,9 +140,9 @@
                 </div>
 
                     <!-- Status Servis Rutin -->
-                    <div class="flex justify-between">
+                    <div class="flex justify-between sm:flex-row justify-between mb-">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Status Servis Rutin</p>
-                        <p class="font-normal text-right
+                        <p class="font-normal text-right sm:mt-0 sm:-ml-5
                             @if($statusServisRutin == 'SUDAH SERVIS')
                                 bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-green-400 border border-green-400
                             @elseif($statusServisRutin == 'WAKTUNYA SERVIS')
@@ -160,7 +160,16 @@
                     <!-- Pengisian BBM Terakhir -->
                     <div class="flex justify-between">
                         <p class="font-normal text-gray-700 dark:text-gray-400">Pengisian BBM Terakhir</p>
-                        <p class="font-normal text-gray-900 dark:text-white text-right">{{ \Carbon\Carbon::parse($bbm->tgl_isi)->format('d-m-Y') }} Rp.{{ number_format($bbm->nominal, 0, ',', '.') }}</p>
+                        <p class="font-normal text-gray-900 dark:text-white mt-2 sm:mt-0 sm:ml-4 text-left sm:text-right">
+                            {{ optional($bbm)->tgl_isi 
+                                ? \Carbon\Carbon::parse(optional($bbm)->tgl_isi)->format('d-m-Y') 
+                                : '-' 
+                            }}
+                            {{ optional($bbm)->nominal 
+                                ? ' Rp.' . number_format(optional($bbm)->nominal, 0, ',', '.') 
+                                : '' 
+                            }}
+                        </p>
                     </div>
 
                     <!-- Status Peminjaman -->
@@ -169,7 +178,9 @@
                         <p class="font-normal text-gray-900 dark:text-white text-right uppercase">
                             <span class="
                                 @if($kendaraan->status_ketersediaan == 'Tersedia') bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-green-400 border border-green-400
-                                @else bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-red-400 border border-red-400
+                                @elseif($kendaraan->status_ketersediaan == 'Tidak Tersedia') bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-red-400 border border-red-400
+                                @else bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-green-400 border border-green-400
+
                                 @endif">
                                 {{ $kendaraan->status_ketersediaan }}
                             </span>

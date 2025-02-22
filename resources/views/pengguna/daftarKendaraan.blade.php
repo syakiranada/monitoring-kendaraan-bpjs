@@ -64,10 +64,11 @@
                         <td class="px-6 py-4 whitespace-nowrap">{{ $item->kapasitas }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $item->plat_nomor }}</td>
                         <td class="px-6 py-4 uppercase whitespace-nowrap">
-                        
                             <span class="
                                 @if($item->status_ketersediaan == 'Tersedia') bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-green-400 border border-green-400
-                                @else bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-red-400 border border-red-400
+                                @elseif($item->status_ketersediaan == 'Tidak Tersedia') bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-red-400 border border-red-400
+                                @else bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-green-400 border border-green-400
+
                                 @endif">
                                 {{ $item->status_ketersediaan }}
                             </span>

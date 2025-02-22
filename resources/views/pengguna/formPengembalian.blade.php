@@ -10,7 +10,7 @@
 </head>
 <body class="bg-gray-100">
 
-    <div class="relative min-h-screen flex items-center justify-center py-12 px-4">
+    <div class="relative min-h-screen flex items-center justify-center py-12 px-4 -mt-10">
         <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-lg">
             <h2 class="text-2xl font-bold mb-6 text-center">Form Pengembalian</h2>
 

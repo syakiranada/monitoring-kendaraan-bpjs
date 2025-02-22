@@ -10,8 +10,8 @@
 </head>
 <body class="bg-gray-100">
 
-    <div class="relative min-h-screen flex items-center justify-center py-12 px-4 top-[-50px]">
-        <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-lg mt-[-50px]">
+    <div class="relative min-h-screen flex items-center justify-center py-12 px-4 -mt-20">
+        <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-lg">
             <h2 class="text-2xl font-bold mb-6 text-center">Form Perpanjangan</h2>
 
             @if(session('success'))
