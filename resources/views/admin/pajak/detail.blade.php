@@ -11,15 +11,14 @@
     </style>
     
     <h1 class="text-2xl font-bold mb-6">Detail Pajak</h1>
-        <div class="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 
-                    dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+        <div class="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100">
                     @php 
                     $currentPage = request()->query('page');
                     @endphp 
                     <input type="hidden" name="current_page" value="{{ $currentPage }}">        
             <div class="space-y-3">
                 <div class="flex justify-between items-center">
-                    <h5 class="text-xl font-bold text-gray-900 dark:text-white">
+                    <h5 class="text-xl font-bold text-gray-900">
                         {{ $pajak->kendaraan->merk }} {{ $pajak->kendaraan->tipe }}
                     </h5>
                 </div>
@@ -30,37 +29,37 @@
                         <span class="text-gray-900">{{ $pajak->kendaraan->plat_nomor }}</span>
                     </div>
                     <div class="flex justify-between text-sm">
-                        <span class="text-gray-600 dark:text-gray-400">Tanggal Jatuh Tempo Pembayaran Pajak</span>
-                        <span class="text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($pajak->tgl_jatuh_tempo)->format('d-m-Y') }}</span>
+                        <span class="text-gray-600">Tanggal Jatuh Tempo Pembayaran Pajak</span>
+                        <span class="text-gray-900">{{ \Carbon\Carbon::parse($pajak->tgl_jatuh_tempo)->format('d-m-Y') }}</span>
                     </div>
                     
                     <div class="flex justify-between text-sm">
-                        <span class="text-gray-600 dark:text-gray-400">Tanggal Pembayaran Pajak</span>
-                        <span class="text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($pajak->tgl_bayar)->format('d-m-Y') }}</span>
+                        <span class="text-gray-600">Tanggal Pembayaran Pajak</span>
+                        <span class="text-gray-900">{{ \Carbon\Carbon::parse($pajak->tgl_bayar)->format('d-m-Y') }}</span>
                     </div>
                     
                     <div class="flex justify-between text-sm">
-                        <span class="text-gray-600 dark:text-gray-400">Tanggal Pembayaran Pajak Selanjutnya</span>
-                        <span class="text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($pajak->tgl_jatuh_tempo_tahun_depan)->format('d-m-Y') }}</span>
+                        <span class="text-gray-600">Tanggal Pembayaran Pajak Selanjutnya</span>
+                        <span class="text-gray-900">{{ \Carbon\Carbon::parse($pajak->tgl_jatuh_tempo_tahun_depan)->format('d-m-Y') }}</span>
                     </div>
                     
                     <div class="flex justify-between text-sm">
-                        <span class="text-gray-600 dark:text-gray-400">Nominal Tagihan</span>
-                        <span class="text-gray-900 dark:text-white">Rp {{ number_format($pajak->nominal, 0, ',', '.') }}</span>
+                        <span class="text-gray-600">Nominal Tagihan</span>
+                        <span class="text-gray-900">Rp {{ number_format($pajak->nominal, 0, ',', '.') }}</span>
                     </div>
                     
                     <div class="flex justify-between text-sm">
-                        <span class="text-gray-600 dark:text-gray-400">Biaya Lain-lain</span>
-                        <span class="text-gray-900 dark:text-white">
+                        <span class="text-gray-600">Biaya Lain-lain</span>
+                        <span class="text-gray-900">
                             {{ $pajak->biaya_pajak_lain ? 'Rp ' . number_format($pajak->biaya_pajak_lain, 0, ',', '.') : '-' }}
                         </span>
                     </div>
                     
                     <div class="flex justify-between text-sm">
-                        <span class="text-gray-600 dark:text-gray-400">Bukti Pembayaran</span>
+                        <span class="text-gray-600">Bukti Pembayaran</span>
                     
                         @if($pajak->bukti_bayar_pajak)
-                            <button id="lihatBukti" class="text-blue-600 hover:underline dark:text-blue-400">
+                            <button id="lihatBukti" class="text-blue-600 hover:underline">
                                 Lihat bukti
                             </button>
                         @else

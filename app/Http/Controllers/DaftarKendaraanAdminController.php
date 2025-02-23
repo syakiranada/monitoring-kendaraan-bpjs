@@ -204,8 +204,8 @@ class DaftarKendaraanAdminController extends Controller
     {
         try {
             Log::info('DEBUG: Incoming request', ['request_data' => $request->all()]);
-
-            $request->validate([
+    
+            $validationRules = [
                 'merk' => 'required|string|max:255',
                 'tipe' => 'required|string|max:255',
                 'plat_nomor' => 'required|string|max:20',
@@ -219,21 +219,29 @@ class DaftarKendaraanAdminController extends Controller
                 'bahan_bakar' => 'required|string',
                 'nomor_mesin' => 'required|string|max:100',
                 'nomor_rangka' => 'required|string|max:100',
-                'tanggal_asuransi' => 'required|date',
-                'tanggal_perlindungan_awal' => 'required|date',
-                'tanggal_perlindungan_akhir' => 'required|date',
                 'tanggal_bayar_pajak' => 'required|date',
-                'tanggal_jatuh_tempo_pajak' => 'required|date',
+                'tanggal_jatuh_tempo_pajak' => 'required|date|after:tanggal_bayar_pajak',
                 'tanggal_cek_fisik' => 'required|date',
                 'frekuensi' => 'required|integer|min:1',
                 'status_pinjam' => 'required|string',
                 'current_page' => 'required|integer|min:1',
-            ]);
-
+            ];
+    
+            // Add conditional validation for insurance fields
+            if ($request->filled('tanggal_asuransi') || $request->filled('tanggal_perlindungan_awal') || $request->filled('tanggal_perlindungan_akhir')) {
+                $validationRules['tanggal_asuransi'] = 'required|date';
+                $validationRules['tanggal_perlindungan_awal'] = 'required|date';
+                $validationRules['tanggal_perlindungan_akhir'] = 'required|date|after:tanggal_perlindungan_awal';
+            }
+    
+            $request->validate($validationRules);
+    
             Log::info('DEBUG: Validation passed');
-
-            $statusKetersediaan = ($request->aset_guna === 'Guna') ? 'TERSEDIA' : 'TIDAK TERSEDIA';
-
+    
+            $statusKetersediaan = ($request->aset_guna === 'Guna') 
+            ? ($request->status_pinjam ?? 'TERSEDIA') 
+            : 'TIDAK TERSEDIA';        
+    
             $kendaraan = Kendaraan::create([
                 'merk' => $request->merk,
                 'tipe' => $request->tipe,
@@ -251,7 +259,7 @@ class DaftarKendaraanAdminController extends Controller
                 'frekuensi_servis' => $request->frekuensi,
                 'status_ketersediaan' => $statusKetersediaan, 
             ]);
-
+    
             Pajak::create([
                 'user_id' => Auth::id(),
                 'id_kendaraan' => $kendaraan->id_kendaraan, 
@@ -259,28 +267,34 @@ class DaftarKendaraanAdminController extends Controller
                 'tgl_jatuh_tempo' => date('Y-m-d', strtotime($request->tanggal_jatuh_tempo_pajak)),
                 'tahun' => date('Y', strtotime($request->tanggal_bayar_pajak)),
             ]);
-
-            Asuransi::create([
-                'user_id' => Auth::id(),
-                'id_kendaraan' => $kendaraan->id_kendaraan,
-                'tgl_bayar' => $request->tanggal_asuransi,
-                'tahun' => date('Y', strtotime($request->tanggal_perlindungan_akhir)),
-                'tgl_perlindungan_awal' => $request->tanggal_perlindungan_awal,
-                'tgl_perlindungan_akhir' => $request->tanggal_perlindungan_akhir,
-            ]);
-
+    
+            // Only create insurance record if insurance fields are filled
+            if ($request->filled('tanggal_asuransi') && 
+                $request->filled('tanggal_perlindungan_awal') && 
+                $request->filled('tanggal_perlindungan_akhir')) {
+                
+                Asuransi::create([
+                    'user_id' => Auth::id(),
+                    'id_kendaraan' => $kendaraan->id_kendaraan,
+                    'tgl_bayar' => $request->tanggal_asuransi,
+                    'tahun' => date('Y', strtotime($request->tanggal_perlindungan_akhir)),
+                    'tgl_perlindungan_awal' => $request->tanggal_perlindungan_awal,
+                    'tgl_perlindungan_akhir' => $request->tanggal_perlindungan_akhir,
+                ]);
+            }
+    
             CekFisik::create([
                 'user_id' => Auth::id(),
                 'id_kendaraan' => $kendaraan->id_kendaraan,
                 'tgl_cek_fisik' => $request->tanggal_cek_fisik,
             ]);
-
+    
             $totalKendaraan = Kendaraan::count();
             $perPage = 10;
             $lastPage = ceil($totalKendaraan / $perPage);
-
+    
             Log::info('DEBUG: Data kendaraan dan terkait berhasil disimpan');
-
+    
             return redirect()->route('kendaraan.daftar_kendaraan', ['page' => $lastPage])
                             ->with('success', 'Data kendaraan dan semua terkait berhasil disimpan!');
         } catch (\Exception $e) {
@@ -302,77 +316,82 @@ class DaftarKendaraanAdminController extends Controller
     }
 
     public function update(Request $request, $id)
-    {
-        try {
-            Log::info('DEBUG: Incoming update request', ['request_data' => $request->all()]);
+{
+    try {
+        Log::info('DEBUG: Incoming update request', ['request_data' => $request->all()]);
 
-            $request->validate([
-                'merk' => 'required|string|max:255',
-                'tipe' => 'required|string|max:255',
-                'plat_nomor' => 'required|string|max:20',
-                'warna' => 'required|string|max:50',
-                'jenis_kendaraan' => 'required|string',
-                'aset_guna' => 'required|string',
-                'kapasitas' => 'required|integer|min:1',
-                'tanggal_beli' => 'required|date',
-                'nilai_perolehan' => 'required|numeric',
-                'nilai_buku' => 'required|numeric',
-                'bahan_bakar' => 'required|string',
-                'nomor_mesin' => 'required|string|max:100',
-                'nomor_rangka' => 'required|string|max:100',
-                'tanggal_asuransi' => 'required|date',
-                'tanggal_perlindungan_awal' => 'required|date',
-                'tanggal_perlindungan_akhir' => 'required|date',
-                'tanggal_bayar_pajak' => 'required|date',
-                'tanggal_jatuh_tempo_pajak' => 'required|date',
-                'tanggal_cek_fisik' => 'required|date',
-                'frekuensi' => 'required|integer|min:1',
-                'status_pinjam' => 'required|string',
-                'current_page' => 'required|integer|min:1',
-            ]);
+        $validationRules = [
+            'merk' => 'required|string|max:255',
+            'tipe' => 'required|string|max:255',
+            'plat_nomor' => 'required|string|max:20',
+            'warna' => 'required|string|max:50',
+            'jenis_kendaraan' => 'required|string',
+            'aset_guna' => 'required|string',
+            'kapasitas' => 'required|integer|min:1',
+            'tanggal_beli' => 'required|date',
+            'nilai_perolehan' => 'required|numeric',
+            'nilai_buku' => 'required|numeric',
+            'bahan_bakar' => 'required|string',
+            'nomor_mesin' => 'required|string|max:100',
+            'nomor_rangka' => 'required|string|max:100',
+            'tanggal_bayar_pajak' => 'required|date',
+            'tanggal_jatuh_tempo_pajak' => 'required|date|after:tanggal_bayar_pajak',
+            'tanggal_cek_fisik' => 'required|date',
+            'frekuensi' => 'required|integer|min:1',
+            'status_pinjam' => 'required|string',
+            'current_page' => 'required|integer|min:1',
+        ];
 
-            Log::info('DEBUG: Validation passed');
+        // Tambahkan validasi opsional untuk asuransi jika ada input
+        if ($request->filled('tanggal_asuransi') || $request->filled('tanggal_perlindungan_awal') || $request->filled('tanggal_perlindungan_akhir')) {
+            $validationRules['tanggal_asuransi'] = 'required|date';
+            $validationRules['tanggal_perlindungan_awal'] = 'required|date';
+            $validationRules['tanggal_perlindungan_akhir'] = 'required|date|after:tanggal_perlindungan_awal';
+        }
 
-            $kendaraan = Kendaraan::findOrFail($id);
+        $request->validate($validationRules);
 
-            $statusKetersediaan = 'Tersedia';
+        Log::info('DEBUG: Validation passed');
+
+        $kendaraan = Kendaraan::findOrFail($id);
+        $statusKetersediaan = ($request->aset_guna === 'Guna') 
+        ? ($request->status_pinjam ?? 'TERSEDIA') 
+        : 'TIDAK TERSEDIA';
+
+
+        $kendaraan->update([
+            'merk' => $request->merk,
+            'tipe' => $request->tipe,
+            'plat_nomor' => $request->plat_nomor,
+            'warna' => $request->warna,
+            'jenis' => $request->jenis_kendaraan,
+            'aset' => $request->aset_guna,
+            'kapasitas' => $request->kapasitas,
+            'tgl_pembelian' => $request->tanggal_beli,
+            'nilai_perolehan' => $request->nilai_perolehan,
+            'nilai_buku' => $request->nilai_buku,
+            'bahan_bakar' => $request->bahan_bakar,
+            'no_mesin' => $request->nomor_mesin,
+            'no_rangka' => $request->nomor_rangka,
+            'frekuensi_servis' => $request->frekuensi,
+            'status_ketersediaan' => $statusKetersediaan,
+        ]);
+
+        Pajak::updateOrCreate(
+            ['id_kendaraan' => $kendaraan->id_kendaraan],
+            [
+                'user_id' => Auth::id(),
+                'tgl_bayar' => date('Y-m-d', strtotime($request->tanggal_bayar_pajak)),
+                'tgl_jatuh_tempo' => date('Y-m-d', strtotime($request->tanggal_jatuh_tempo_pajak)),
+                'tahun' => date('Y', strtotime($request->tanggal_bayar_pajak)),
+            ]
+        );
+
+        // Hanya perbarui atau buat asuransi jika ada data asuransi yang diinput
+        if ($request->filled('tanggal_asuransi') && 
+            $request->filled('tanggal_perlindungan_awal') && 
+            $request->filled('tanggal_perlindungan_akhir')) {
             
-            Log::info('DEBUG: Status kendaraan yang diterima', ['status_pinjam' => $request->aset_guna]);
-
-            if (in_array($request->aset_guna, ['Lelang', 'Jual', 'Tidak Guna'])) {
-                $statusKetersediaan = 'TIDAK TERSEDIA';
-            }
-
-            Log::info('DEBUG: Status ketersediaan yang diterapkan', ['status_ketersediaan' => $statusKetersediaan]);
-
-            $kendaraan->update([
-                'merk' => $request->merk,
-                'tipe' => $request->tipe,
-                'plat_nomor' => $request->plat_nomor,
-                'warna' => $request->warna,
-                'jenis' => $request->jenis_kendaraan,
-                'aset' => $request->aset_guna,
-                'kapasitas' => $request->kapasitas,
-                'tgl_pembelian' => $request->tanggal_beli,
-                'nilai_perolehan' => $request->nilai_perolehan,
-                'nilai_buku' => $request->nilai_buku,
-                'bahan_bakar' => $request->bahan_bakar,
-                'no_mesin' => $request->nomor_mesin,
-                'no_rangka' => $request->nomor_rangka,
-                'frekuensi_servis' => $request->frekuensi,
-                'status_ketersediaan' => $statusKetersediaan,  
-            ]);
-
-            Pajak::updateOrCreate(
-                ['id_kendaraan' => $kendaraan->id_kendaraan],
-                [
-                    'user_id' => Auth::id(),
-                    'tgl_bayar' => date('Y-m-d', strtotime($request->tanggal_bayar_pajak)),
-                    'tgl_jatuh_tempo' => date('Y-m-d', strtotime($request->tanggal_jatuh_tempo_pajak)),
-                    'tahun' => date('Y', strtotime($request->tanggal_bayar_pajak)),
-                ]
-            );
-
             Asuransi::updateOrCreate(
                 ['id_kendaraan' => $kendaraan->id_kendaraan],
                 [
@@ -383,29 +402,30 @@ class DaftarKendaraanAdminController extends Controller
                     'tgl_perlindungan_akhir' => $request->tanggal_perlindungan_akhir,
                 ]
             );
-
-            CekFisik::updateOrCreate(
-                ['id_kendaraan' => $kendaraan->id_kendaraan],
-                [
-                    'user_id' => Auth::id(),
-                    'tgl_cek_fisik' => $request->tanggal_cek_fisik,
-                ]
-            );
-
-            $currentPage = $request->input('current_page', 1);
-
-            Log::info('DEBUG: Data kendaraan dan terkait berhasil diupdate');
-
-            return redirect()->route('kendaraan.daftar_kendaraan', ['page' => $currentPage])
-                            ->with('success', 'Data kendaraan dan semua terkait berhasil diperbarui!');
-
-        } catch (\Exception $e) {
-            Log::error('DEBUG: Exception occurred', ['error' => $e->getMessage()]);
-            return redirect()->back()
-                            ->withInput()
-                            ->withErrors(['error' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()]);
         }
+
+        CekFisik::updateOrCreate(
+            ['id_kendaraan' => $kendaraan->id_kendaraan],
+            [
+                'user_id' => Auth::id(),
+                'tgl_cek_fisik' => $request->tanggal_cek_fisik,
+            ]
+        );
+
+        $currentPage = $request->input('current_page', 1);
+
+        Log::info('DEBUG: Data kendaraan dan terkait berhasil diperbarui');
+
+        return redirect()->route('kendaraan.daftar_kendaraan', ['page' => $currentPage])
+                        ->with('success', 'Data kendaraan dan semua terkait berhasil diperbarui!');
+                        
+    } catch (\Exception $e) {
+        Log::error('DEBUG: Exception occurred', ['error' => $e->getMessage()]);
+        return redirect()->back()
+                        ->withInput()
+                        ->withErrors(['error' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()]);
     }
+}
 
     public function detail($id_kendaraan) {
         $kendaraan = Kendaraan::findOrFail($id_kendaraan);

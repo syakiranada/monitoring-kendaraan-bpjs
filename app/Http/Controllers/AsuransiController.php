@@ -16,6 +16,7 @@ class AsuransiController extends Controller
     {
         $search = $request->input('search');
         $statusFilter = $request->input('status');
+
         $dataKendaraanQuery = Kendaraan::select(
             'kendaraan.*',
             'asuransi.id_asuransi', 
@@ -40,8 +41,20 @@ class AsuransiController extends Controller
                 ->on('asuransi.tgl_bayar', '=', 'latest_asuransi.max_bayar')
                 ->on('asuransi.tgl_perlindungan_akhir', '=', 'latest_asuransi.max_perlindungan_akhir');
         })
-        ->groupBy('kendaraan.id_kendaraan', 'asuransi.id_asuransi', 'asuransi.user_id', 'asuransi.tahun', 'asuransi.tgl_bayar', 'asuransi.tgl_perlindungan_awal', 'asuransi.tgl_perlindungan_akhir', 'asuransi.polis', 'asuransi.bukti_bayar_asuransi', 'asuransi.nominal', 'asuransi.biaya_asuransi_lain'); // Pastikan semua kolom yang ada dalam select di group by
-
+        ->where('kendaraan.aset', '!=', 'lelang') // Hanya kendaraan yang asetnya bukan 'lelang'
+        ->groupBy(
+            'kendaraan.id_kendaraan', 
+            'asuransi.id_asuransi', 
+            'asuransi.user_id', 
+            'asuransi.tahun', 
+            'asuransi.tgl_bayar', 
+            'asuransi.tgl_perlindungan_awal', 
+            'asuransi.tgl_perlindungan_akhir', 
+            'asuransi.polis', 
+            'asuransi.bukti_bayar_asuransi', 
+            'asuransi.nominal', 
+            'asuransi.biaya_asuransi_lain'
+        ); 
 
         $dataKendaraan = $dataKendaraanQuery->get();
     

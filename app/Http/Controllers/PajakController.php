@@ -16,17 +16,17 @@ class PajakController extends Controller
 {
     $search = $request->input('search');
     $statusFilter = $request->input('status');
-    
+
     $dataKendaraanQuery = Kendaraan::select(
         'kendaraan.*',
-        'pajak.id_pajak', 
-        'pajak.user_id', 
-        'pajak.tahun', 
-        'pajak.tgl_bayar', 
-        'pajak.tgl_jatuh_tempo', 
-        'pajak.bukti_bayar_pajak', 
-        'pajak.nominal', 
-        'pajak.biaya_pajak_lain', 
+        'pajak.id_pajak',
+        'pajak.user_id',
+        'pajak.tahun',
+        'pajak.tgl_bayar',
+        'pajak.tgl_jatuh_tempo',
+        'pajak.bukti_bayar_pajak',
+        'pajak.nominal',
+        'pajak.biaya_pajak_lain',
         DB::raw('DATE_ADD(latest_pajak.max_jatuh_tempo, INTERVAL 1 YEAR) as tgl_jatuh_tempo_seharusnya')
     )
     ->distinct()
@@ -38,7 +38,8 @@ class PajakController extends Controller
         $join->on('kendaraan.id_kendaraan', '=', 'pajak.id_kendaraan')
             ->on('pajak.tgl_bayar', '=', 'latest_pajak.max_bayar')
             ->on('pajak.tgl_jatuh_tempo', '=', 'latest_pajak.max_jatuh_tempo');
-    });
+    })
+    ->where('kendaraan.aset', 'guna');
 
     $dataKendaraan = $dataKendaraanQuery->get();
 

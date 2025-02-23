@@ -46,16 +46,16 @@
                                class="w-full p-2.5 border rounded-lg">
                     </div>
                     <div>
-                        <label for="jenis_kendaraan" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Jenis Kendaraan</label>
-                        <select id="jenis_kendaraan" name="jenis_kendaraan" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <label for="jenis_kendaraan" class="block mb-2 text-sm font-medium text-gray-900">Jenis Kendaraan</label>
+                        <select id="jenis_kendaraan" name="jenis_kendaraan" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                             <option {{ $kendaraan->jenis == 'Sedan' ? 'selected' : '' }}>Sedan</option>
                             <option {{ $kendaraan->jenis == 'Non Sedan' ? 'selected' : '' }}>Non Sedan</option>
                             <option {{ $kendaraan->jenis == 'Motor' ? 'selected' : '' }}>Motor</option>
                         </select>
                     </div>
                     <div>
-                        <label for="aset_guna" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Aset Guna</label>
-                        <select id="aset_guna" name="aset_guna" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <label for="aset_guna" class="block mb-2 text-sm font-medium text-gray-900">Aset Guna</label>
+                        <select id="aset_guna" name="aset_guna" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                             <option value="Guna" {{ $kendaraan->aset == 'Guna' ? 'selected' : '' }}>Guna</option>
                             <option value="Tidak Guna" {{ $kendaraan->aset == 'Tidak Guna' ? 'selected' : '' }}>Tidak Guna</option>
                             <option value="Jual" {{ $kendaraan->aset == 'Jual' ? 'selected' : '' }}>Jual</option>
@@ -100,8 +100,8 @@
 
                 <div class="grid grid-cols-3 gap-4 mb-4">
                     <div>
-                        <label for="bahan_bakar" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Bahan Bakar</label>
-                        <select id="bahan_bakar" name="bahan_bakar" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <label for="bahan_bakar" class="block mb-2 text-sm font-medium text-gray-900">Bahan Bakar</label>
+                        <select id="bahan_bakar" name="bahan_bakar" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                             @foreach(['Pertalite', 'Pertamax', 'Pertamax Turbo', 'Dexlite', 'Pertamina Dex', 'Solar', 'BioSolar', 'Pertalite/Pertamax', 'Pertamax/Pertamax Turbo', 'Solar/Dexlite/Pertamina Dex', 'BioSolar/Solar/Dexlite'] as $fuel)
                                 <option {{ $kendaraan->bahan_bakar == $fuel ? 'selected' : '' }}>{{ $fuel }}</option>
                             @endforeach
@@ -128,21 +128,21 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Bayar Asuransi Terakhir</label>
                         <input type="date" 
                             name="tanggal_asuransi" 
-                            value="{{ $asuransi->tgl_bayar }}"
+                            value="{{ $asuransi->tgl_bayar ?? ''}}"
                             class="w-full p-2.5 border rounded-lg">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Masa Perlindungan Awal</label>
                         <input type="date" 
                             name="tanggal_perlindungan_awal" 
-                            value="{{ $asuransi->tgl_perlindungan_awal }}"
+                            value="{{ $asuransi->tgl_perlindungan_awal ?? ''}}"
                             class="w-full p-2.5 border rounded-lg">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Masa Perlindungan Akhir</label>
                         <input type="date" 
                             name="tanggal_perlindungan_akhir" 
-                            value="{{ $asuransi->tgl_perlindungan_akhir }}"
+                            value="{{ $asuransi->tgl_perlindungan_akhir ?? '' }}"
                             class="w-full p-2.5 border rounded-lg">
                     </div>
                 </div>
@@ -191,8 +191,8 @@
                                step="1">
                     </div>
                     <div>
-                        <label for="status_pinjam" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Status Pinjam</label>
-                        <select id="status_pinjam" name="status_pinjam" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <label for="status_pinjam" class="block mb-2 text-sm font-medium text-gray-900">Status Pinjam</label>
+                        <select id="status_pinjam" name="status_pinjam" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                             <option {{ $kendaraan->status_ketersediaan == 'TERSEDIA' ? 'selected' : '' }}>TERSEDIA</option>
                             <option {{ $kendaraan->status_ketersediaan == 'TIDAK TERSEDIA' ? 'selected' : '' }}>TIDAK TERSEDIA</option>
                         </select>
@@ -243,8 +243,7 @@
             let fields = [
                 'merk', 'tipe', 'plat_nomor', 'warna', 'jenis_kendaraan', 'aset_guna',
                 'kapasitas', 'tanggal_beli', 'nilai_perolehan', 'nilai_buku', 
-                'bahan_bakar', 'nomor_mesin', 'nomor_rangka', 'tanggal_asuransi', 
-                'tanggal_perlindungan_awal', 'tanggal_perlindungan_akhir', 
+                'bahan_bakar', 'nomor_mesin', 'nomor_rangka',
                 'tanggal_bayar_pajak', 'tanggal_jatuh_tempo_pajak', 'tanggal_cek_fisik', 'frekuensi', 'status_pinjam'
             ];
 

@@ -13,21 +13,21 @@
                 <input 
                     type="text" 
                     name="search"
-                    class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-48 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
+                    class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-48 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
                     placeholder="Search for items"
                     value="{{ request('search') }}"
                 >
                 <div class="absolute inset-y-0 start-0 flex items-center ps-3">
-                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                    <svg class="w-4 h-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                    </svg>
+                    </svg>                    
                 </div>
             </div>
         </form>
         
-        <table class="pb-8 w-11/12 mx-auto text-sm text-left text-gray-500 dark:text-gray-400">
-            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                <tr>
+        <table class="pb-8 w-11/12 mx-auto text-sm text-left text-gray-500">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                <tr>        
                     <th class="px-6 py-3">Merk dan Tipe</th>
                     <th class="px-6 py-3">Plat</th>
                     <th class="px-6 py-3">Tanggal Jatuh Tempo</th>
@@ -38,8 +38,8 @@
             </thead>
             <tbody>
                 @forelse ($dataKendaraan as $item)
-                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                        <td class="px-6 py-3">{{ $item->merk ?? '-' }} {{ $item->tipe ?? '-' }}</td>
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-6 py-3">{{ $item->merk ?? '-' }} {{ $item->tipe ?? '-' }}</td>                
                         <td class="px-6 py-3">{{ $item->plat_nomor ?? '-' }}</td>
                         <td class="px-6 py-3">
                             {{ $item->tgl_jatuh_tempo_seharusnya ? \Carbon\Carbon::parse($item->tgl_jatuh_tempo_seharusnya)->format('d-m-Y') : '-' }}
@@ -62,21 +62,27 @@
                         <td class="px-6 py-3 whitespace-nowrap">
                             @if (!empty($item->id_pajak))
                                 @if ($item->status === 'JATUH TEMPO' || $item->status === 'MENDEKATI JATUH TEMPO')
-                                    <a href="{{ route('pajak.kelola', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1)]) }}" class="font-medium text-gray-600 dark:text-gray-500 hover:underline">Kelola</a>
-                                @elseif ($item->status === 'SUDAH DIBAYAR')
-                                    <a href="{{ route('pajak.detail', ['id_pajak' => $item->id_pajak, 'page' => request()->query('page', 1)]) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline mr-1">Detail</a>
-                                    <a href="{{ route('pajak.edit', ['id_pajak' => $item->id_pajak, 'page' => request()->query('page', 1)]) }}" class="font-medium text-yellow-600 dark:text-yellow-500 hover:underline mr-1">Edit</a>
-                                    <button class="font-medium text-red-600 dark:text-red-500 hover:underline" onclick="event.preventDefault(); confirmDelete({{ $item->id_pajak }})">Hapus</button>
-                                    <form id="delete-form-{{ $item->id_pajak }}" action="{{ route('pajak.hapus', $item->id_pajak) }}" method="POST" class="hidden">
-                                        @csrf
-                                        @method('DELETE')
-                                    </form>
+                                <a href="{{ route('pajak.kelola', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1)]) }}" 
+                                class="font-medium text-gray-600 hover:underline">Kelola</a>
+                            @elseif ($item->status === 'SUDAH DIBAYAR')
+                                <a href="{{ route('pajak.detail', ['id_pajak' => $item->id_pajak, 'page' => request()->query('page', 1)]) }}" 
+                                class="font-medium text-blue-600 hover:underline mr-1">Detail</a>
+                                <a href="{{ route('pajak.edit', ['id_pajak' => $item->id_pajak, 'page' => request()->query('page', 1)]) }}" 
+                                class="font-medium text-yellow-600 hover:underline mr-1">Edit</a>
+                                <button class="font-medium text-red-600 hover:underline" 
+                                        onclick="event.preventDefault(); confirmDelete({{ $item->id_pajak }})">Hapus</button>
+                                <form id="delete-form-{{ $item->id_pajak }}" action="{{ route('pajak.hapus', $item->id_pajak) }}" 
+                                    method="POST" class="hidden">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
                                 @else
                                     <span>-</span>
                                 @endif
                             @else
-                                <a href="{{ route('pajak.kelola', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1)]) }}" class="font-medium text-gray-600 dark:text-gray-500 hover:underline">Kelola</a>
-                            @endif
+                            <a href="{{ route('pajak.kelola', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1)]) }}" 
+                                class="font-medium text-gray-600 hover:underline">Kelola</a>
+                             @endif                             
                         </td>            
                     </tr>
                 @empty
@@ -138,4 +144,4 @@
 </x-app-layout>
 
 {{-- <div class="flex justify-center py-4">
-    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400"> --}}
+    <table class="w-full text-sm text-left text-gray-500"> --}}

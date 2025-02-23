@@ -12,20 +12,20 @@
                 <input 
                     type="text" 
                     name="search"
-                    class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-48 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
-                    placeholder="Search for items"
+                    class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-48 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
+                    placeholder="Search for items"                    
                     value="{{ request('search') }}"
                 >
                 <div class="absolute inset-y-0 start-0 flex items-center ps-3">
-                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                    <svg class="w-4 h-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                    </svg>
+                    </svg>                    
                 </div>
             </div>
         </form>
         
-        <table class="pb-8 w-11/12 mx-auto text-sm text-left text-gray-500 dark:text-gray-400">
-            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <table class="pb-8 w-11/12 mx-auto text-sm text-left text-gray-500">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50">        
                 <tr>
                     <th class="px-6 py-3">Merk dan Tipe</th>
                     <th class="px-6 py-3">Plat</th>
@@ -37,8 +37,8 @@
             </thead>
             <tbody>
                 @forelse ($dataKendaraan as $item)
-                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                        <td class="px-6 py-3">{{ $item->merk ?? '-' }} {{ $item->tipe ?? '-' }}</td>
+                <tr class="bg-white border-b hover:bg-gray-50">
+                    <td class="px-6 py-3">{{ $item->merk ?? '-' }} {{ $item->tipe ?? '-' }}</td>                
                         <td class="px-6 py-3">{{ $item->plat_nomor ?? '-' }}</td>
                         <td class="px-6 py-3">
                             {{ $item->tgl_jatuh_tempo ? \Carbon\Carbon::parse($item->tgl_jatuh_tempo)->format('d-m-Y') : '-' }}
@@ -60,16 +60,16 @@
                         <td class="px-6 py-3 whitespace-nowrap">
                             @if (!empty($item->id_asuransi))
                                 @if ($item->status === 'JATUH TEMPO' || $item->status === 'MENDEKATI JATUH TEMPO')
-                                    <a href="{{ route('asuransi.kelola', ['id_kendaraan' => $item->id_kendaraan,'page' => request()->query('page', 1)]) }}" 
-                                       class="font-medium text-gray-600 dark:text-gray-500 hover:underline">Kelola</a>
-                                @elseif ($item->status === 'SUDAH DIBAYAR')
-                                    <div class="flex space-x-1">
-                                        <a href="{{ route('asuransi.detail', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1)]) }}" 
-                                           class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Detail</a>
-                                        <a href="{{ route('asuransi.edit', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1)]) }}" 
-                                           class="font-medium text-yellow-600 dark:text-yellow-500 hover:underline">Edit</a>
-                                        <button class="font-medium text-red-600 dark:text-red-500 hover:underline" 
-                                                onclick="confirmDelete({{ $item->id_asuransi }})">Hapus</button>
+                                <a href="{{ route('asuransi.kelola', ['id_kendaraan' => $item->id_kendaraan,'page' => request()->query('page', 1)]) }}" 
+                                    class="font-medium text-gray-600 hover:underline">Kelola</a>
+                                 @elseif ($item->status === 'SUDAH DIBAYAR')
+                                     <div class="flex space-x-1">
+                                         <a href="{{ route('asuransi.detail', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1)]) }}" 
+                                            class="font-medium text-blue-600 hover:underline">Detail</a>
+                                         <a href="{{ route('asuransi.edit', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1)]) }}" 
+                                            class="font-medium text-yellow-600 hover:underline">Edit</a>
+                                         <button class="font-medium text-red-600 hover:underline" 
+                                                 onclick="confirmDelete({{ $item->id_asuransi }})">Hapus</button>                                 
                                     </div>
                                     <form id="delete-form-{{ $item->id_asuransi }}" action="{{ route('asuransi.hapus', $item->id_asuransi) }}" method="POST" class="hidden">
                                         @csrf
@@ -80,8 +80,8 @@
                                 @endif
                             @else
                                 <a href="{{ route('asuransi.kelola', ['id_kendaraan' => $item->id_kendaraan,'page' => request()->query('page', 1)]) }}" 
-                                   class="font-medium text-gray-600 dark:text-gray-500 hover:underline">Kelola</a>
-                            @endif
+                                    class="font-medium text-gray-600 hover:underline">Kelola</a>
+                                @endif                                    
                         </td>                        
                     </tr>
                 @empty

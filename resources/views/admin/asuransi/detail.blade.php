@@ -44,12 +44,12 @@
                     <span class="text-gray-900">{{ \Carbon\Carbon::parse($asuransi->tgl_bayar)->format('d-m-Y') }}</span>
                 </div>
                 <div class="flex justify-between text-sm">
-                    <span class="text-gray-600 dark:text-gray-400">Nominal Tagihan</span>
-                    <span class="text-gray-900 dark:text-white">Rp {{ number_format($asuransi->nominal, 0, ',', '.') }}</span>
+                    <span class="text-gray-600">Nominal Tagihan</span>
+                    <span class="text-gray-900">Rp {{ number_format($asuransi->nominal, 0, ',', '.') }}</span>
                 </div>
                 <div class="flex justify-between text-sm">
-                    <span class="text-gray-600 dark:text-gray-400">Biaya Lain-lain</span>
-                    <span class="text-gray-900 dark:text-white">
+                    <span class="text-gray-600">Biaya Lain-lain</span>
+                    <span class="text-gray-900">
                         {{ $asuransi->biaya_asuransik_lain ? 'Rp ' . number_format($asuransi->biaya_asuransi_lain, 0, ',', '.') : '-' }}
                     </span>
                 </div>

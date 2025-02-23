@@ -41,16 +41,16 @@
                                class="w-full p-2.5 border rounded-lg">
                     </div>
                     <div>
-                        <label for="jenis_kendaraan" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Jenis Kendaraan</label>
-                            <select id="jenis_kendaraan" name="jenis_kendaraan" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <label for="jenis_kendaraan" class="block mb-2 text-sm font-medium text-gray-900">Jenis Kendaraan</label>
+                            <select id="jenis_kendaraan" name="jenis_kendaraan" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                                 <option>Sedan</option>
                                 <option>Non Sedan</option>
                                 <option>Motor</option>
                             </select>
                     </div>
                     <div>
-                        <label for="aset_guna" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Aset Guna</label>
-                            <select id="aset_guna" name="aset_guna" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <label for="aset_guna" class="block mb-2 text-sm font-medium text-gray-900">Aset Guna</label>
+                            <select id="aset_guna" name="aset_guna" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                                 <option>Guna</option>
                                 <option>Tidak Guna</option>
                                 <option>Jual</option>
@@ -92,8 +92,8 @@
 
                 <div class="grid grid-cols-3 gap-4 mb-4">
                     <div>
-                        <label for="bahan_bakar" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Bahan Bakar</label>
-                            <select id="bahan_bakar" name="bahan_bakar" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <label for="bahan_bakar" class="block mb-2 text-sm font-medium text-gray-900">Bahan Bakar</label>
+                            <select id="bahan_bakar" name="bahan_bakar" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                                 <option>Pertalite</option>
                                 <option>Pertamax</option>
                                 <option>Pertamax Turbo</option>
@@ -181,8 +181,8 @@
                            step="1">
                 </div>
                 <div>
-                    <label for="status_pinjam" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Status Pinjam</label>
-                        <select id="status_pinjam" name="status_pinjam" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    <label for="status_pinjam" class="block mb-2 text-sm font-medium text-gray-900">Status Pinjam</label>
+                        <select id="status_pinjam" name="status_pinjam" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                             <option>TERSEDIA</option>
                             <option>TIDAK TERSEDIA</option>
                         </select>
@@ -225,72 +225,95 @@
         }
 
         document.getElementById('save-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            let fields = [
-                'merk', 'tipe', 'plat_nomor', 'warna', 'jenis_kendaraan', 'aset_guna',
-                'kapasitas', 'tanggal_beli', 'nilai_perolehan', 'nilai_buku', 
-                'bahan_bakar', 'nomor_mesin', 'nomor_rangka', 'tanggal_asuransi', 
-                'tanggal_perlindungan_awal', 'tanggal_perlindungan_akhir', 
-                'tanggal_bayar_pajak', 'tanggal_jatuh_tempo_pajak', 'tanggal_cek_fisik', 'frekuensi', 'status_pinjam'
-            ];
+        event.preventDefault();
+        let fields = [
+            'merk', 'tipe', 'plat_nomor', 'warna', 'jenis_kendaraan', 'aset_guna',
+            'kapasitas', 'tanggal_beli', 'nilai_perolehan', 'nilai_buku', 
+            'bahan_bakar', 'nomor_mesin', 'nomor_rangka',
+            'tanggal_bayar_pajak', 'tanggal_jatuh_tempo_pajak', 'tanggal_cek_fisik', 'frekuensi', 'status_pinjam'
+        ];
 
-            let missingFields = [];
-            fields.forEach(function(field) {
-                let input = document.querySelector('[name="' + field + '"]');
-                if (!input || !input.value.trim()) {
-                    missingFields.push(field);
-                }
-            });
-
-            if (missingFields.length > 0) {
-                let alertDiv = document.getElementById('alertMessage');
-                alertDiv.classList.remove('hidden');
-                setTimeout(() => alertDiv.classList.add('hidden'), 10000);
-                return;
+        let missingFields = [];
+        fields.forEach(function(field) {
+            let input = document.querySelector('[name="' + field + '"]');
+            if (!input || !input.value.trim()) {
+                missingFields.push(field);
             }
+        });
 
-            let tanggalAwalPerlindungan = document.querySelector('input[name="tanggal_perlindungan_awal"]').value;
-            let tanggalAkhirPerlindungan = document.querySelector('input[name="tanggal_perlindungan_akhir"]').value;
+        if (missingFields.length > 0) {
+            let alertDiv = document.getElementById('alertMessage');
+            alertDiv.classList.remove('hidden');
+            setTimeout(() => alertDiv.classList.add('hidden'), 10000);
+            return;
+        }
 
-            if (new Date(tanggalAwalPerlindungan) > new Date(tanggalAkhirPerlindungan)) {
+        // Validation for protection dates
+        let tanggalAwalPerlindungan = document.querySelector('input[name="tanggal_perlindungan_awal"]').value;
+        let tanggalAkhirPerlindungan = document.querySelector('input[name="tanggal_perlindungan_akhir"]').value;
+
+        if (tanggalAwalPerlindungan && tanggalAkhirPerlindungan) {
+            let awal = new Date(tanggalAwalPerlindungan);
+            let akhir = new Date(tanggalAkhirPerlindungan);
+
+            if (awal >= akhir) {
                 let alertDiv = document.getElementById('alertMessage');
-                alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Tanggal perlindungan awal tidak boleh lebih besar dari tanggal perlindungan akhir.';
+                alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Tanggal perlindungan akhir harus lebih besar dari tanggal perlindungan awal.';
                 alertDiv.classList.remove('hidden');
                 alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 setTimeout(() => alertDiv.classList.add('hidden'), 5000);
                 return false;
             }
+        }
 
-            let nominalInput = document.querySelector('input[name="nilai_perolehan"]');
-            let biayaLainInput = document.querySelector('input[name="nilai_buku"]');
-            nominalInput.value = nominalInput.value.replace(/[^\d]/g, '');
-            biayaLainInput.value = biayaLainInput.value.replace(/[^\d]/g, '');
+        // Validation for tax dates
+        let tanggalBayarPajak = document.querySelector('input[name="tanggal_bayar_pajak"]').value;
+        let tanggalJatuhTempoPajak = document.querySelector('input[name="tanggal_jatuh_tempo_pajak"]').value;
 
-            Swal.fire({
-                title: "Konfirmasi",
-                text: "Apakah Anda yakin ingin menyimpan data kendaraan ini?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                confirmButtonText: "Ya",
-                cancelButtonText: "Tidak"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    setTimeout(() => {
-                        Swal.fire({
-                            title: "Sukses!",
-                            text: "Data kendaraan berhasil disimpan.",
-                            icon: "success",
-                            confirmButtonColor: "#3085d6",
-                            confirmButtonText: "OK"
-                        }).then(() => {
-                            document.getElementById('save-form').submit();
-                        });
-                    }, 500);
-                }
-            });
+        if (tanggalBayarPajak && tanggalJatuhTempoPajak) {
+            let bayar = new Date(tanggalBayarPajak);
+            let jatuhTempo = new Date(tanggalJatuhTempoPajak);
+
+            if (bayar >= jatuhTempo) {
+                let alertDiv = document.getElementById('alertMessage');
+                alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Tanggal jatuh tempo pajak harus lebih besar dari tanggal bayar pajak terakhir.';
+                alertDiv.classList.remove('hidden');
+                alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => alertDiv.classList.add('hidden'), 5000);
+                return false;
+            }
+        }
+
+        let nominalInput = document.querySelector('input[name="nilai_perolehan"]');
+        let biayaLainInput = document.querySelector('input[name="nilai_buku"]');
+        nominalInput.value = nominalInput.value.replace(/[^\d]/g, '');
+        biayaLainInput.value = biayaLainInput.value.replace(/[^\d]/g, '');
+
+        Swal.fire({
+            title: "Konfirmasi",
+            text: "Apakah Anda yakin ingin menyimpan data kendaraan ini?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Ya",
+            cancelButtonText: "Tidak"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                setTimeout(() => {
+                    Swal.fire({
+                        title: "Sukses!",
+                        text: "Data kendaraan berhasil disimpan.",
+                        icon: "success",
+                        confirmButtonColor: "#3085d6",
+                        confirmButtonText: "OK"
+                    }).then(() => {
+                        document.getElementById('save-form').submit();
+                    });
+                }, 500);
+            }
         });
-    </script>
+    });
+</script>
 </x-app-layout>
 {{-- @endsection --}}
