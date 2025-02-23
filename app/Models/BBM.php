@@ -19,6 +19,7 @@ class Bbm extends Model
     protected $fillable = [
         'user_id',
         'id_kendaraan',
+        'id_peminjaman',
         'nominal',
         'jenis_bbm',
         'tgl_isi',
@@ -34,5 +35,10 @@ class Bbm extends Model
     public function kendaraan()
     {
         return $this->belongsTo(Kendaraan::class, 'id_kendaraan', 'id_kendaraan');
+    }
+
+    public function peminjaman()
+    {
+        return $this->belongsTo(Peminjaman::class, 'id_peminjaman', 'id_peminjaman');
     }
 }

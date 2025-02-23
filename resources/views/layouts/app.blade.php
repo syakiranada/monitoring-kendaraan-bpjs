@@ -112,6 +112,7 @@
                     ['icon' => 'clock-rotate-left', 'title' => 'Riwayat', 'route' => 'admin.riwayat.index'],
                     ['icon' => 'users', 'title' => 'Kelola Akun', 'route' => 'admin.kelola-akun.index'],
 
+                    ['icon' => 'gas-pump', 'title' => 'Pengisian BBM', 'route' => 'admin.pengisianBBM']
                 ]);
             } elseif ($user->peran === 'pengguna') {
                 $menuItems = array_merge($menuItems, [

@@ -28,4 +28,9 @@ class Peminjaman extends Model {
     {
         return $this->hasMany(ServisInsidental::class, 'id_peminjaman', 'id_peminjaman');
     }
+
+    public function pengisianBBM()
+    {
+        return $this->hasMany(BBM::class, 'id_peminjaman', 'id_peminjaman');
+    }
 }
