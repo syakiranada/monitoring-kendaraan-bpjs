@@ -107,6 +107,7 @@
                     ['icon' => 'shield', 'title' => 'Asuransi', 'route' => 'asuransi.daftar_kendaraan_asuransi'],
                     ['icon' => 'screwdriver-wrench', 'title' => 'Servis Rutin', 'route' => 'admin.servisRutin'],
                     ['icon' => 'gears', 'title' => 'Servis Insidental', 'route' => 'admin.servisInsidental'],
+                    ['icon' => 'gas-pump', 'title' => 'Pengisian BBM', 'route' => 'admin.pengisianBBM']
                 ]);
             } elseif ($user->peran === 'pengguna') {
                 $menuItems = array_merge($menuItems, [

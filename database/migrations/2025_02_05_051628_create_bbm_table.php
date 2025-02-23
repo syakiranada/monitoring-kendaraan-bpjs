@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id('id_bbm'); // Primary Key
             $table->unsignedBigInteger('user_id'); // Foreign Key untuk pengguna
             $table->unsignedBigInteger('id_kendaraan'); // Foreign Key untuk kendaraan
+            $table->unsignedBigInteger('id_peminjaman')->nullable(); // Tambahkan kolom untuk relasi ke peminjaman
             $table->integer('nominal')->nullable(); // Jumlah nominal pengisian BBM
             $table->string('jenis_bbm', 25)->nullable();// Jenis BBM (varchar 25)
             $table->date('tgl_isi')->nullable(); // Tanggal pengisian BBM
@@ -23,6 +24,7 @@ return new class extends Migration
             // Foreign Key Constraints
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('id_kendaraan')->references('id_kendaraan')->on('kendaraan')->onDelete('cascade');
+            $table->foreign('id_peminjaman')->references('id_peminjaman')->on('peminjaman')->onDelete('cascade'); // Relasi ke tabel peminjaman
         });
     }
 

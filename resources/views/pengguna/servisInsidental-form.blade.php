@@ -235,7 +235,7 @@
                 setupFileUpload("fotoInputBuktiFisik", "fileNameBuktiFisik", "removeFileBuktiFisik");
             });
     
-            document.getElementById('hargaInput').addEventListener('input', function (e) {
+            {{--  document.getElementById('hargaInput').addEventListener('input', function (e) {
                 // Ambil nilai input
                 let value = e.target.value;
             
@@ -247,6 +247,11 @@
             
                 // Perbarui nilai input dengan angka yang sudah bersih
                 e.target.value = value;
+            });  --}}
+
+            document.getElementById('hargaInput').addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+                e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
             });
         </script>
     </body>

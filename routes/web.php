@@ -15,6 +15,7 @@ use App\Http\Controllers\AsuransiController;
 use App\Http\Controllers\PajakController;
 use App\Http\Controllers\DaftarKendaraanAdminController;
 use App\Http\Controllers\BerandaController;
+use App\Http\Controllers\IsiBBMController;
 use App\Http\Controllers\IsiBBMPenggunaController;
 use App\Http\Controllers\ServisInsidentalPenggunaController;
 use App\Http\Controllers\ServisRutinController;
@@ -49,6 +50,10 @@ Route::middleware(['auth', 'user'])->group(function () {
     Route::post('/peminjaman/perpanjangan', [PeminjamanPenggunaController::class, 'perpanjangan'])->name('peminjaman.perpanjang');
     
     Route::get('/pengisianBBM', [IsiBBMPenggunaController::class, 'index'])->name('pengisianBBM');
+    Route::get('/pengisianBBM/create', [IsiBBMPenggunaController::class, 'create'])->name('pengisianBBM.create');
+    Route::post('/pengisianBBM', [IsiBBMPenggunaController::class, 'store'])->name('pengisianBBM.store');
+    Route::get('/pengisianBBM/{id}', [IsiBBMPenggunaController::class, 'detail'])->name('pengisianBBM.detail');
+
     Route::get('/servisInsidental', [ServisInsidentalPenggunaController::class, 'index'])->name('servisInsidental');
     Route::get('/servisInsidental/create', [ServisInsidentalPenggunaController::class, 'create'])->name('servisInsidental.create');
     Route::post('/servisInsidental', [ServisInsidentalPenggunaController::class, 'store'])->name('servisInsidental.store');
@@ -85,6 +90,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/servisInsidental/create', [ServisInsidentalController::class, 'create'])->name('admin.servisInsidental.create');
     Route::post('/admin/servisInsidental', [ServisInsidentalController::class, 'store'])->name('admin.servisInsidental.store');
     Route::get('/admin/servisInsidental/{id}', [ServisInsidentalController::class, 'detail'])->name('admin.servisInsidental.detail');
+
+    Route::get('/admin/pengisianBBM', [IsiBBMController::class, 'index'])->name('admin.pengisianBBM');
+    Route::get('/admin/pengisianBBM/create', [IsiBBMController::class, 'create'])->name('admin.pengisianBBM.create');
+    Route::post('/admin/pengisianBBM', [IsiBBMController::class, 'store'])->name('admin.pengisianBBM.store');
+    Route::get('/admin/pengisianBBM/{id}', [IsiBBMController::class, 'detail'])->name('admin.pengisianBBM.detail');
     
     Route::get('/admin/pengajuan-peminjaman', [PengajuanPeminjamanController::class, 'index'])->name('admin.pengajuan-peminjaman.index');
     Route::get('/admin/pengajuan-peminjaman/{id}', [PengajuanPeminjamanController::class, 'detail'])->name('admin.pengajuan-peminjaman.detail');
