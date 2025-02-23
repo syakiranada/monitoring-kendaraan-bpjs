@@ -54,7 +54,7 @@
                             <td class="px-6 py-4">Rp{{ number_format($item->nominal + $item->biaya_asuransi_lain, 0, ',', '.') }}</td>
                             <td class="px-6 py-4">{{ $item->user->name ?? '-' }}</td>
                             <td class="px-6 py-4">
-                                <a href="{{ route('admin.riwayat.detail-asuransi', $item->id_asuransi) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
+                                <a href="{{ route('admin.riwayat.detail-asuransi', ['id' => $item->id_asuransi, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
                                     Detail
                                 </a>
                             </td>
@@ -70,7 +70,7 @@
 
         <!-- Pagination -->
         <div class="mt-4">
-            {{ $riwayatAsuransi->links() }}
+            {{ $riwayatAsuransi->appends(request()->query())->links() }}
         </div>
     </div>
 </x-app-layout>

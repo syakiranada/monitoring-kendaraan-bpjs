@@ -54,7 +54,7 @@
                             <td class="px-6 py-4">Rp{{ number_format($item->harga, 0, ',', '.') }}</td>
                             <td class="px-6 py-4">{{ $item->user->name }}</td>
                             <td class="px-6 py-4">
-                                <a href="{{ route('admin.riwayat.detail-servis-rutin', $item->id_servis_rutin) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
+                                <a href="{{ route('admin.riwayat.detail-servis-rutin', ['id' => $item->id_servis_rutin, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
                                     Detail
                                 </a>
                             </td>
@@ -70,7 +70,7 @@
 
         <!-- Pagination -->
         <div class="mt-4">
-            {{ $riwayatServis->links() }}
+            {{ $riwayatServis->appends(request()->query())->links() }}
         </div>
     </div>
 </x-app-layout>

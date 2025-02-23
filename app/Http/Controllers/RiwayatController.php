@@ -21,6 +21,7 @@ class RiwayatController extends Controller
 
     public function peminjaman(Request $request)
     {
+        $search = $request->search;
         $query = Peminjaman::with(['user', 'kendaraan'])->orderBy('tgl_mulai', 'desc');
 
         // Search functionality
@@ -44,7 +45,7 @@ class RiwayatController extends Controller
         $riwayatPeminjaman = $query->paginate(10);
         $kendaraan = Kendaraan::all(); // Ambil semua kendaraan untuk dropdown filter
 
-        return view('admin.riwayat.peminjaman', compact('riwayatPeminjaman', 'kendaraan'));
+        return view('admin.riwayat.peminjaman', compact('riwayatPeminjaman', 'kendaraan', 'search'));
     }
 
     public function detailPeminjaman($id)
@@ -56,6 +57,7 @@ class RiwayatController extends Controller
 
     public function pajak(Request $request)
     {
+        $search = $request->search;
         // Ambil data pajak dengan relasi kendaraan dan user (admin yang input)
         $query = Pajak::with(['kendaraan', 'user'])
             ->orderBy('tgl_bayar', 'desc')
@@ -79,7 +81,7 @@ class RiwayatController extends Controller
         // Paginate hasilnya
         $riwayatPajak = $query->paginate(10);
 
-        return view('admin.riwayat.pajak', compact('riwayatPajak'));
+        return view('admin.riwayat.pajak', compact('riwayatPajak', 'search'));
     }
 
     public function detailPajak($id)
@@ -97,6 +99,7 @@ class RiwayatController extends Controller
 
     public function asuransi(Request $request)
     {
+        $search = $request->search;
         $query = Asuransi::with(['kendaraan', 'user'])
             ->orderBy('tgl_bayar', 'desc');
 
@@ -123,7 +126,7 @@ class RiwayatController extends Controller
 
         $riwayatAsuransi = $query->paginate(10);
 
-        return view('admin.riwayat.asuransi', compact('riwayatAsuransi'));
+        return view('admin.riwayat.asuransi', compact('riwayatAsuransi', 'search'));
     }
 
     public function detailAsuransi($id)
@@ -149,6 +152,7 @@ class RiwayatController extends Controller
 
     public function servisRutin(Request $request)
     {
+        $search = $request->search;
         $query = ServisRutin::with(['kendaraan', 'user'])
             ->orderBy('tgl_servis_real', 'desc');
 
@@ -173,7 +177,7 @@ class RiwayatController extends Controller
 
         $riwayatServis = $query->paginate(10);
 
-        return view('admin.riwayat.servis-rutin', compact('riwayatServis'));
+        return view('admin.riwayat.servis-rutin', compact('riwayatServis', 'search'));
     }
 
     public function detailServisRutin($id)
@@ -186,6 +190,7 @@ class RiwayatController extends Controller
 
     public function servisInsidental(Request $request)
     {
+        $search = $request->search;
         $query = ServisInsidental::with(['kendaraan', 'user'])
             ->orderBy('tgl_servis', 'desc');
 
@@ -208,7 +213,7 @@ class RiwayatController extends Controller
 
         $riwayatServis = $query->paginate(10);
 
-        return view('admin.riwayat.servis-insidental', compact('riwayatServis'));
+        return view('admin.riwayat.servis-insidental', compact('riwayatServis', 'search'));
     }
 
     public function detailServisInsidental($id)
@@ -216,7 +221,7 @@ class RiwayatController extends Controller
         $servis = ServisInsidental::with(['kendaraan'])
             ->findOrFail($id);
 
-        return view('admin.servisInsidental-detail', compact('servis'));
+        return view('admin.riwayat.detail-servis-insidental', compact('servis'));
     }
 
     public function pengisianBBM(Request $request)
@@ -264,7 +269,13 @@ class RiwayatController extends Controller
             'riwayatBBM' => $riwayatBBM,
             'totalTransaksi' => $totalTransaksi,
             'kendaraan' => $kendaraanList,
-            'penggunas' => $penggunaList
+            'penggunas' => $penggunaList,
+            'filterParams' => [
+                'kendaraan' => $kendaraan,
+                'pengguna' => $pengguna,
+                'tgl_awal' => $tgl_awal,
+                'tgl_akhir' => $tgl_akhir
+            ]
         ]);
     }
 
@@ -272,6 +283,18 @@ class RiwayatController extends Controller
     public function detailPengisianBBM($id)
     {
 
+        $bbm = BBM::with(['kendaraan'])->findOrFail($id);
+        
+        // Ambil semua parameter filter dari request
+        $filterParams = [
+            'kendaraan' => request()->query('kendaraan'),
+            'pengguna' => request()->query('pengguna'),
+            'tgl_awal' => request()->query('tgl_awal'),
+            'tgl_akhir' => request()->query('tgl_akhir'),
+            'page' => request()->query('page', 1)
+        ];
+
+        return view('admin.riwayat.detail-pengisian-bbm', compact('bbm', 'filterParams'));
     }
 
 }

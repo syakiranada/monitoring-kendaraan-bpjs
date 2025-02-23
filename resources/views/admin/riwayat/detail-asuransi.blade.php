@@ -13,10 +13,12 @@
         </style>
          <h1 class="text-2xl font-bold mb-6">Detail Asuransi</h1>
             <div class="w-full max-w-md p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
-                @php 
+                {{-- @php 
                     $currentPage = request()->query('page');
                 @endphp 
-                    <input type="hidden" name="current_page" value="{{ $currentPage }}">  
+                    <input type="hidden" name="current_page" value="{{ $currentPage }}">   --}}
+                    <input type="hidden" name="page" value="{{ request()->query('page', 1) }}">
+                    <input type="hidden" name="search" value="{{ request()->query('search') }}">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-semibold text-gray-900">
                         {{ $asuransi->kendaraan->merk }} {{ $asuransi->kendaraan->tipe }}
@@ -75,9 +77,9 @@
                             <span class="text-gray-400">Tidak ada bukti</span>
                         @endif
                     </div>
-                    <button type="button" onclick="window.location.href='{{ route('admin.riwayat.asuransi', ['page' => $currentPage]) }}'" class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
+                    <button type="button" onclick="window.location.href='{{ route('admin.riwayat.asuransi', ['page' => request('page'), 'search' => request('search')]) }}'" class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
                         Kembali
-                    </button>   
+                    </button>    
                 </div>
             </div>
         </div>

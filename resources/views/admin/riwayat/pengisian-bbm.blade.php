@@ -52,7 +52,7 @@
             </div>
 
             <div class="mt-4">
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Filter</button>
+                <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2">Filter</button>
             </div>
         </form>
 
@@ -83,7 +83,17 @@
                             <td class="px-6 py-4">Rp{{ number_format($item->nominal, 0, ',', '.') }}</td>
                             <td class="px-6 py-4">{{ $item->user->name }}</td>
                             <td class="px-6 py-4">
-                                <a href="{{ route('admin.riwayat.detail-pengisian-bbm', $item->id_bbm) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
+                                {{-- <a href="{{ route('admin.riwayat.detail-pengisian-bbm', ['id' => $item->id_bbm, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
+                                    Detail
+                                </a> --}}
+                                <a href="{{ route('admin.riwayat.detail-pengisian-bbm', [
+                                    'id' => $item->id_bbm,
+                                    'kendaraan' => request('kendaraan'),
+                                    'pengguna' => request('pengguna'),
+                                    'tgl_awal' => request('tgl_awal'),
+                                    'tgl_akhir' => request('tgl_akhir'),
+                                    'page' => request()->query('page', 1)
+                                ]) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
                                     Detail
                                 </a>
                             </td>
@@ -99,7 +109,7 @@
 
         <!-- Pagination -->
         <div class="mt-4">
-            {{ $riwayatBBM->links() }}
+            {{ $riwayatBBM->appends(request()->query())->links() }}
         </div>
     </div>
 </x-app-layout>

@@ -12,7 +12,7 @@ class CekFisikController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil semua kendaraan
+        $search = $request->input('search');
         $kendaraan = Kendaraan::leftJoin('cek_fisik', 'kendaraan.id_kendaraan', '=', 'cek_fisik.id_kendaraan')
             ->select(
                 'kendaraan.id_kendaraan',
@@ -21,20 +21,16 @@ class CekFisikController extends Controller
                 'kendaraan.plat_nomor',
                 DB::raw('(SELECT tgl_cek_fisik FROM cek_fisik WHERE cek_fisik.id_kendaraan = kendaraan.id_kendaraan ORDER BY tgl_cek_fisik DESC LIMIT 1) as tgl_cek_fisik_terakhir')
             )
-            ->groupBy('kendaraan.id_kendaraan', 'kendaraan.merk', 'kendaraan.tipe', 'kendaraan.plat_nomor');
-
-        // Search functionality
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $kendaraan->where(function ($query) use ($search) {
-                $query->where('merk', 'like', "%$search%")
-                    ->orWhere('tipe', 'like', "%$search%")
-                    ->orWhere('plat_nomor', 'like', "%$search%");
-            });
-        }
-
-        // Tambahkan pagination agar lebih rapi
-        $kendaraan = $kendaraan->paginate(10);
+            ->groupBy('kendaraan.id_kendaraan', 'kendaraan.merk', 'kendaraan.tipe', 'kendaraan.plat_nomor')
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('kendaraan.merk', 'LIKE', "%{$search}%")
+                    ->orWhere('kendaraan.tipe', 'LIKE', "%{$search}%")
+                    ->orWhere('kendaraan.plat_nomor', 'LIKE', "%{$search}%");
+                });
+            })
+            ->paginate(10)
+            ->appends(['search' => $search]); // Append search parameter to pagination links
 
         return view('admin.cek-fisik.index', compact('kendaraan'));
     }
@@ -63,7 +59,10 @@ class CekFisikController extends Controller
 
         CekFisik::create(array_merge($request->all(), ['user_id' => Auth::id()]));
 
-        return redirect()->route('admin.cek-fisik.index')->with('success', 'Cek fisik berhasil dicatat.');
+        return redirect()->route('admin.cek-fisik.index', [
+            'page' => $request->input('page', 1),
+            'search' => $request->input('search')
+        ])->with('success', 'Cek fisik berhasil dicatat.');
     }
 
     public function detail($id_kendaraan)
@@ -80,16 +79,22 @@ class CekFisikController extends Controller
 
     public function edit($id_kendaraan)
     {
+        $search = request()->query('search');
+        $page = request()->query('page', 1);
+
         // Ambil cek fisik terakhir untuk kendaraan
         $cekFisik = CekFisik::where('id_kendaraan', $id_kendaraan)
             ->orderBy('tgl_cek_fisik', 'desc')
             ->first();
 
         if (!$cekFisik) {
-            return redirect()->route('admin.cek-fisik.index')->with('error', 'Cek fisik tidak ditemukan.');
+            return redirect()->route('admin.cek-fisik.index', [
+                'page' => $page,
+                'search' => $search
+            ])->with('error', 'Cek fisik tidak ditemukan.');
         }
-
-        return view('admin.cek-fisik.edit', compact('cekFisik'));
+    
+        return view('admin.cek-fisik.edit', compact('cekFisik', 'search', 'page'));
     }
 
     public function update(Request $request, $id)
@@ -109,8 +114,16 @@ class CekFisikController extends Controller
 
         $cekFisik = CekFisik::findOrFail($id);
         $cekFisik->update($request->all());
-        
-        return redirect()->route('admin.cek-fisik.index')->with('success', 'Cek fisik berhasil diperbarui.');
+
+        $page = $request->input('page', 1);
+        $search = $request->input('search');
+
+        return redirect()
+            ->route('admin.cek-fisik.index', [
+                'page' => $page,
+                'search' => $search
+            ])
+            ->with('success', 'Data cek fisik berhasil diperbarui.');
     }
 
     public function destroy($id_kendaraan)
@@ -124,6 +137,12 @@ class CekFisikController extends Controller
             $cekFisikTerakhir->delete();
         }
 
-        return redirect()->route('admin.cek-fisik.index')->with('success', 'Cek fisik terakhir berhasil dihapus.');
+        $page = request()->query('page', 1);
+        $search = request()->query('search');
+
+        return redirect()->route('admin.cek-fisik.index', [
+            'page' => $page,
+            'search' => $search
+        ])->with('success', 'Cek fisik terakhir berhasil dihapus.');
     }
 }

@@ -65,7 +65,7 @@
                             </td>
                             <td class="px-6 py-4">
                                 <!-- Button for "Detail" -->
-                                <a href="{{ route('admin.riwayat.detail-peminjaman', $item->id_peminjaman) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
+                                <a href="{{ route('admin.riwayat.detail-peminjaman', ['id' => $item->id_peminjaman, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
                                     Detail
                                 </a>
                             </td>
@@ -81,8 +81,13 @@
 
         <!-- Pagination -->
         <div class="mt-4">
-            {{ $riwayatPeminjaman->links() }}
+            {{ $riwayatPeminjaman->appends(request()->query())->links() }}
         </div>
+        {{-- <nav class="pb-4 flex items-center justify-end pt-4 px-12" aria-label="Table navigation">
+            <div class="w-full md:w-auto flex justify-end">
+                {{ $riwayatPeminjaman->appends(request()->query())->onEachSide(1)->links() }}
+            </div>
+        </nav>  --}}
     </div>
 </x-app-layout>
 {{-- @endsection --}}

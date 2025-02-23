@@ -8,6 +8,12 @@
             <h2 class="text-2xl font-bold mb-6 text-center">Form Cek Fisik Kendaraan</h2>
             <form id = "save-form" action="{{ route('admin.cek-fisik.store') }}" method="POST">
                 @csrf
+                {{-- @php 
+                $currentPage = request()->query('page', 1);
+                @endphp 
+                <input type="hidden" name="current_page" value="{{ $currentPage }}"> --}}
+                <input type="hidden" name="page" value="{{ request()->query('page', 1) }}">
+                <input type="hidden" name="search" value="{{ request()->query('search') }}">
                 <input type="hidden" name="id_kendaraan" value="{{ $kendaraan->id_kendaraan }}">
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
@@ -56,7 +62,9 @@
                 </div>
                 
                 <div class="flex justify-end space-x-4 mb-2">
-                    <button type="button" onclick="window.location.href='{{ route('admin.cek-fisik.index') }}'" class="bg-red-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition">Batal</button>
+                    <button type="button" onclick="window.location.href='{{ route('admin.cek-fisik.index', ['page' => request('page'), 'search' => request('search')]) }}'" class="bg-red-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition">
+                        Batal
+                    </button>
                     <button type="submit" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition">Simpan</button>
                 </div>
                 <div id="alertMessage" class="hidden p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">

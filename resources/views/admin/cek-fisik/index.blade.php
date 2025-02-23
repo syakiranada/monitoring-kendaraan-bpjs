@@ -7,7 +7,7 @@
         <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Daftar Cek Fisik Kendaraan</h2>
 
         <!-- Search Form -->
-        <form action="{{ route('admin.pengajuan-peminjaman.index') }}" method="GET" class="flex justify-end pb-4">
+        <form action="{{ route('admin.cek-fisik.index') }}" method="GET" class="flex justify-end pb-4">
             <div class="relative">
                 <input 
                     type="text" 
@@ -53,16 +53,18 @@
                             <td class="px-6 py-4">{{ $item->plat_nomor }}</td>
                             <td class="px-6 py-4">{{ $item->tgl_cek_fisik_terakhir ? date('d-m-Y', strtotime($item->tgl_cek_fisik_terakhir)) : '-' }}</td>
                             <td class="flex space-x-2 px-6 py-4">
-                                <a href="{{ route('admin.cek-fisik.create', $item->id_kendaraan) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
+                                <a href="{{ route('admin.cek-fisik.create', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page'), 'search' => request()->query('search')]) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
                                     Catat
                                 </a>
-                                <a href="{{ route('admin.cek-fisik.detail', $item->id_kendaraan) }}" class="text-gray-600 dark:text-gray-500 hover:underline">
+                                <a href="{{ route('admin.cek-fisik.detail', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page'), 'search' => request()->query('search')]) }}" 
+                                    class="text-gray-600 dark:text-gray-500 hover:underline">
                                     Detail
                                 </a>
-                                <a href="{{ route('admin.cek-fisik.edit', $item->id_kendaraan) }}" class="text-yellow-600 dark:text-yellow-500 hover:underline">
+                                <a href="{{ route('admin.cek-fisik.edit', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page'), 'search' => request()->query('search')]) }}"
+                                    class="text-yellow-600 dark:text-yellow-500 hover:underline">
                                     Edit
                                 </a>
-                                <form action="{{ route('admin.cek-fisik.destroy', $item->id_kendaraan) }}" method="POST" onsubmit="return confirmDelete(event, this);">
+                                <form action="{{ route('admin.cek-fisik.destroy', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page'), 'search' => request()->query('search')]) }}" method="POST" onsubmit="return confirmDelete(event, this);">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-red-600 dark:text-red-500 hover:underline">
@@ -88,6 +90,11 @@
         <div class="mt-4">
             {{ $kendaraan->links() }}
         </div>
+        {{-- <nav class="pb-4 flex items-center justify-end pt-4 px-12" aria-label="Table navigation">
+            <div class="w-full md:w-auto flex justify-end">
+                {{ $kendaraan->appends(request()->query())->onEachSide(1)->links() }}
+            </div>
+        </nav>  --}}
 
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
