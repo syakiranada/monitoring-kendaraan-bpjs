@@ -129,6 +129,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/riwayat/detail-servis-insidental/{id}', [RiwayatController::class, 'detailServisInsidental'])->name('admin.riwayat.detail-servis-insidental');
     Route::get('/admin/riwayat/pengisian-bbm', [RiwayatController::class, 'pengisianBBM'])->name('admin.riwayat.pengisian-bbm');
     Route::get('/admin/riwayat/detail-pengisian-bbm/{id}', [RiwayatController::class, 'detailPengisianBBM'])->name('admin.riwayat.detail-pengisian-bbm');
+    Route::get('/admin/riwayat/cek-fisik', [RiwayatController::class, 'cekFisik'])->name('admin.riwayat.cek-fisik');
+    Route::get('/admin/riwayat/detail-cek-fisik/{id}', [RiwayatController::class, 'detailCekFisik'])->name('admin.riwayat.detail-cek-fisik');
 
     //PAJAK
     Route::get('/pajak', [PajakController::class, 'index'])->name('pajak.daftar_kendaraan_pajak');

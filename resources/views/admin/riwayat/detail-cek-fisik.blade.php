@@ -38,10 +38,10 @@
             {{-- <button type="button" onclick="window.location.href='{{ route('admin.cek-fisik.index', ['page' => request('page'), 'search' => request('search')]) }}'" 
                     class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
                 Kembali
-            </button> --}}
-            <button type="button" onclick="window.location.href='{{ route('admin.cek-fisik.index', ['page' => request('page'), 'search' => request('search')]) }}'" class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
+            </button> --}} 
+            <button type="button" onclick="window.location.href='{{ route('admin.riwayat.cek-fisik', ['page' => request('page'), 'search' => request('search')]) }}'" class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
                 Kembali
-            </button>   
+            </button>  
         </div>
     </div>
 </x-app-layout>

@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\BBM;
 use App\Models\Pajak;
 use App\Models\Asuransi;
+use App\Models\CekFisik;
 use App\Models\Kendaraan;
 use App\Models\Peminjaman;
 use App\Models\ServisRutin;
 use Illuminate\Http\Request;
 use App\Models\ServisInsidental;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\User;
 
 class RiwayatController extends Controller
@@ -295,6 +297,40 @@ class RiwayatController extends Controller
         ];
 
         return view('admin.riwayat.detail-pengisian-bbm', compact('bbm', 'filterParams'));
+    }
+
+    public function cekFisik(Request $request)
+    {
+        $search = $request->search;
+        $query = CekFisik::with(['kendaraan', 'user'])
+            ->orderBy('tgl_cek_fisik', 'desc');
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('kendaraan', function ($q) use ($search) {
+                    $q->where('merk', 'like', "%$search%")
+                        ->orWhere('tipe', 'like', "%$search%")
+                        ->orWhere('plat_nomor', 'like', "%$search%");
+                })
+                ->orWhereHas('user', function ($q) use ($search) {
+                    $q->where('name', 'like', "%$search%");
+                })
+                ->orWhere('tgl_cek_fisik', 'like', "%$search%");
+            });
+        }
+
+        $riwayatCekFisik = $query->paginate(10);
+
+        return view('admin.riwayat.cek-fisik', compact('riwayatCekFisik', 'search'));
+    }
+
+    public function detailCekFisik($id)
+    {
+        $cekFisik = CekFisik::with(['kendaraan'])
+            ->findOrFail($id);
+    
+        return view('admin.riwayat.detail-cek-fisik', compact('cekFisik'));
     }
 
 }
