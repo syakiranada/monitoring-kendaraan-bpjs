@@ -1,8 +1,8 @@
-@extends('layouts.sidebar')
+{{-- @extends('layouts.sidebar')
 
-@section('content')
+@section('content') --}}
 
-{{-- <x-app-layout> --}}
+<x-app-layout>
     <div class="min-h-screen flex items-center justify-center py-12 px-4">
         <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-lg">
             <h2 class="text-2xl font-bold mb-6 text-center">Form Cek Fisik Kendaraan</h2>
@@ -103,5 +103,5 @@
              });
          });
      </script>
-{{-- </x-app-layout> --}}
-@endsection
+</x-app-layout>
+{{-- @endsection --}}

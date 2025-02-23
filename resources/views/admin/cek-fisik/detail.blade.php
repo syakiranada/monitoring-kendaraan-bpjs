@@ -1,33 +1,41 @@
-@extends('layouts.sidebar')
-
-@section('content')
-
-{{-- <x-app-layout> --}}
-    <div class="min-h-screen flex items-center justify-center py-12 px-4">
-        <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-lg">
-            <h2 class="text-2xl font-bold mb-6 text-center">Detail Cek Fisik Kendaraan</h2>
-            
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Cek Fisik</label>
-                <p class="w-full p-2.5 border rounded-lg bg-gray-100">{{ $cekFisik->tgl_cek_fisik }}</p>
+<x-app-layout>
+    <h1 class="text-2xl font-bold mb-6">Detail Cek Fisik Kendaraan</h1>
+    <div class="block max-w-md p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 
+                dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+        @php 
+            $currentPage = request()->query('page');
+        @endphp 
+        <input type="hidden" name="current_page" value="{{ $currentPage }}">        
+        <div class="space-y-3">
+            <div class="flex justify-between items-center">
+                <h5 class="text-xl font-bold text-gray-900 dark:text-white">
+                    {{ $cekFisik->kendaraan->merk }} {{ $cekFisik->kendaraan->tipe }} - {{ $kendaraan->plat_nomor }}
+                </h5>
             </div>
-            
-            @foreach(['mesin', 'accu', 'air_radiator', 'air_wiper', 'body', 'ban', 'pengharum', 'kondisi_keseluruhan'] as $field)
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ ucfirst(str_replace('_', ' ', $field)) }}</label>
-                    <p class="w-full p-2.5 border rounded-lg bg-gray-100">{{ $cekFisik->$field }}</p>
+
+            <div class="space-y-2">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Tanggal Cek Fisik</span>
+                    <span class="text-gray-900">{{ $cekFisik->tgl_cek_fisik }}</span>
                 </div>
-            @endforeach
-            
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
-                <p class="w-full p-2.5 border rounded-lg bg-gray-100">{{ $cekFisik->catatan }}</p>
+
+                @foreach(['mesin', 'accu', 'air_radiator', 'air_wiper', 'body', 'ban', 'pengharum', 'kondisi_keseluruhan'] as $field)
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600 dark:text-gray-400">{{ ucfirst(str_replace('_', ' ', $field)) }}</span>
+                        <span class="text-gray-900 dark:text-white">{{ $cekFisik->$field }}</span>
+                    </div>
+                @endforeach
+
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600 dark:text-gray-400">Catatan</span>
+                    <span class="text-gray-900 dark:text-white">{{ $cekFisik->catatan }}</span>
+                </div>
             </div>
-            
-            <div class="flex justify-end space-x-4 mb-2">
-                <button type="button" onclick="window.location.href='{{ route('admin.cek-fisik.index') }}'" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition">Kembali</button>
-            </div>
+
+            <button type="button" onclick="window.location.href='{{ route('admin.cek-fisik.index', ['page' => $currentPage]) }}'" 
+                    class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
+                Kembali
+            </button>  
         </div>
     </div>
-{{-- </x-app-layout> --}}
-@endsection
+</x-app-layout>

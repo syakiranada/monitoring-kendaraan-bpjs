@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BBM;
 use App\Models\Pajak;
 use App\Models\Asuransi;
 use App\Models\Kendaraan;
 use App\Models\Peminjaman;
 use App\Models\ServisRutin;
 use Illuminate\Http\Request;
+use App\Models\ServisInsidental;
+use Illuminate\Foundation\Auth\User;
 
 class RiwayatController extends Controller
 {
@@ -174,6 +177,99 @@ class RiwayatController extends Controller
     }
 
     public function detailServisRutin($id)
+    {
+        $servis = ServisRutin::with(['kendaraan'])
+            ->findOrFail($id);
+
+        return view('admin.riwayat.detail-servis-rutin', compact('servis'));
+    }
+
+    public function servisInsidental(Request $request)
+    {
+        $query = ServisInsidental::with(['kendaraan', 'user'])
+            ->orderBy('tgl_servis', 'desc');
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('kendaraan', function ($q) use ($search) {
+                    $q->where('merk', 'like', "%$search%")
+                        ->orWhere('tipe', 'like', "%$search%")
+                        ->orWhere('plat_nomor', 'like', "%$search%");
+                })
+                ->orWhereHas('user', function ($q) use ($search) {
+                    $q->where('name', 'like', "%$search%");
+                })
+                ->orWhere('lokasi', 'like', "%$search%")
+                ->orWhere('harga', 'like', "%$search%")
+                ->orWhere('tgl_servis', 'like', "%$search%");
+            });
+        }
+
+        $riwayatServis = $query->paginate(10);
+
+        return view('admin.riwayat.servis-insidental', compact('riwayatServis'));
+    }
+
+    public function detailServisInsidental($id)
+    {
+        $servis = ServisInsidental::with(['kendaraan'])
+            ->findOrFail($id);
+
+        return view('admin.servisInsidental-detail', compact('servis'));
+    }
+
+    public function pengisianBBM(Request $request)
+    {
+        // Get the filter inputs from the request
+        $kendaraan = $request->get('kendaraan');
+        $pengguna = $request->get('pengguna');
+        $tgl_awal = $request->get('tgl_awal');
+        $tgl_akhir = $request->get('tgl_akhir');
+
+        // Build the query
+        $query = BBM::query();
+
+        if ($kendaraan) {
+            $query->whereHas('kendaraan', function($q) use ($kendaraan) {
+                $q->where('plat_nomor', $kendaraan);
+            });
+        }
+
+        if ($pengguna) {
+            $query->whereHas('user', function($q) use ($pengguna) {
+                $q->where('id', $pengguna);
+            });
+        }        
+
+        if ($tgl_awal) {
+            $query->whereDate('tgl_isi', '>=', $tgl_awal);
+        }
+
+        if ($tgl_akhir) {
+            $query->whereDate('tgl_isi', '<=', $tgl_akhir);
+        }
+
+        // Get the filtered data
+        $riwayatBBM = $query->with(['kendaraan', 'user'])->paginate(10);
+
+        // Calculate the total transaksi
+        $totalTransaksi = collect($riwayatBBM->items())->sum('nominal');
+
+        // Get the list of vehicles and users for the filter
+        $kendaraanList = Kendaraan::all();
+        $penggunaList = User::all();
+
+        return view('admin.riwayat.pengisian-bbm', [
+            'riwayatBBM' => $riwayatBBM,
+            'totalTransaksi' => $totalTransaksi,
+            'kendaraan' => $kendaraanList,
+            'penggunas' => $penggunaList
+        ]);
+    }
+
+
+    public function detailPengisianBBM($id)
     {
 
     }

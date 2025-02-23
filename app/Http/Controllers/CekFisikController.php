@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class CekFisikController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         // Ambil semua kendaraan
         $kendaraan = Kendaraan::leftJoin('cek_fisik', 'kendaraan.id_kendaraan', '=', 'cek_fisik.id_kendaraan')
@@ -21,8 +21,20 @@ class CekFisikController extends Controller
                 'kendaraan.plat_nomor',
                 DB::raw('(SELECT tgl_cek_fisik FROM cek_fisik WHERE cek_fisik.id_kendaraan = kendaraan.id_kendaraan ORDER BY tgl_cek_fisik DESC LIMIT 1) as tgl_cek_fisik_terakhir')
             )
-            ->groupBy('kendaraan.id_kendaraan', 'kendaraan.merk', 'kendaraan.tipe', 'kendaraan.plat_nomor')
-            ->get();
+            ->groupBy('kendaraan.id_kendaraan', 'kendaraan.merk', 'kendaraan.tipe', 'kendaraan.plat_nomor');
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $kendaraan->where(function ($query) use ($search) {
+                $query->where('merk', 'like', "%$search%")
+                    ->orWhere('tipe', 'like', "%$search%")
+                    ->orWhere('plat_nomor', 'like', "%$search%");
+            });
+        }
+
+        // Tambahkan pagination agar lebih rapi
+        $kendaraan = $kendaraan->paginate(10);
 
         return view('admin.cek-fisik.index', compact('kendaraan'));
     }

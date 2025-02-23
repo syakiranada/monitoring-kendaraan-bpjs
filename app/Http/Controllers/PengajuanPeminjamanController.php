@@ -9,14 +9,36 @@ use Illuminate\Support\Facades\Log;
 
 class PengajuanPeminjamanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $peminjaman = Peminjaman::with(['user', 'kendaraan'])
-            ->where('status_pinjam', 'Menunggu Persetujuan')
-            ->get();
+            ->where('status_pinjam', 'Menunggu Persetujuan');
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $peminjaman->where(function ($q) use ($search) {
+                $q->whereHas('user', function ($qUser) use ($search) {
+                    $qUser->where('name', 'like', "%$search%");
+                })
+                ->orWhereHas('kendaraan', function ($qKendaraan) use ($search) {
+                    $qKendaraan->where('merk', 'like', "%$search%")
+                            ->orWhere('tipe', 'like', "%$search%")
+                            ->orWhere('plat_nomor', 'like', "%$search%");
+                })
+                ->orWhere('tujuan', 'like', "%$search%")
+                ->orWhere('tgl_mulai', 'like', "%$search%")
+                ->orWhere('tgl_selesai', 'like', "%$search%")
+                ;
+            });
+        }
+
+        // pagination
+        $peminjaman = $peminjaman->paginate(10);
 
         return view('admin.pengajuan-peminjaman.index', compact('peminjaman'));
     }
+
 
     public function detail($id)
     {
