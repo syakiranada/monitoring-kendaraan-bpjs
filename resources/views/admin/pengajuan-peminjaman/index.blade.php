@@ -1,10 +1,29 @@
-@extends('layouts.sidebar')
+{{-- @extends('layouts.sidebar')
 
-@section('content')
+@section('content') --}}
 
-{{-- <x-app-layout> --}}
+<x-app-layout>
     <div class="p-6">
         <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Daftar Pengajuan Peminjaman Kendaraan</h2>
+
+        <!-- Search Form -->
+        <form action="{{ route('admin.pengajuan-peminjaman.index') }}" method="GET" class="flex justify-end pb-4">
+            <div class="relative">
+                <input 
+                    type="text" 
+                    name="search"
+                    class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-60 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
+                    placeholder="Cari peminjam, kendaraan, ..."
+                    value="{{ request('search') }}"
+                >
+                <div class="absolute inset-y-0 start-0 flex items-center ps-3">
+                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                    </svg>
+                </div>
+            </div>
+        </form>
+
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
             <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -69,6 +88,11 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination -->
+        <div class="mt-4">
+            {{ $peminjaman->links() }}
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
     <script>
@@ -103,5 +127,5 @@
             });
         }
     </script>
-{{-- </x-app-layout> --}}
-@endsection
+</x-app-layout>
+{{-- @endsection --}}

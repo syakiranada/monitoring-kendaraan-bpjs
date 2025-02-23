@@ -1,6 +1,7 @@
-@extends('layouts.sidebar')
+{{-- @extends('layouts.sidebar')
 
-@section('content')
+@section('content') --}}
+<x-app-layout>
     <div class="p-6">
         <div class="mb-4 flex space-x-2">
             <a href="{{ route('admin.riwayat.index') }}" class="flex items-center px-5 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-full text-sm hover:bg-gray-100 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
@@ -83,4 +84,5 @@
             {{ $riwayatPeminjaman->links() }}
         </div>
     </div>
-@endsection
+</x-app-layout>
+{{-- @endsection --}}

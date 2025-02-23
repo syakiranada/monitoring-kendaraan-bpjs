@@ -11,16 +11,16 @@
                 Kembali
             </a>
         </div> 
-        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Riwayat Pembayaran Asuransi</h2>
+        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Riwayat Servis Insidental</h2>
         
         <!-- Search Form -->
-        <form action="{{ route('admin.riwayat.asuransi') }}" method="GET" class="flex justify-end pb-4">
+        <form action="{{ route('admin.riwayat.servis-insidental') }}" method="GET" class="flex justify-end pb-4">
             <div class="relative">
                 <input 
                     type="text" 
                     name="search"
                     class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-60 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
-                    placeholder="Cari merek, tipe, plat nomor, tahun, dll..."
+                    placeholder="Cari kendaraan, pengguna..."
                     value="{{ request('search') }}"
                 >
                 <div class="absolute inset-y-0 start-0 flex items-center ps-3">
@@ -37,31 +37,29 @@
                     <tr>
                         <th scope="col" class="px-6 py-3">Merek & Tipe</th>
                         <th scope="col" class="px-6 py-3">Plat Nomor</th>
-                        <th scope="col" class="px-6 py-3">Tahun</th>
-                        <th scope="col" class="px-6 py-3">Tanggal Pembayaran</th>
-                        <th scope="col" class="px-6 py-3">Total Pembayaran</th>
-                        <th scope="col" class="px-6 py-3">Admin Input</th>
+                        <th scope="col" class="px-6 py-3">Tanggal Servis</th>
+                        <th scope="col" class="px-6 py-3">Biaya</th>
+                        <th scope="col" class="px-6 py-3">User Input</th>
                         <th scope="col" class="px-6 py-3">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($riwayatAsuransi as $item)
+                    @forelse ($riwayatServis as $item)
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                            <td class="px-6 py-4">{{ $item->kendaraan->merk ?? '-' }} {{ $item->kendaraan->tipe ?? '-' }}</td>
-                            <td class="px-6 py-4">{{ $item->kendaraan->plat_nomor ?? '-' }}</td>
-                            <td class="px-6 py-4">{{ $item->tahun }}</td>
-                            <td class="px-6 py-4">{{ $item->tgl_bayar ?? '-' }}</td>
-                            <td class="px-6 py-4">Rp{{ number_format($item->nominal + $item->biaya_asuransi_lain, 0, ',', '.') }}</td>
-                            <td class="px-6 py-4">{{ $item->user->name ?? '-' }}</td>
+                            <td class="px-6 py-4">{{ $item->kendaraan->merk }} {{ $item->kendaraan->tipe }}</td>
+                            <td class="px-6 py-4">{{ $item->kendaraan->plat_nomor }}</td>
+                            <td class="px-6 py-4">{{ $item->tgl_servis ?? '-' }}</td>
+                            <td class="px-6 py-4">Rp{{ number_format($item->harga, 0, ',', '.') }}</td>
+                            <td class="px-6 py-4">{{ $item->user->name }}</td>
                             <td class="px-6 py-4">
-                                <a href="{{ route('admin.riwayat.detail-asuransi', $item->id_asuransi) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
+                                <a href="{{ route('admin.riwayat.detail-servis-insidental', $item->id_servis_insidental) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
                                     Detail
                                 </a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center px-6 py-4">Tidak ada riwayat pembayaran asuransi.</td>
+                            <td colspan="7" class="text-center px-6 py-4">Tidak ada riwayat servis insidental.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -70,7 +68,7 @@
 
         <!-- Pagination -->
         <div class="mt-4">
-            {{ $riwayatAsuransi->links() }}
+            {{ $riwayatServis->links() }}
         </div>
     </div>
 </x-app-layout>

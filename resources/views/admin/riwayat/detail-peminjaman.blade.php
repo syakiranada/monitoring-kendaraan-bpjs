@@ -1,8 +1,8 @@
-@extends('layouts.sidebar')
+{{-- @extends('layouts.sidebar')
 
-@section('content')
+@section('content') --}}
 
-{{-- <x-app-layout> --}}
+<x-app-layout>
     <div class="p-6">
         <div class="mb-4 flex space-x-2">
             <a href="{{ route('admin.riwayat.peminjaman') }}" class="flex items-center px-5 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg text-sm hover:bg-gray-100 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
@@ -59,7 +59,7 @@
 
         @if ($peminjaman->tgl_kembali_real)
             <!-- Card Pengembalian Kendaraan -->
-            <div class="block p-6 mt-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+            <div class="block p-6 mt-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                 <h3 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">Pengembalian Kendaraan</h3>
                 <div class="grid grid-cols-2 gap-y-2 text-gray-700 dark:text-gray-400">
                     <p class="font-semibold">Tanggal Kembali Real</p>
@@ -77,5 +77,5 @@
             </div>
         @endif
     </div>
-{{-- </x-app-layout> --}}
-@endsection
+</x-app-layout>
+{{-- @endsection --}}

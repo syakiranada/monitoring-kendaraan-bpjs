@@ -1,6 +1,7 @@
-@extends('layouts.sidebar')
+{{-- @extends('layouts.sidebar')
 
-@section('content')
+@section('content') --}}
+<x-app-layout>
     <div class="p-6">
         <div class="mb-4 flex space-x-2">
             <a href="{{ route('admin.riwayat.index') }}" class="flex items-center px-5 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-full text-sm hover:bg-gray-100 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
@@ -19,7 +20,7 @@
                     type="text" 
                     name="search"
                     class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-60 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
-                    placeholder="Cari merek, tipe, plat nomor..."
+                    placeholder="Cari kendaraan, pengguna..."
                     value="{{ request('search') }}"
                 >
                 <div class="absolute inset-y-0 start-0 flex items-center ps-3">
@@ -38,7 +39,7 @@
                         <th scope="col" class="px-6 py-3">Plat Nomor</th>
                         <th scope="col" class="px-6 py-3">Tanggal Servis</th>
                         <th scope="col" class="px-6 py-3">Kilometer</th>
-                        <th scope="col" class="px-6 py-3">Total Biaya</th>
+                        <th scope="col" class="px-6 py-3">Biaya</th>
                         <th scope="col" class="px-6 py-3">Admin Input</th>
                         <th scope="col" class="px-6 py-3">Aksi</th>
                     </tr>
@@ -72,4 +73,5 @@
             {{ $riwayatServis->links() }}
         </div>
     </div>
-@endsection
+</x-app-layout>
+{{-- @endsection --}}
