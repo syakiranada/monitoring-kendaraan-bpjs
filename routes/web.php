@@ -2,38 +2,23 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\PajakController;
-
-use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RiwayatController;
-
-use App\Http\Controllers\AsuransiController;
 use App\Http\Controllers\CekFisikController;
 use App\Http\Controllers\Admin\UserController;
-<<<<<<< HEAD
-
-use App\Http\Controllers\PengajuanPeminjamanController;
-use App\Http\Controllers\PeminjamanPenggunaController;
-use App\Http\Controllers\DaftarKendaraanPenggunaController;
 use App\Http\Controllers\AsuransiController;
 use App\Http\Controllers\PajakController;
 use App\Http\Controllers\DaftarKendaraanAdminController;
 use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\IsiBBMController;
-use App\Http\Controllers\IsiBBMPenggunaController;
 use App\Http\Controllers\ServisInsidentalPenggunaController;
-=======
 use App\Http\Controllers\KelolaAkunController;
->>>>>>> 78a1b173de791e92413c87ea22a1f2d738d1533f
 use App\Http\Controllers\ServisRutinController;
 use App\Http\Controllers\IsiBBMPenggunaController;
 use App\Http\Controllers\ServisInsidentalController;
 use App\Http\Controllers\PeminjamanPenggunaController;
 use App\Http\Controllers\PengajuanPeminjamanController;
-use App\Http\Controllers\DaftarKendaraanAdminController;
 use App\Http\Controllers\DaftarKendaraanPenggunaController;
-use App\Http\Controllers\ServisInsidentalPenggunaController;
 
 
 Route::get('/', function () {
@@ -48,6 +33,7 @@ Route::get('/', function () {
 
 // Route Pengguna
 Route::middleware(['auth', 'user'])->group(function () {
+    //BERANDA
     Route::get('/beranda', [BerandaController::class, 'pengguna'])->name('beranda');
 
     Route::get('/peminjaman', [PeminjamanPenggunaController::class, 'peminjamanPage'])->name('peminjaman');
@@ -86,7 +72,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Kelola Akun Pengguna
     Route::get('/admin/kelola-akun', [KelolaAkunController::class, 'index'])->name('admin.kelola-akun.index');
     Route::post('/admin/kelola-akun/import', [KelolaAkunController::class, 'import'])->name('admin.kelola-akun.import');
-
+    //BERANDA
     Route::get('/admin/beranda', [BerandaController::class, 'admin'])->name('admin.beranda');
     // Route::get('/admin/kendaraan', [KendaraanController::class, 'adminIndex'])->name('admin.kendaraan');
     // Route::get('/admin/pengajuan-peminjaman', [PeminjamanController::class, 'adminPengajuan'])->name('admin.peminjaman');
