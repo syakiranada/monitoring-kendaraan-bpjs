@@ -19,7 +19,7 @@ class ServisRutin extends Model
         'kilometer', 
         'lokasi', 
         'bukti_bayar', 
-        'bukti_fisik', 
+        // 'bukti_fisik', 
         // 'status', 
         'tgl_servis_real', 
         'tgl_servis_selanjutnya'
