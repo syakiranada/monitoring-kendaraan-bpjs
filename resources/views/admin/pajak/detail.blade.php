@@ -77,7 +77,7 @@
                             </div>
                         </div>
                     </div>
-                    <button type="button" onclick="window.location.href='{{ route('pajak.daftar_kendaraan_pajak', ['page' => $currentPage]) }}'" class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
+                    <button type="button" onclick="window.location.href='{{ route('pajak.daftar_kendaraan_pajak', ['page' => $currentPage, 'search' => request()->query('search')]) }}'" class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
                         Kembali
                     </button>  
                 </div>

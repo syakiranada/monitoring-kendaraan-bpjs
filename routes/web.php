@@ -161,7 +161,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::delete('/admin/kendaraan/hapus/{id_kendaraan}', [DaftarKendaraanAdminController::class, 'hapus'])->name('kendaraan.hapus');
     Route::post('/admin/kendaraan/store', [DaftarKendaraanAdminController::class, 'store'])->name('kendaraan.store');
     Route::post('/admin/kendaraan/{id}/hitung-depresiasi', [DaftarKendaraanAdminController::class, 'hitungDepresiasi'])->name('kendaraan.hitungDepresiasi');
-
+    Route::get('/admin/kendaraan/check-plat', [DaftarKendaraanAdminController::class, 'checkPlatNomor']);
+    
 });
 
 Route::middleware('auth')->group(function () {

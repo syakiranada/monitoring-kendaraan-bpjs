@@ -181,7 +181,7 @@ class AsuransiController extends Controller
                 'foto_polis' => 'required|mimes:jpeg,jpg,png,pdf|max:5120',
                 'bukti_bayar_asuransi' => 'required|mimes:jpeg,jpg,png,pdf|max:5120',
             ]);
-
+ 
             $page = $request->input('current_page', 1);
             $kendaraan = Kendaraan::findOrFail($request->id_kendaraan);
             $polisPath = $request->file('foto_polis')->store('polis', 'public');
@@ -201,8 +201,11 @@ class AsuransiController extends Controller
             ]);
 
             return redirect()
-            ->route('asuransi.daftar_kendaraan_asuransi', ['page' => $page])
-            ->with('success', 'Data asuransi berhasil disimpan!');
+            ->route('asuransi.daftar_kendaraan_asuransi', [
+                'page' => $page,
+                'search' => $request->query('search', request()->input('search', ''))
+            ])
+            ->with('success', 'Data asuransi berhasil disimpan!');        
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal menyimpan data asuransi!');
         }
@@ -269,9 +272,14 @@ class AsuransiController extends Controller
             $asuransi->save();
 
             $page = $request->input('current_page', 1);
+            $search = $request->query('search', request()->input('search', ''));
+            
             return redirect()
-                ->route('asuransi.daftar_kendaraan_asuransi', ['page' => $page])
-                ->with('success', 'Data asuransi berhasil diperbarui!');
+                ->route('asuransi.daftar_kendaraan_asuransi', [
+                    'page' => $page,
+                    'search' => $search ?: null // Tetap sertakan search jika ada, kosongkan jika tidak
+                ])
+                ->with('success', 'Data asuransi berhasil diperbarui!');            
         } catch (\Exception $e) {
             return redirect()
                 ->back()
@@ -304,7 +312,7 @@ class AsuransiController extends Controller
         }
     }
 
-    public function hapus($id_asuransi)
+    public function hapus($id_asuransi, Request $request)
     {
         try {
             $asuransi = Asuransi::findOrFail($id_asuransi);
@@ -318,8 +326,15 @@ class AsuransiController extends Controller
             }
 
             $asuransi->delete();
+            $page = $request->input('current_page', 1);
+            // Ambil search dan page
+            $search = $request->query('search', request()->input('search', ''));
+            $search = preg_replace('/\?page=\d+/', '', $search); // Hapus `?page=...`
 
-            return redirect()->route('asuransi.daftar_kendaraan_asuransi')->with('success', 'Data asuransi berhasil dihapus!');
+            return redirect()->route('asuransi.daftar_kendaraan_asuransi', [
+                'page' => $page,
+                'search' => $search ?: null // Tetap sertakan search jika ada, kosongkan jika tidak
+            ])->with('success', 'Data asuransi berhasil dihapus!');
         } catch (\Exception $e) {
             Log::error('Terjadi kesalahan saat menghapus asuransi: ' . $e->getMessage());
             return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat menghapus data!']);

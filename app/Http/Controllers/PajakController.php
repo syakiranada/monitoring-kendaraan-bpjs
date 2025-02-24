@@ -182,18 +182,22 @@ class PajakController extends Controller
             ]);
 
             $page = $request->input('current_page', 1);
-
+            $search = $request->query('search', request()->input('search', ''));
+            
             if ($newPajak) {
                 Log::info('DEBUG_PAJAK: Success - Redirecting to daftar_kendaraan_pajak');
 
                 return redirect()
-                    ->route('pajak.daftar_kendaraan_pajak', ['page' => $page])
+                    ->route('pajak.daftar_kendaraan_pajak', [
+                        'page' => $page,
+                        'search' => $search ?: null // Tetap sertakan search jika ada, kosongkan jika tidak
+                    ])
                     ->with('success', 'Data pajak berhasil diperbarui!');
-            } else {
+            }
+            else {
                 Log::error('DEBUG_PAJAK: Failed to create new pajak');
                 return redirect()->back()->with('error', 'Gagal menyimpan data pajak!');
             }
-
         } catch (\Exception $e) {
             Log::error('DEBUG_PAJAK: Exception occurred', ['error' => $e->getMessage()]);
             return redirect()->back()
@@ -262,11 +266,13 @@ class PajakController extends Controller
             Log::info('DEBUG_PAJAK_UPDATE: Data updated successfully');
 
             $page = $request->input('current_page', 1);
+            // Ambil search dan page
+            $search = $request->query('search', request()->input('search', ''));
 
-            return redirect()
-                ->route('pajak.daftar_kendaraan_pajak', ['page' => $page])
-                ->with('success', 'Data pajak berhasil diperbarui!');
-
+            return redirect()->route('pajak.daftar_kendaraan_pajak', [
+                'page' => $page,
+                'search' => $search ?: null // Tetap sertakan search jika ada, kosongkan jika tidak
+            ])->with('success', 'Data pajak berhasil diperbarui!');
         } catch (\Exception $e) {
             Log::error('DEBUG_PAJAK_UPDATE: Exception occurred', ['error' => $e->getMessage()]);
             return redirect()
@@ -301,10 +307,15 @@ class PajakController extends Controller
 
             Log::info('DEBUG_PAJAK_DELETE: Data pajak berhasil dihapus', ['id_pajak' => $id_pajak]);
 
-            $page = request()->query('page');
+            $page = $request->input('current_page', 1);
+            // Ambil search dan page
+            $search = $request->query('search', request()->input('search', ''));
+            $search = preg_replace('/\?page=\d+/', '', $search); // Hapus `?page=...`
 
-
-            return redirect()->route('pajak.daftar_kendaraan_pajak', ['page' => $page])->with('success', 'Data pajak berhasil dihapus!');
+            return redirect()->route('pajak.daftar_kendaraan_pajak', [
+                'page' => $page,
+                'search' => $search ?: null // Tetap sertakan search jika ada, kosongkan jika tidak
+            ])->with('success', 'Data pajak berhasil dihapus!');
         } catch (\Exception $e) {
             Log::error('DEBUG_PAJAK_DELETE: Error saat menghapus', ['error' => $e->getMessage()]);
             return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat menghapus data!']);

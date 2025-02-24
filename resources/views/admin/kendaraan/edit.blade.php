@@ -11,7 +11,8 @@
                 $currentPage = request()->query('page', 1);
                 @endphp 
                 <input type="hidden" name="current_page" value="{{ $currentPage }}">   
-                <input type="hidden" name="user_id" value="{{ auth()->id() }}">     
+                <input type="hidden" name="user_id" value="{{ auth()->id() }}">
+                <input type="hidden" name="search" value="{{ request()->query('search', '') }}">
 
                 <div class="grid grid-cols-3 gap-4 mb-4">
                     <div>
@@ -200,7 +201,7 @@
                 </div>
 
                 <div class="flex justify-end space-x-4 mb-2 mt-4">
-                    <button type="button" onclick="window.location.href='{{ route('kendaraan.daftar_kendaraan', ['page' => $currentPage]) }}'" class="bg-red-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition">
+                    <button type="button" onclick="window.location.href='{{ route('kendaraan.daftar_kendaraan',  ['page' => $currentPage, 'search' => request()->query('search')]) }}'" class="bg-red-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition">
                         Batal
                     </button>                    
                     <button type="submit" id="saveButton" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition">
@@ -236,33 +237,48 @@
             }
             input.value = value ? value : '';
         }
-
+ 
         document.getElementById('save-form').addEventListener('submit', function(event) {
-            event.preventDefault();
+    event.preventDefault();
 
-            let fields = [
-                'merk', 'tipe', 'plat_nomor', 'warna', 'jenis_kendaraan', 'aset_guna',
-                'kapasitas', 'tanggal_beli', 'nilai_perolehan', 'nilai_buku', 
-                'bahan_bakar', 'nomor_mesin', 'nomor_rangka',
-                'tanggal_bayar_pajak', 'tanggal_jatuh_tempo_pajak', 'tanggal_cek_fisik', 'frekuensi', 'status_pinjam'
-            ];
+    let fields = [
+        'merk', 'tipe', 'plat_nomor', 'warna', 'jenis_kendaraan', 'aset_guna',
+        'kapasitas', 'tanggal_beli', 'nilai_perolehan', 'nilai_buku', 
+        'bahan_bakar', 'nomor_mesin', 'nomor_rangka',
+        'tanggal_bayar_pajak', 'tanggal_jatuh_tempo_pajak', 'tanggal_cek_fisik', 'frekuensi', 'status_pinjam'
+    ];
 
-            let missingFields = [];
+    let missingFields = [];
+    fields.forEach(function(field) {
+        let input = document.querySelector('[name="' + field + '"]');
+        if (!input || !input.value.trim()) {
+            missingFields.push(field);
+        }
+    });
 
-            fields.forEach(function(field) {
-                let input = document.querySelector('[name="' + field + '"]');
-                if (!input || !input.value.trim()) {
-                    missingFields.push(field);
-                }
-            });
+    if (missingFields.length > 0) {
+        let alertDiv = document.getElementById('alertMessage');
+        alertDiv.classList.remove('hidden');
+        setTimeout(() => alertDiv.classList.add('hidden'), 10000);
+        return;
+    }
 
-            if (missingFields.length > 0) {
+    let platNomor = document.querySelector('input[name="plat_nomor"]').value.trim();
+
+    // 🔍 Cek apakah plat nomor sudah ada di database dengan AJAX (pakai route di web.php)
+    fetch('/admin/kendaraan/check-plat?plat_nomor=' + encodeURIComponent(platNomor))
+        .then(response => response.json())
+        .then(data => {
+            if (data.exists) {
                 let alertDiv = document.getElementById('alertMessage');
+                alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Plat nomor sudah digunakan oleh kendaraan lain.';
                 alertDiv.classList.remove('hidden');
-                setTimeout(() => alertDiv.classList.add('hidden'), 10000);
+                alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => alertDiv.classList.add('hidden'), 5000);
                 return;
             }
 
+            // ✅ Validasi tanggal perlindungan
             let tanggalAwalPerlindungan = document.querySelector('input[name="tanggal_perlindungan_awal"]').value;
             let tanggalAkhirPerlindungan = document.querySelector('input[name="tanggal_perlindungan_akhir"]').value;
 
@@ -272,14 +288,33 @@
                 alertDiv.classList.remove('hidden');
                 alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 setTimeout(() => alertDiv.classList.add('hidden'), 5000);
-                return false;
+                return;
             }
 
+            // ✅ Validasi tanggal pajak
+            let tanggalBayarPajak = document.querySelector('input[name="tanggal_bayar_pajak"]').value;
+            let tanggalJatuhTempoPajak = document.querySelector('input[name="tanggal_jatuh_tempo_pajak"]').value;
+
+            if (tanggalBayarPajak && tanggalJatuhTempoPajak) {
+                let bayar = new Date(tanggalBayarPajak);
+                let jatuhTempo = new Date(tanggalJatuhTempoPajak);
+                if (bayar >= jatuhTempo) {
+                    let alertDiv = document.getElementById('alertMessage');
+                    alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Tanggal jatuh tempo pajak harus lebih besar dari tanggal bayar pajak terakhir.';
+                    alertDiv.classList.remove('hidden');
+                    alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => alertDiv.classList.add('hidden'), 5000);
+                    return;
+                }
+            }
+
+            // ✅ Format angka untuk nilai perolehan & nilai buku
             let nominalInput = document.querySelector('input[name="nilai_perolehan"]');
             let biayaLainInput = document.querySelector('input[name="nilai_buku"]');
             nominalInput.value = nominalInput.value.replace(/[^\d]/g, '');
             biayaLainInput.value = biayaLainInput.value.replace(/[^\d]/g, '');
 
+            // ✅ Konfirmasi sebelum submit
             Swal.fire({
                 title: "Konfirmasi",
                 text: "Apakah Anda yakin ingin menyimpan perubahan data kendaraan ini?",
@@ -294,7 +329,7 @@
                     setTimeout(() => {
                         Swal.fire({
                             title: "Sukses!",
-                            text: "Data kendaraan berhasil diperbarui.",
+                            text: "Perubahan data kendaraan berhasil disimpan.",
                             icon: "success",
                             confirmButtonColor: "#3085d6",
                             confirmButtonText: "OK"
@@ -304,7 +339,12 @@
                     }, 500);
                 }
             });
+        })
+        .catch(error => {
+            console.error('Error:', error);
         });
+});
+
     </script>
 </x-app-layout>
 {{-- @endsection --}}

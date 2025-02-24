@@ -62,25 +62,29 @@
                         <td class="px-6 py-3 whitespace-nowrap">
                             @if (!empty($item->id_pajak))
                                 @if ($item->status === 'JATUH TEMPO' || $item->status === 'MENDEKATI JATUH TEMPO')
-                                <a href="{{ route('pajak.kelola', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1)]) }}" 
+                                <a href="{{ route('pajak.kelola', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" 
                                 class="font-medium text-gray-600 hover:underline">Kelola</a>
                             @elseif ($item->status === 'SUDAH DIBAYAR')
-                                <a href="{{ route('pajak.detail', ['id_pajak' => $item->id_pajak, 'page' => request()->query('page', 1)]) }}" 
+                                <a href="{{ route('pajak.detail', ['id_pajak' => $item->id_pajak, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" 
                                 class="font-medium text-blue-600 hover:underline mr-1">Detail</a>
-                                <a href="{{ route('pajak.edit', ['id_pajak' => $item->id_pajak, 'page' => request()->query('page', 1)]) }}" 
+                                <a href="{{ route('pajak.edit', ['id_pajak' => $item->id_pajak, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" 
                                 class="font-medium text-yellow-600 hover:underline mr-1">Edit</a>
                                 <button class="font-medium text-red-600 hover:underline" 
-                                        onclick="event.preventDefault(); confirmDelete({{ $item->id_pajak }})">Hapus</button>
-                                <form id="delete-form-{{ $item->id_pajak }}" action="{{ route('pajak.hapus', $item->id_pajak) }}" 
-                                    method="POST" class="hidden">
-                                    @csrf
-                                    @method('DELETE')
-                                </form>
+                                onclick="event.preventDefault(); confirmDelete({{ $item->id_pajak }})">
+                                Hapus
+                            </button>
+                            
+                            <form id="delete-form-{{ $item->id_pajak }}" 
+                                action="{{ route('pajak.hapus', ['id_pajak' => $item->id_pajak, 'search' => request()->query('search'), 'page' => request()->query('page')]) }}" 
+                                method="POST" class="hidden">
+                                @csrf
+                                @method('DELETE')
+                            </form>                            
                                 @else
                                     <span>-</span>
                                 @endif
                             @else
-                            <a href="{{ route('pajak.kelola', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1)]) }}" 
+                            <a href="{{ route('pajak.kelola', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" 
                                 class="font-medium text-gray-600 hover:underline">Kelola</a>
                              @endif                             
                         </td>            

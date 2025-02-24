@@ -60,18 +60,18 @@
                         <td class="px-6 py-3 whitespace-nowrap">
                             @if (!empty($item->id_asuransi))
                                 @if ($item->status === 'JATUH TEMPO' || $item->status === 'MENDEKATI JATUH TEMPO')
-                                <a href="{{ route('asuransi.kelola', ['id_kendaraan' => $item->id_kendaraan,'page' => request()->query('page', 1)]) }}" 
-                                    class="font-medium text-gray-600 hover:underline">Kelola</a>
-                                 @elseif ($item->status === 'SUDAH DIBAYAR')
-                                     <div class="flex space-x-1">
-                                         <a href="{{ route('asuransi.detail', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1)]) }}" 
-                                            class="font-medium text-blue-600 hover:underline">Detail</a>
-                                         <a href="{{ route('asuransi.edit', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1)]) }}" 
-                                            class="font-medium text-yellow-600 hover:underline">Edit</a>
-                                         <button class="font-medium text-red-600 hover:underline" 
-                                                 onclick="confirmDelete({{ $item->id_asuransi }})">Hapus</button>                                 
+                                    <a href="{{ route('asuransi.kelola', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1), 'search' => request()->query('search', '')]) }}" 
+                                       class="font-medium text-gray-600 hover:underline">Kelola</a>
+                                @elseif ($item->status === 'SUDAH DIBAYAR')
+                                    <div class="flex space-x-1">
+                                        <a href="{{ route('asuransi.detail', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1), 'search' => request()->query('search', '')]) }}" 
+                                           class="font-medium text-blue-600 hover:underline">Detail</a>
+                                        <a href="{{ route('asuransi.edit', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1), 'search' => request()->query('search', '')]) }}" 
+                                           class="font-medium text-yellow-600 hover:underline">Edit</a>
+                                        <button class="font-medium text-red-600 hover:underline" 
+                                                onclick="confirmDelete({{ $item->id_asuransi }})">Hapus</button>                                 
                                     </div>
-                                    <form id="delete-form-{{ $item->id_asuransi }}" action="{{ route('asuransi.hapus', $item->id_asuransi) }}" method="POST" class="hidden">
+                                    <form id="delete-form-{{ $item->id_asuransi }}" action="{{ route('asuransi.hapus', ['id_asuransi' => $item->id_asuransi, 'page' => request()->query('page', 1), 'search' => request()->query('search', '')]) }}" method="POST" class="hidden">
                                         @csrf
                                         @method('DELETE')
                                     </form>
@@ -79,10 +79,10 @@
                                     <span>-</span>
                                 @endif
                             @else
-                                <a href="{{ route('asuransi.kelola', ['id_kendaraan' => $item->id_kendaraan,'page' => request()->query('page', 1)]) }}" 
-                                    class="font-medium text-gray-600 hover:underline">Kelola</a>
-                                @endif                                    
-                        </td>                        
+                                <a href="{{ route('asuransi.kelola', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1), 'search' => request()->query('search', '')]) }}" 
+                                   class="font-medium text-gray-600 hover:underline">Kelola</a>
+                            @endif                                    
+                        </td>                                          
                     </tr>
                 @empty
                     <tr>

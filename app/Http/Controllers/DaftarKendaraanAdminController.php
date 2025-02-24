@@ -188,7 +188,7 @@ class DaftarKendaraanAdminController extends Controller
         }
     }
 
-    $dataKendaraan = $dataKendaraanQuery->paginate(10);
+    $dataKendaraan = $dataKendaraanQuery->paginate(10)->appends(['search' => $search]);
     
         return view('admin.kendaraan.daftar_kendaraan', compact('dataKendaraan', 'search', 'statusKetersediaanFilter', 'alerts'));
     }
@@ -199,6 +199,12 @@ class DaftarKendaraanAdminController extends Controller
         $user_id = Auth::id();
         return view('admin.kendaraan.tambah', compact('user_id'));
     }
+
+    public function checkPlatNomor(Request $request)
+{
+    $exists = Kendaraan::where('plat_nomor', $request->plat_nomor)->exists();
+    return response()->json(['exists' => $exists]);
+}
 
     public function store(Request $request)
     {
@@ -289,14 +295,22 @@ class DaftarKendaraanAdminController extends Controller
                 'tgl_cek_fisik' => $request->tanggal_cek_fisik,
             ]);
     
-            $totalKendaraan = Kendaraan::count();
-            $perPage = 10;
-            $lastPage = ceil($totalKendaraan / $perPage);
-    
-            Log::info('DEBUG: Data kendaraan dan terkait berhasil disimpan');
-    
-            return redirect()->route('kendaraan.daftar_kendaraan', ['page' => $lastPage])
-                            ->with('success', 'Data kendaraan dan semua terkait berhasil disimpan!');
+            $search = $request->query('search', request()->input('search', ''));
+
+            // Hitung total kendaraan berdasarkan apakah ada search atau tidak
+            $totalKendaraan = Kendaraan::when($search, function ($query, $search) {
+                return $query->where('merk', 'LIKE', "%{$search}%");
+            })->count();
+            
+            $perPage = 10; 
+            $lastPage = max(1, ceil($totalKendaraan / $perPage)); // Pastikan min. halaman 1
+            
+            // Redirect dengan mempertahankan search jika ada
+            return redirect()->route('kendaraan.daftar_kendaraan', [
+                'page' => $lastPage,
+                'search' => $search ?: null
+            ])->with('success', 'Data kendaraan dan semua terkait berhasil diperbarui!');
+            
         } catch (\Exception $e) {
             Log::error('DEBUG: Exception occurred', ['error' => $e->getMessage()]);
             return redirect()->back()
@@ -415,9 +429,14 @@ class DaftarKendaraanAdminController extends Controller
         $currentPage = $request->input('current_page', 1);
 
         Log::info('DEBUG: Data kendaraan dan terkait berhasil diperbarui');
+                
+        // Ambil search dan page
+        $search = $request->query('search', request()->input('search', ''));
 
-        return redirect()->route('kendaraan.daftar_kendaraan', ['page' => $currentPage])
-                        ->with('success', 'Data kendaraan dan semua terkait berhasil diperbarui!');
+        return redirect()->route('kendaraan.daftar_kendaraan', [
+            'page' => $currentPage,
+            'search' => $search ?: null // Tetap sertakan search jika ada, kosongkan jika tidak
+        ])->with('success', 'Data kendaraan dan semua terkait berhasil diperbarui!');
                         
     } catch (\Exception $e) {
         Log::error('DEBUG: Exception occurred', ['error' => $e->getMessage()]);
@@ -439,25 +458,30 @@ class DaftarKendaraanAdminController extends Controller
 
 
     public function hapus($id_kendaraan, Request $request)
-    {
-        try {
-            $kendaraan = Kendaraan::findOrFail($id_kendaraan);
-            Pajak::where('id_kendaraan', $id_kendaraan)->delete();
-            Asuransi::where('id_kendaraan', $id_kendaraan)->delete();
-            CekFisik::where('id_kendaraan', $id_kendaraan)->delete();
-            ServisRutin::where('id_kendaraan', $id_kendaraan)->delete();
-            ServisInsidental::where('id_kendaraan', $id_kendaraan)->delete();
-            BBM::where('id_kendaraan', $id_kendaraan)->delete();
-            Peminjaman::where('id_kendaraan', $id_kendaraan)->delete();
-            $kendaraan->delete();
-            Log::info('DEBUG_KENDARAAN_DELETE: Kendaraan dan semua data terkait berhasil dihapus', ['id_kendaraan' => $id_kendaraan]);
+{
+    try {
+        $kendaraan = Kendaraan::findOrFail($id_kendaraan);
+        Pajak::where('id_kendaraan', $id_kendaraan)->delete();
+        Asuransi::where('id_kendaraan', $id_kendaraan)->delete();
+        CekFisik::where('id_kendaraan', $id_kendaraan)->delete();
+        ServisRutin::where('id_kendaraan', $id_kendaraan)->delete();
+        ServisInsidental::where('id_kendaraan', $id_kendaraan)->delete();
+        BBM::where('id_kendaraan', $id_kendaraan)->delete();
+        Peminjaman::where('id_kendaraan', $id_kendaraan)->delete();
+        $kendaraan->delete();
+        Log::info('DEBUG_KENDARAAN_DELETE: Kendaraan dan semua data terkait berhasil dihapus', ['id_kendaraan' => $id_kendaraan]);
 
-            $page = request()->query('page');
-            return redirect()->route('kendaraan.daftar_kendaraan', ['page' => $page])
-                ->with('success', 'Kendaraan dan semua data terkait berhasil dihapus!');
-        } catch (\Exception $e) {
-            Log::error('DEBUG_KENDARAAN_DELETE: Error saat menghapus kendaraan', ['error' => $e->getMessage()]);
-            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat menghapus kendaraan!']);
-        }
+       // Ambil parameter search dan page dari request
+        $search = $request->query('search', '');
+        $search = preg_replace('/\?page=\d+/', '', $search); // Hapus `?page=...`
+
+        return redirect()->route('kendaraan.daftar_kendaraan', [
+            'page' => $request->query('page', 1),
+            'search' => $search
+        ])->with('success', 'Kendaraan dan semua data terkait berhasil dihapus!');
+    } catch (\Exception $e) {
+        Log::error('DEBUG_KENDARAAN_DELETE: Error saat menghapus kendaraan', ['error' => $e->getMessage()]);
+        return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat menghapus kendaraan!']);
     }
+}
 }

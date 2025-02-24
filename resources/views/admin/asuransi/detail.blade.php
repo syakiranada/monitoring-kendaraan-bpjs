@@ -75,9 +75,10 @@
                         <span class="text-gray-400">Tidak ada bukti</span>
                     @endif
                 </div>
-                <button type="button" onclick="window.location.href='{{ route('asuransi.daftar_kendaraan_asuransi', ['page' => $currentPage]) }}'" class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
+                <button type="button" onclick="window.location.href='{{ route('asuransi.daftar_kendaraan_asuransi', ['page' => $currentPage, 'search' => request()->query('search', '')]) }}'" 
+                    class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
                     Kembali
-                </button>   
+                </button>                
             </div>
         </div>
     </div>

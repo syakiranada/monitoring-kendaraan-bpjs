@@ -10,7 +10,8 @@
                 $currentPage = request()->query('page', 1);
                 @endphp 
                 <input type="hidden" name="current_page" value="{{ $currentPage }}">   
-                <input type="hidden" name="user_id" value="{{ auth()->id() }}">     
+                <input type="hidden" name="user_id" value="{{ auth()->id() }}">    
+                <input type="hidden" name="search" value="{{ request()->query('search', '') }}"> 
 
                 <div class="grid grid-cols-3 gap-4 mb-4">
                     <div>
@@ -89,7 +90,7 @@
                         </div>
                     </div>
                 </div>
-
+ 
                 <div class="grid grid-cols-3 gap-4 mb-4">
                     <div>
                         <label for="bahan_bakar" class="block mb-2 text-sm font-medium text-gray-900">Bahan Bakar</label>
@@ -190,7 +191,7 @@
             </div>
 
                 <div class="flex justify-end space-x-4 mb-2 mt-4">
-                    <button type="button" onclick="window.location.href='{{ route('kendaraan.daftar_kendaraan', ['page' => $currentPage]) }}'" class="bg-red-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition">
+                    <button type="button" onclick="window.location.href='{{ route('kendaraan.daftar_kendaraan',  ['page' => $currentPage, 'search' => request()->query('search')]) }}'" class="bg-red-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition">
                         Batal
                     </button>                    
                     <button type="submit" id="saveButton" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition">
@@ -225,95 +226,93 @@
         }
 
         document.getElementById('save-form').addEventListener('submit', function(event) {
-        event.preventDefault();
-        let fields = [
-            'merk', 'tipe', 'plat_nomor', 'warna', 'jenis_kendaraan', 'aset_guna',
-            'kapasitas', 'tanggal_beli', 'nilai_perolehan', 'nilai_buku', 
-            'bahan_bakar', 'nomor_mesin', 'nomor_rangka',
-            'tanggal_bayar_pajak', 'tanggal_jatuh_tempo_pajak', 'tanggal_cek_fisik', 'frekuensi', 'status_pinjam'
-        ];
+    event.preventDefault();
+    
+    let fields = [
+        'merk', 'tipe', 'plat_nomor', 'warna', 'jenis_kendaraan', 'aset_guna',
+        'kapasitas', 'tanggal_beli', 'nilai_perolehan', 'nilai_buku', 
+        'bahan_bakar', 'nomor_mesin', 'nomor_rangka',
+        'tanggal_bayar_pajak', 'tanggal_jatuh_tempo_pajak', 'tanggal_cek_fisik', 'frekuensi', 'status_pinjam'
+    ];
 
-        let missingFields = [];
-        fields.forEach(function(field) {
-            let input = document.querySelector('[name="' + field + '"]');
-            if (!input || !input.value.trim()) {
-                missingFields.push(field);
-            }
-        });
-
-        if (missingFields.length > 0) {
-            let alertDiv = document.getElementById('alertMessage');
-            alertDiv.classList.remove('hidden');
-            setTimeout(() => alertDiv.classList.add('hidden'), 10000);
-            return;
+    let missingFields = [];
+    fields.forEach(function(field) {
+        let input = document.querySelector('[name="' + field + '"]');
+        if (!input || !input.value.trim()) {
+            missingFields.push(field);
         }
-
-        // Validation for protection dates
-        let tanggalAwalPerlindungan = document.querySelector('input[name="tanggal_perlindungan_awal"]').value;
-        let tanggalAkhirPerlindungan = document.querySelector('input[name="tanggal_perlindungan_akhir"]').value;
-
-        if (tanggalAwalPerlindungan && tanggalAkhirPerlindungan) {
-            let awal = new Date(tanggalAwalPerlindungan);
-            let akhir = new Date(tanggalAkhirPerlindungan);
-
-            if (awal >= akhir) {
-                let alertDiv = document.getElementById('alertMessage');
-                alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Tanggal perlindungan akhir harus lebih besar dari tanggal perlindungan awal.';
-                alertDiv.classList.remove('hidden');
-                alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                setTimeout(() => alertDiv.classList.add('hidden'), 5000);
-                return false;
-            }
-        }
-
-        // Validation for tax dates
-        let tanggalBayarPajak = document.querySelector('input[name="tanggal_bayar_pajak"]').value;
-        let tanggalJatuhTempoPajak = document.querySelector('input[name="tanggal_jatuh_tempo_pajak"]').value;
-
-        if (tanggalBayarPajak && tanggalJatuhTempoPajak) {
-            let bayar = new Date(tanggalBayarPajak);
-            let jatuhTempo = new Date(tanggalJatuhTempoPajak);
-
-            if (bayar >= jatuhTempo) {
-                let alertDiv = document.getElementById('alertMessage');
-                alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Tanggal jatuh tempo pajak harus lebih besar dari tanggal bayar pajak terakhir.';
-                alertDiv.classList.remove('hidden');
-                alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                setTimeout(() => alertDiv.classList.add('hidden'), 5000);
-                return false;
-            }
-        }
-
-        let nominalInput = document.querySelector('input[name="nilai_perolehan"]');
-        let biayaLainInput = document.querySelector('input[name="nilai_buku"]');
-        nominalInput.value = nominalInput.value.replace(/[^\d]/g, '');
-        biayaLainInput.value = biayaLainInput.value.replace(/[^\d]/g, '');
-
-        Swal.fire({
-            title: "Konfirmasi",
-            text: "Apakah Anda yakin ingin menyimpan data kendaraan ini?",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Ya",
-            cancelButtonText: "Tidak"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                setTimeout(() => {
-                    Swal.fire({
-                        title: "Sukses!",
-                        text: "Data kendaraan berhasil disimpan.",
-                        icon: "success",
-                        confirmButtonColor: "#3085d6",
-                        confirmButtonText: "OK"
-                    }).then(() => {
-                        document.getElementById('save-form').submit();
-                    });
-                }, 500);
-            }
-        });
     });
+
+    if (missingFields.length > 0) {
+        let alertDiv = document.getElementById('alertMessage');
+        alertDiv.classList.remove('hidden');
+        setTimeout(() => alertDiv.classList.add('hidden'), 10000);
+        return;
+    }
+
+    let platNomor = document.querySelector('input[name="plat_nomor"]').value.trim();
+
+    // 🔍 Cek apakah plat nomor sudah ada di database dengan AJAX
+    // 🔍 Cek plat nomor di database lewat rute web.php
+    fetch('/admin/kendaraan/check-plat?plat_nomor=' + encodeURIComponent(platNomor))
+        .then(response => response.json())
+        .then(data => {
+            if (data.exists) {
+                let alertDiv = document.getElementById('alertMessage');
+                alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Plat nomor sudah digunakan oleh kendaraan lain.';
+                alertDiv.classList.remove('hidden');
+                alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => alertDiv.classList.add('hidden'), 5000);
+                return;
+            }
+
+            // 🚀 Jika plat nomor tidak duplikat, lanjutkan validasi lainnya
+            let tanggalBayarPajak = document.querySelector('input[name="tanggal_bayar_pajak"]').value;
+            let tanggalJatuhTempoPajak = document.querySelector('input[name="tanggal_jatuh_tempo_pajak"]').value;
+
+            if (tanggalBayarPajak && tanggalJatuhTempoPajak) {
+                let bayar = new Date(tanggalBayarPajak);
+                let jatuhTempo = new Date(tanggalJatuhTempoPajak);
+                if (bayar >= jatuhTempo) {
+                    let alertDiv = document.getElementById('alertMessage');
+                    alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Tanggal jatuh tempo pajak harus lebih besar dari tanggal bayar pajak terakhir.';
+                    alertDiv.classList.remove('hidden');
+                    alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => alertDiv.classList.add('hidden'), 5000);
+                    return;
+                }
+            }
+
+            Swal.fire({
+                title: "Konfirmasi",
+                text: "Apakah Anda yakin ingin menyimpan data kendaraan ini?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Ya",
+                cancelButtonText: "Tidak"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    setTimeout(() => {
+                        Swal.fire({
+                            title: "Sukses!",
+                            text: "Data kendaraan berhasil disimpan.",
+                            icon: "success",
+                            confirmButtonColor: "#3085d6",
+                            confirmButtonText: "OK"
+                        }).then(() => {
+                            document.getElementById('save-form').submit();
+                        });
+                    }, 500);
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+});
+
 </script>
 </x-app-layout>
 {{-- @endsection --}}

@@ -12,6 +12,7 @@
                 @endphp 
                 <input type="hidden" name="current_page" value="{{ $currentPage }}">
                 <input type="hidden" name="id_asuransi" value="{{ $asuransi->id_asuransi }}">
+                <input type="hidden" name="search" value="{{ request()->query('search', '') }}">
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
@@ -121,9 +122,11 @@
                 </div>
 
                 <div class="flex justify-end space-x-4 mb-2">
-                    <button type="button" onclick="window.location.href='{{ route('asuransi.daftar_kendaraan_asuransi', ['page' => $currentPage]) }}'" class="bg-red-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition">
+                    <button type="button" 
+                        onclick="window.location.href='{{ route('asuransi.daftar_kendaraan_asuransi', ['page' => $currentPage, 'search' => request()->query('search', '')]) }}'" 
+                        class="bg-red-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition">
                         Batal
-                    </button>    
+                    </button>
                     <button type="submit" id="saveButton" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition">
                         Simpan
                     </button>

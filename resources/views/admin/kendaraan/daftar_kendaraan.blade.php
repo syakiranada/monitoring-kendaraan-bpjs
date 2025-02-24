@@ -49,7 +49,7 @@
     
         <div class="flex justify-between items-center pb-4 px-6">
             <div class="relative ml-4"> 
-                <a href="{{ route('kendaraan.tambah', ['page' => request()->query('page', 1)]) }}" 
+                <a href="{{ route('kendaraan.tambah', ['page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" 
                     class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2">
                      + Tambah
                  </a>                 
@@ -84,26 +84,32 @@
                             @endif
                         </td>
                         <td class="px-6 py-3">
-                            <a href="{{ route('kendaraan.detail', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1)]) }}" 
+                            <a href="{{ route('kendaraan.detail', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" 
                                class="font-medium text-blue-600 hover:underline">
                                 Detail
                             </a>
                         
                             @if ($item->aset !== 'Lelang' && $item->aset !== 'LELANG')
-                                <a href="{{ route('kendaraan.edit', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1)]) }}" 
+                                <a href="{{ route('kendaraan.edit', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" 
                                    class="font-medium text-yellow-600 hover:underline">
                                     Edit
                                 </a> 
-                                <form id="delete-form-{{ $item->id_kendaraan }}" action="{{ route('kendaraan.hapus', $item->id_kendaraan) }}" method="POST" style="display: none;">
-                                    @csrf
-                                    @method('DELETE') 
-                                </form>
+                        
+                                <form id="delete-form-{{ $item->id_kendaraan }}" 
+                                    action="{{ route('kendaraan.hapus', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1), 'search' => rawurldecode(request()->query('search'))]) }}" 
+                                    method="POST" 
+                                    style="display: none;">
+                                  @csrf
+                                  @method('DELETE') 
+                              </form>
+                              
+                                
                                 <button class="font-medium text-red-600 hover:underline" 
                                         onclick="confirmDelete({{ $item->id_kendaraan }})">
                                     Hapus
                                 </button>
                             @endif
-                        </td>                                                              
+                        </td>                                                             
                     </tr>
                 @empty
                     <tr>
