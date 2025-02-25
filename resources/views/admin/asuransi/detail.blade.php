@@ -11,7 +11,7 @@
             display: flex !important;
         }
     </style>
-     <h1 class="text-2xl font-bold mb-6">Detail Asurani</h1>
+     <h1 class="text-2xl font-bold mb-6">Detail Asuransi</h1>
         <div class="w-full max-w-md p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
             @php 
                 $currentPage = request()->query('page');
@@ -23,42 +23,50 @@
                 </h2>
             </div>
             <div class="space-y-3">
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Plat Nomor</span>
+                <div class="flex items-start text-sm">
+                    <span class="text-gray-600 w-72">Plat Nomor</span>
                     <span class="text-gray-900">{{ $asuransi->kendaraan->plat_nomor }}</span>
                 </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Masa Perlindungan Awal</span>
+            
+                <div class="flex items-start text-sm">
+                    <span class="text-gray-600 w-72">Masa Perlindungan Awal</span>
                     <span class="text-gray-900">{{ \Carbon\Carbon::parse($asuransi->tgl_perlindungan_awal)->format('d-m-Y') }}</span>
                 </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Masa Perlindungan akhir</span>
+            
+                <div class="flex items-start text-sm">
+                    <span class="text-gray-600 w-72">Masa Perlindungan Akhir</span>
                     <span class="text-gray-900">{{ \Carbon\Carbon::parse($asuransi->tgl_perlindungan_akhir)->format('d-m-Y') }}</span>
                 </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Jatuh Tempo Pembayaran Asuransi</span>
+            
+                <div class="flex items-start text-sm">
+                    <span class="text-gray-600 w-72">Jatuh Tempo Pembayaran Asuransi</span>
                     <span class="text-gray-900">{{ \Carbon\Carbon::parse($asuransi->tgl_jatuh_tempo)->format('d-m-Y') }}</span>
                 </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Tanggal Pembayaran Asuransi</span>
+            
+                <div class="flex items-start text-sm">
+                    <span class="text-gray-600 w-72">Tanggal Pembayaran Asuransi</span>
                     <span class="text-gray-900">{{ \Carbon\Carbon::parse($asuransi->tgl_bayar)->format('d-m-Y') }}</span>
                 </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Nominal Tagihan</span>
+            
+                <div class="flex items-start text-sm">
+                    <span class="text-gray-600 w-72">Nominal Tagihan</span>
                     <span class="text-gray-900">Rp {{ number_format($asuransi->nominal, 0, ',', '.') }}</span>
                 </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Biaya Lain-lain</span>
+            
+                <div class="flex items-start text-sm">
+                    <span class="text-gray-600 w-72">Biaya Lain-lain</span>
                     <span class="text-gray-900">
                         {{ $asuransi->biaya_asuransik_lain ? 'Rp ' . number_format($asuransi->biaya_asuransi_lain, 0, ',', '.') : '-' }}
                     </span>
                 </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Tanggal Pembayaran Asuransi Selanjutnya</span>
+            
+                <div class="flex items-start text-sm">
+                    <span class="text-gray-600 w-72">Tanggal Pembayaran Asuransi Selanjutnya</span>
                     <span class="text-gray-900">{{ \Carbon\Carbon::parse($asuransi->tgl_perlindungan_akhir)->format('d-m-Y') }}</span>
                 </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Bukti Polis Asuransi</span>
+            
+                <div class="flex items-start text-sm">
+                    <span class="text-gray-600 w-72">Bukti Polis Asuransi</span>
                     @if($asuransi->polis)
                         <a href="#" class="text-blue-600 hover:underline" 
                            onclick="showModal('polisModal', '{{ asset('storage/' . $asuransi->polis) }}')">Lihat bukti</a>
@@ -66,8 +74,9 @@
                         <span class="text-gray-400">Tidak ada bukti</span>
                     @endif
                 </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Bukti Pembayaran</span>
+            
+                <div class="flex items-start text-sm">
+                    <span class="text-gray-600 w-72">Bukti Pembayaran</span>
                     @if($asuransi->bukti_bayar_asuransi)
                         <a href="#" class="text-blue-600 hover:underline" 
                            onclick="showModal('pembayaranModal', '{{ asset('storage/' . $asuransi->bukti_bayar_asuransi) }}')">Lihat bukti</a>
@@ -82,8 +91,8 @@
             </div>
         </div>
     </div>
-    <div id="polisModal" class="fixed inset-0 bg-black bg-opacity-50 justify-center items-center hidden z-40">
-        <div class="relative bg-white p-4 rounded-lg shadow-lg w-auto max-w-3xl">
+    <div id="polisModal" class="fixed inset-0 bg-black bg-opacity-50 justify-center items-center hidden z-50">
+        <div class="relative bg-white p-4 rounded-lg shadow-lg w-auto max-w-3xl mx-auto my-auto">
             <button onclick="hideModal('polisModal')" class="absolute top-1.5 right-3 bg-white text-black text-sm w-7 h-7 flex items-center justify-center rounded-full shadow-md hover:bg-gray-300 z-50 border border-black">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -92,8 +101,9 @@
             <div class="filePreviewContainer max-h-[80vh] overflow-auto"></div>
         </div>
     </div>
-    <div id="pembayaranModal" class="fixed inset-0 bg-black bg-opacity-50 justify-center items-center hidden z-40">
-        <div class="relative bg-white p-4 rounded-lg shadow-lg w-auto max-w-3xl">
+    
+    <div id="pembayaranModal" class="fixed inset-0 bg-black bg-opacity-50 justify-center items-center hidden z-50">
+        <div class="relative bg-white p-4 rounded-lg shadow-lg w-auto max-w-3xl mx-auto my-auto">
             <button onclick="hideModal('pembayaranModal')" class="absolute top-1.5 right-3 bg-white text-black text-sm w-7 h-7 flex items-center justify-center rounded-full shadow-md hover:bg-gray-300 z-50 border border-black">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -101,25 +111,26 @@
             </button>
             <div class="filePreviewContainer max-h-[80vh] overflow-auto"></div>
         </div>
+    </div>
     
     <script>
-       function showModal(modalId, filePath) {
+        function showModal(modalId, filePath) {
             const modal = document.getElementById(modalId);
             const filePreviewContainer = modal.querySelector('.filePreviewContainer'); 
-
+    
             if (!modal || !filePreviewContainer) {
                 console.error("Modal atau filePreviewContainer tidak ditemukan!");
                 return;
             }
-
+    
             if (!filePath) {
                 console.error("File path tidak valid.");
                 return;
             }
-
+    
             const fileExtension = filePath.split('.').pop().toLowerCase();
             filePreviewContainer.innerHTML = ""; 
-
+    
             if (fileExtension === "pdf") {
                 filePreviewContainer.innerHTML = `
                     <iframe src="${filePath}" class="w-full h-[80vh]" frameborder="0"></iframe>
@@ -129,27 +140,29 @@
                     <img src="${filePath}" alt="File Asuransi" class="max-h-[80vh] max-w-full object-contain rounded-lg">
                 `;
             }
-
+    
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             document.body.style.overflow = 'hidden';
         }
-
+    
         function hideModal(modalId) {
             const modal = document.getElementById(modalId);
             modal.classList.add('hidden');
             modal.classList.remove('flex');
             document.body.style.overflow = '';
         }
-
+    
+        // Close modal when clicking outside
         document.querySelectorAll('.fixed').forEach(modal => {
             modal.addEventListener('click', (e) => {
-                if (e.target.classList.contains('fixed')) {
+                if (e.target === modal) {
                     hideModal(modal.id);
                 }
             });
         });
-
+    
+        // Close modal with Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 document.querySelectorAll('.fixed').forEach(modal => {
