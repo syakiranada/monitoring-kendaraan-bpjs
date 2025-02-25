@@ -19,11 +19,56 @@ use App\Models\ServisRutin;
 
 class DaftarKendaraanPenggunaController extends Controller
 {
-    public function daftarKendaraan()
+    public function daftarKendaraan(Request $request)
     {
-        $kendaraan = Kendaraan::where('aset', 'guna')->get();
-        return view('pengguna.daftarKendaraan', compact('kendaraan'));
-    }
+        // Query dasar untuk kendaraan dengan aset 'guna'
+        $search = $request->search;
+        $query = Kendaraan::where('aset', 'guna');
+
+        // Jika terdapat pencarian, tambahkan kondisi filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('merk', 'like', "%$search%")
+                ->orWhere('tipe', 'like', "%$search%")
+                ->orWhere('plat_nomor', 'like', "%$search%")
+                ->orWhere('kapasitas', 'like', "%$search%")
+                ->orWhere('status_ketersediaan', 'like', "%$search%");
+            });
+        }
+
+        // Dapatkan hasil query dengan pagination
+        $kendaraan = $query->paginate(5);
+
+        return view('pengguna.daftarKendaraan', compact('kendaraan', 'search'));
+}
+
+    // public function daftarKendaraan(Request $request)
+    // {
+    //     // Ambil semua kendaraan dengan aset 'guna' sebagai basis query untuk pagination
+    //     $query = Kendaraan::where('aset', 'guna')->orderBy('created_at', 'desc');
+
+    //     // Jika ada input pencarian, filter berdasarkan merk, tipe, atau plat_nomor
+    //     if ($request->filled('search')) {
+    //         $search = $request->search;
+    //         $query->where(function ($q) use ($search) {
+    //             $q->where('merk', 'like', "%$search%")
+    //             ->orWhere('tipe', 'like', "%$search%")
+    //             ->orWhere('plat_nomor', 'like', "%$search%")
+    //             ->orWhere('kapasitas', 'like', "%$search%")
+    //             ->orWhere('status_ketersediaan', 'like', "%$search%");
+    //         });
+    //     }
+
+    //     // Hasil query dengan pagination
+    //     $kendaraan = $query->paginate(5);
+
+    //     // Untuk keperluan dropdown filter, ambil semua kendaraan dengan aset 'guna'
+    //     $kendaraan = Kendaraan::where('aset', 'guna')->get();
+
+    //     return view('pengguna.daftarKendaraan', compact('kendaraan', 'kendaraans'));
+    // }
+
     
     public function detail($id)
     {
