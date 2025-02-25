@@ -23,62 +23,77 @@
                                 <input type="text" id="merkTipe" name="merk_tipe" 
                                        class="w-full p-2 border border-gray-300 rounded bg-gray-100" 
                                        readonly 
-                                       value="{{ old('merk') . ' ' . request('tipe') }}" readonly>
-                                <input type="hidden" id="id_kendaraan" name="id_kendaraan" value="{{ request('id_kendaraan') }}">
+                                       value="{{ $servis->kendaraan->merk }} {{ $servis->kendaraan->tipe }}">
+                                <input type="hidden" id="id_kendaraan" name="id_kendaraan" value="{{ $servis->id_kendaraan }}">
                             </div>
                             <div>
                                 <label class="block text-gray-700">Nomor Plat</label>
                                 <input type="text" id="nomorPlat" name="plat_nomor" class="w-full p-2 border border-gray-300 rounded bg-gray-100" 
-                                       readonly value="{{ old ('plat') }}">
+                                       readonly value="{{ $servis->kendaraan->plat_nomor }}">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-gray-700">Jadwal Servis</label>
                                 <input type="date" id="jadwalServis" name="tgl_servis" class="w-full p-2 border border-gray-300 rounded" 
-                                       value="{{ old ('jadwal_servis') }}" readonly>
+                                       value="{{ $servis->tgl_servis_selanjutnya }}" readonly>
                             </div>
                             <div>
                                 <label class="block text-gray-700">Tanggal Servis Realtime</label>
-                                <input type="date" id="tglServisReal" name="tgl_servis_real" class="w-full p-2 border border-gray-300 rounded" required>
+                                <input type="date" id="tglServisReal" name="tgl_servis_real" class="w-full p-2 border border-gray-300 rounded" 
+                                       value="{{ $servis->tgl_servis_real ?? '' }}" required>
                             </div>
                             <div>
+                                <label class="block text-gray-700">Tanggal Servis Selanjutnya</label>
                                 <input type="date" id="tglServisSelanjutnya" name="tgl_servis_selanjutnya"
-                                class="w-full p-2 border border-gray-300 rounded bg-gray-100"
-                                readonly onfocus="this.removeAttribute('readonly')">
+                                       class="w-full p-2 border border-gray-300 rounded bg-gray-100"
+                                       value="{{ $servis->tgl_servis_selanjutnya ?? '' }}"
+                                       readonly onfocus="this.removeAttribute('readonly')">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-gray-700">Kilometer Penggunaan</label>
-                                <input id="kilometer" type="text" name="kilometer" inputmode="numeric" pattern="\d*" class="w-full p-2 border border-gray-300 rounded" required data-raw="">
+                                <input id="kilometer" type="text" name="kilometer" inputmode="numeric" pattern="\d*" 
+                                       class="w-full p-2 border border-gray-300 rounded" 
+                                       value="{{ $servis->kilometer ?? '' }}" required data-raw="">
                             </div>
                             <div>
                                 <label class="block text-gray-700">Jumlah Pembayaran</label>
-                                <input id="harga" type="text" name="harga" inputmode="numeric" pattern="\d*" class="w-full p-2 border border-gray-300 rounded" required data-raw="">
+                                <input id="harga" type="text" name="harga" inputmode="numeric" pattern="\d*" 
+                                       class="w-full p-2 border border-gray-300 rounded" 
+                                       value="{{ $servis->harga ?? '' }}" required data-raw="">
                             </div>
                         </div>
                         <div class="mb-4">
                             <label class="block text-gray-700">Lokasi Servis</label>
-                            <input type="text" name="lokasi" class="w-full p-2 border border-gray-300 rounded" required>
+                            <input type="text" name="lokasi" class="w-full p-2 border border-gray-300 rounded" 
+                                   value="{{ $servis->lokasi ?? '' }}" required>
                         </div>
                         <div class="mb-6 flex justify-start space-x-4">
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Upload Bukti Pembayaran Servis</label>
                                 <div class="flex flex-col items-center">
                                     <label id="uploadLabelBuktiBayar" class="cursor-pointer flex flex-col items-center justify-center w-32 h-14 border border-blue-500 text-blue-600 font-medium rounded-lg hover:bg-blue-100 transition">
-                                        <span id="uploadTextBuktiBayar" class="text-sm">Upload Photo</span>
-                                        <input type="file" name="bukti_bayar" id="fotoInputBuktiBayar" class="hidden">
+                                        <span id="uploadTextBuktiBayar" class="text-sm">
+                                            {{ $servis->bukti_bayar ? 'Ganti File' : 'Upload File' }}
+                                        </span>
+                                        <input type="file" name="bukti_bayar" id="fotoInputBuktiBayar" class="hidden" accept=".png, .jpg, .jpeg, .pdf">
                                     </label>
-                                    <a href="#" id="removeFileBuktiBayar" class="hidden text-red-600 font-medium text-sm mt-2 hover:underline text-center">Remove</a>
+                                    @if($servis->bukti_bayar)
+                                        <div class="mt-2 text-sm text-gray-700">File saat ini: {{ basename($servis->bukti_bayar) }}</div>
+                                        <a href="#" id="removeFileBuktiBayar" class="text-red-600 font-medium text-sm mt-1 hover:underline text-center">Remove</a>
+                                    @else
+                                        <a href="#" id="removeFileBuktiBayar" class="hidden text-red-600 font-medium text-sm mt-2 hover:underline text-center">Remove</a>
+                                    @endif
                                 </div>
                             </div>
                             <div class="h-20 bg-gray-300" style="width: 0.5px;"></div>
                             <div class="mb-4">
                                 <p class="font-medium text-gray-700">Image requirements:</p>
                                 <ul class="text-sm text-gray-600">
-                                    <li>1. Format: PNG, JPG, atau PDF</li>
-                                    <li>2. Ukuran maksimal: 5MB</li>
+                                    <li>1. Format: PNG, JPG, JPEG, atau PDF</li>
+                                    <li>2. Ukuran maksimal: 2MB</li>
                                     <li>3. Harus jelas dan tidak buram</li>
                                 </ul>
                             </div>
@@ -86,7 +101,7 @@
                         <div class="flex justify-end">
                             <button type="button" onclick="history.back()" class="bg-red-500 text-white px-4 py-2 rounded mr-2">Batal</button>
                             <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Simpan</button>
-                        </div>
+                        </div>                        
                     </form>
                 </div>
             </div>
@@ -158,25 +173,6 @@
                     alert('Terjadi kesalahan saat menghitung tanggal servis selanjutnya: ' + error.message);
                 }
             });
-            
-            if (id_kendaraan.value) {
-                // Fetch jadwal servis terbaru if needed
-                fetch(`/api/servis_terbaru/${id_kendaraan.value}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Gagal mengambil data servis terbaru');
-                        }
-                        return response.json();
-                    })
-                    .then(servisData => {
-                        if (servisData.tgl_servis_selanjutnya) {
-                            document.getElementById("jadwalServis").value = servisData.tgl_servis_selanjutnya;
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Error fetching servis data:", error);
-                    });
-            }
     
             // File upload handler for bukti bayar
             const fotoInputBuktiBayar = document.getElementById('fotoInputBuktiBayar');
@@ -194,10 +190,13 @@
             removeFileBuktiBayar.addEventListener('click', function(e) {
                 e.preventDefault();
                 fotoInputBuktiBayar.value = '';
-                uploadTextBuktiBayar.textContent = 'Upload Photo';
+                uploadTextBuktiBayar.textContent = '{{ $servis->bukti_bayar ? "Ganti File" : "Upload Photo" }}';
                 removeFileBuktiBayar.classList.add('hidden');
+                
+                @if(!$servis->bukti_bayar)
+                removeFileBuktiBayar.classList.add('hidden');
+                @endif
             });
-            
         </script>
     </body>
     </html>

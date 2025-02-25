@@ -92,7 +92,7 @@
                                 <p class="font-medium text-gray-700">Image requirements:</p>
                                 <ul class="text-sm text-gray-600">
                                     <li>1. Format: PNG, JPG, atau PDF</li>
-                                    <li>2. Ukuran maksimal: 5MB</li>
+                                    <li>2. Ukuran maksimal: 2MB</li>
                                     <li>3. Foto harus jelas dan tidak buram</li>
                                 </ul>
                             </div>
@@ -118,78 +118,47 @@
         </div>
     
         <!-- Display SweetAlert based on session messages -->
-        @if(session('success'))
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
         <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil!',
-                text: "{{ session('success') }}",
-                confirmButtonColor: '#3085d6'
-            });
-        </script>
-        @endif
     
-        @if(session('error'))
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal!',
-                text: "{{ session('error') }}",
-                confirmButtonColor: '#d33'
-            });
-        </script>
-        @endif
-    
-        <script>
             document.addEventListener("DOMContentLoaded", function () {
                 // Form submission with AJAX
                 const form = document.getElementById('servisForm');
                 
-                form.addEventListener('submit', function(e) {
+                form.addEventListener('submit', async function (e) {
                     e.preventDefault();
-                    
-                    const formData = new FormData(form);
-                    
-                    fetch(form.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
+                
+                    const formData = new FormData(this);
+                
+                    try {
+                        let response = await fetch(this.action, {
+                            method: 'POST',
+                            body: formData
+                        });
+                
+                        let data = await response.json().catch(() => null);
+                
+                        if (response.ok && data?.success) {
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Berhasil!',
                                 text: data.message || 'Data servis berhasil disimpan',
-                                confirmButtonColor: '#3085d6'
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    window.location.href = data.redirect || "{{ url()->previous() }}";
-                                }
+                            }).then(() => {
+                                window.location.href = data.redirect || "{{ url()->previous() }}";
                             });
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal!',
-                                text: data.message || 'Terjadi kesalahan saat menyimpan data',
-                                confirmButtonColor: '#d33'
-                            });
+                            throw new Error(data?.message || 'Gagal menyimpan data');
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
+                    } catch (error) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Gagal!',
-                            text: 'Terjadi kesalahan pada sistem',
-                            confirmButtonColor: '#d33'
+                            text: error.message || 'Terjadi kesalahan pada sistem',
                         });
-                    });
+                    }
                 });
+                
     
                 document.querySelectorAll(".kendaraan-row").forEach(row => {
                     row.addEventListener("click", async function () {

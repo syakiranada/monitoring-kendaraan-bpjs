@@ -104,7 +104,7 @@ class ServisInsidentalPenggunaController extends Controller
             // Simpan data ke database
             ServisInsidental::create($data);
     
-            return redirect()->route('servisInsidental')
+            return redirect()->route('servisInsidental.index')
                 ->with('success', 'Data servis insidental berhasil disimpan.');
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage()]);
