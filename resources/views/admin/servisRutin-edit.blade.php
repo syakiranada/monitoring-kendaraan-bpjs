@@ -11,31 +11,32 @@
         <div class="flex">
             <!-- Main Content -->
             <div class="w-4/5 p-8">
-                <h1 class="text-3xl font-bold mb-8">Form Input Servis Rutin Kendaraan</h1>
+                <h1 class="text-3xl font-bold mb-8">Form Edit Servis Rutin Kendaraan</h1>
                 <div class="bg-white p-8 rounded shadow-md">
                     <h2 class="text-xl font-semibold mb-4">Detail Servis</h2>
-                    <form action="{{ route('admin.servisRutin.store') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('admin.servisRutin.update', $servis->id_servis_rutin) }}" method="POST" enctype="multipart/form-data">
                         @csrf
+                        @method('PUT')
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-gray-700">Merk dan Tipe Kendaraan</label>
                                 <input type="text" id="merkTipe" name="merk_tipe" 
                                        class="w-full p-2 border border-gray-300 rounded bg-gray-100" 
                                        readonly 
-                                       value="{{ request('merk') . ' ' . request('tipe') }}">
+                                       value="{{ old('merk') . ' ' . request('tipe') }}" readonly>
                                 <input type="hidden" id="id_kendaraan" name="id_kendaraan" value="{{ request('id_kendaraan') }}">
                             </div>
                             <div>
                                 <label class="block text-gray-700">Nomor Plat</label>
                                 <input type="text" id="nomorPlat" name="plat_nomor" class="w-full p-2 border border-gray-300 rounded bg-gray-100" 
-                                       readonly value="{{ request('plat') }}">
+                                       readonly value="{{ old ('plat') }}">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-gray-700">Jadwal Servis</label>
                                 <input type="date" id="jadwalServis" name="tgl_servis" class="w-full p-2 border border-gray-300 rounded" 
-                                       value="{{ request('jadwal_servis') }}" readonly>
+                                       value="{{ old ('jadwal_servis') }}" readonly>
                             </div>
                             <div>
                                 <label class="block text-gray-700">Tanggal Servis Realtime</label>

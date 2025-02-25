@@ -8,13 +8,19 @@ use App\Models\Peminjaman;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ServisRutinController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ServisRutin::with(['kendaraan']);
-
+        $query = ServisRutin::with(['kendaraan'])
+            ->whereIn('id_servis_rutin', function ($subquery) {
+                $subquery->selectRaw('MAX(id_servis_rutin)')
+                    ->from('servis_rutin')
+                    ->groupBy('id_kendaraan');
+            });
+    
         if ($request->has('search')) {
             $search = $request->search;
             $query->whereHas('kendaraan', function($q) use ($search) {
@@ -23,13 +29,13 @@ class ServisRutinController extends Controller
                   ->orWhere('plat_nomor', 'like', "%{$search}%");
             });
         }
-
+    
         $servisRutins = $query->orderBy('tgl_servis_real', 'desc')
-                            ->paginate(10);
-
+                              ->paginate(10);
+    
         return view('admin.servisRutin', compact('servisRutins'));
-
     }
+    
 
     public function create()
     {
@@ -42,21 +48,16 @@ class ServisRutinController extends Controller
         $validated = $request->validate([
             'id_kendaraan' => 'required|exists:kendaraan,id_kendaraan',
             'tgl_servis_real' => 'required|date',
+            'tgl_servis_selanjutnya' => 'required|date',
             'kilometer' => 'required|numeric|min:0',
-            'lokasi' => 'required|string',
+            'lokasi' => 'required|string|max:200',
             'harga' => 'required|numeric|min:0',
             'bukti_bayar' => 'required|image|max:2048', // Max 2MB
-            'bukti_fisik' => 'required|image|max:2048', // Max 2MB
         ]);
     
-        // Store payment proof image
         $buktiBayarPath = $request->file('bukti_bayar')->store('bukti-bayar', 'public');
-        
-        // Store physical proof image
-        $buktiFisikPath = $request->file('bukti_fisik')->store('bukti-fisik', 'public');
     
-        // Calculate next service date (assuming 1 month from real service date)
-        $tglServisSelanjutnya = Carbon::parse($validated['tgl_servis_real'])->addMonth();
+        $tglServisSelanjutnya = $validated['tgl_servis_selanjutnya'];
     
         // Create new service record
         ServisRutin::create([
@@ -66,7 +67,6 @@ class ServisRutinController extends Controller
             'kilometer' => $validated['kilometer'],
             'lokasi' => $validated['lokasi'],
             'bukti_bayar' => $buktiBayarPath,
-            'bukti_fisik' => $buktiFisikPath,
             'tgl_servis_real' => $validated['tgl_servis_real'],
             'tgl_servis_selanjutnya' => $tglServisSelanjutnya
         ]);
@@ -99,88 +99,87 @@ class ServisRutinController extends Controller
         return response()->json(['frekuensi' => $kendaraan->frekuensi ?? 0]);
     }
 
-    /**
-     * Show form for editing service record
-     */
-    // public function edit($id)
-    // {
-    //     $servisRutin = ServisRutin::findOrFail($id);
-    //     $kendaraan = Kendaraan::all();
+    public function edit($id)
+    {
+        $servis = ServisRutin::with('kendaraan')->findOrFail($id);
         
-    //     return view('admin.servis-rutin.edit', compact('servisRutin', 'kendaraan'));
-    // }
+        return view('admin.servisRutin-edit', [
+            'servis' => $servis,
+            'merk' => $servis->kendaraan->merk ?? 'Tidak Diketahui',
+            'tipe' => $servis->kendaraan->tipe ?? '',
+            'plat' => $servis->kendaraan->plat_nomor ?? '-',
+            'jadwal_servis' => $servis->tgl_servis_selanjutnya ?? '-'
+        ]);
+    }
+    
 
-    /**
-     * Update the specified service record
-     */
-    // public function update(Request $request, $id)
-    // {
-    //     $servisRutin = ServisRutin::findOrFail($id);
 
-    //     $validated = $request->validate([
-    //         'kendaraan_id' => 'required|exists:kendaraans,id',
-    //         'tanggal_servis' => 'required|date',
-    //         'kilometer_sekarang' => 'required|numeric|min:0',
-    //         'jenis_servis' => 'required|string',
-    //         'deskripsi' => 'required|string',
-    //         'biaya' => 'required|numeric|min:0',
-    //         'bengkel' => 'required|string',
-    //         'nota_servis' => 'nullable|image|max:2048', // Optional on update
-    //         'keterangan' => 'nullable|string',
-    //     ]);
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'tgl_servis_real' => 'required|date_format:Y-m-d',
+            'kilometer' => 'required|numeric|min:0',
+            'lokasi' => 'required|string|max:200',
+            'harga' => 'required|numeric|min:0',
+            'bukti_bayar' => 'nullable|image|max:2048', // Max 2MB
+        ]);
 
-    //     // Handle new receipt upload if provided
-    //     if ($request->hasFile('nota_servis')) {
-    //         // Delete old receipt
-    //         if ($servisRutin->nota_servis) {
-    //             Storage::disk('public')->delete($servisRutin->nota_servis);
-    //         }
-    //         $notaPath = $request->file('nota_servis')->store('nota-servis', 'public');
-    //         $validated['nota_servis'] = $notaPath;
-    //     }
+        $servis = ServisRutin::findOrFail($id);
 
-    //     $servisRutin->update($validated);
+        // Hitung ulang tanggal servis selanjutnya berdasarkan frekuensi servis kendaraan
+        $frekuensiServis = $servis->kendaraan->frekuensi_servis ?? 1; // Default ke 1 bulan jika tidak ada
+        $tglServisSelanjutnya = Carbon::parse($validated['tgl_servis_real'])->addMonths($frekuensiServis);
 
-    //     // Update next service schedule if date changed
-    //     if ($servisRutin->wasChanged('tanggal_servis')) {
-    //         $this->updateNextServiceSchedule($validated['kendaraan_id'], $validated['tanggal_servis']);
-    //     }
+        // Jika ada bukti bayar baru, hapus yang lama dan simpan yang baru
+        if ($request->hasFile('bukti_bayar')) {
+            if ($servis->bukti_bayar) {
+                ServisRutin::disk('public')->delete($servis->bukti_bayar);
+            }
+            $buktiBayarPath = $request->file('bukti_bayar')->store('bukti-bayar', 'public');
+            $validated['bukti_bayar'] = $buktiBayarPath;
+        }
 
-    //     return redirect()->route('admin.servis-rutin.index')
-    //         ->with('success', 'Data servis rutin berhasil diperbarui.');
-    // }
+        // Update data servis rutin
+        $servis->update([
+            'tgl_servis_real' => $validated['tgl_servis_real'],
+            'tgl_servis_selanjutnya' => $tglServisSelanjutnya,
+            'kilometer' => $validated['kilometer'],
+            'lokasi' => $validated['lokasi'],
+            'harga' => $validated['harga'],
+            'bukti_bayar' => $validated['bukti_bayar'] ?? $servis->bukti_bayar,
+        ]);
 
-    // /**
-    //  * Remove the specified service record
-    //  */
-    // public function destroy($id)
-    // {
-    //     $servisRutin = ServisRutin::findOrFail($id);
-        
-    //     // Delete receipt file
-    //     if ($servisRutin->nota_servis) {
-    //         Storage::disk('public')->delete($servisRutin->nota_servis);
-    //     }
+        return redirect()->route('admin.servisRutin')
+            ->with('success', 'Data servis rutin berhasil diperbarui.');
+    }
 
-    //     $servisRutin->delete();
-
-    //     return redirect()->route('admin.servis-rutin.index')
-    //         ->with('success', 'Data servis rutin berhasil dihapus.');
-    // }
-
-    // /**
-    //  * Update next service schedule for vehicle
-    //  */
-    // private function updateNextServiceSchedule($kendaraanId, $lastServiceDate)
-    // {
-    //     $kendaraan = Kendaraan::find($kendaraanId);
-        
-    //     // Set next service date (assuming 3 months interval)
-    //     $nextServiceDate = Carbon::parse($lastServiceDate)->addMonths(3);
-        
-    //     $kendaraan->update([
-    //         'jadwal_servis_berikutnya' => $nextServiceDate,
-    //         'status_servis' => 'BELUM'
-    //     ]);
-    // }
+    public function destroy($id)
+    {
+        $servis = ServisRutin::findOrFail($id);
+    
+        // Simpan ID Kendaraan sebelum menghapus
+        $idKendaraan = $servis->id_kendaraan;
+    
+        // Hapus bukti bayar jika ada
+        if ($servis->bukti_bayar) {
+            Storage::disk('public')->delete($servis->bukti_bayar);
+        }
+    
+        // Hapus data dari database
+        $servis->delete();
+    
+        // Cari record servis sebelumnya untuk kendaraan yang sama
+        $servisSebelumnya = ServisRutin::where('id_kendaraan', $idKendaraan)
+            ->orderBy('tgl_servis_real', 'desc')
+            ->first();
+    
+        if ($servisSebelumnya) {
+            return redirect()->route('admin.servisRutin', ['id' => $servisSebelumnya->id_servis_rutin])
+                ->with('success', 'Data servis rutin berhasil dihapus.');
+        }
+    
+        return redirect()->route('admin.servisRutin')
+            ->with('success', 'Data servis rutin berhasil dihapus.');
+    }
+    
 }
