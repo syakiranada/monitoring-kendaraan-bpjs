@@ -13,7 +13,7 @@
         <!-- <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Detail Kendaraan</h1> -->
         
         <!-- Button Back -->
-        <a href="{{ route('kendaraan') }}" class="flex items-center text-blue-600 font-semibold hover:underline mb-5">
+        <a href="{{  url()->previous()  }}" class="flex items-center text-blue-600 font-semibold hover:underline mb-5">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
             </svg>

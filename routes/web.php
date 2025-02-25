@@ -82,10 +82,15 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Route::get('/admin/pengisian-bbm', [BBMController::class, 'adminIndex'])->name('admin.bbm');
     // Route::get('/admin/cek-fisik', [CekFisikController::class, 'index'])->name('admin.cek-fisik');
     // Route::get('/admin/riwayat', [RiwayatController::class, 'index'])->name('admin.riwayat');
+
     Route::get('/admin/servisRutin', [ServisRutinController::class, 'index'])->name('admin.servisRutin');
     Route::get('/admin/servisRutin/create', [ServisRutinController::class, 'create'])->name('admin.servisRutin.create');
     Route::post('/admin/servisRutin', [ServisRutinController::class, 'store'])->name('admin.servisRutin.store');
     Route::get('/admin/servisRutin/{id}', [ServisRutinController::class, 'detail'])->name('admin.servisRutin.detail');
+    Route::get('/admin/servisRutin/{id}/edit', [ServisRutinController::class, 'edit'])->name('admin.servisRutin.edit');
+    Route::put('/admin/servisRutin/{id}', [ServisRutinController::class, 'update'])->name('admin.servisRutin.update');
+    Route::delete('/admin/servisRutin/{id}', [ServisRutinController::class, 'destroy'])->name('admin.servisRutin.destroy');
+
     Route::get('/api/kendaraan/{id}', [ServisRutinController::class, 'getKendaraan']);
     Route::get('/api/servis_terbaru/{id_kendaraan}', [ServisRutinController::class, 'getServisTerbaru']);
     Route::get('/api/frekuensi/{id_kendaraan}', [ServisRutinController::class, 'getFrekuensi']);

@@ -34,23 +34,63 @@
                         <tr class="kendaraan-row cursor-pointer" data-id="{{ $servis->kendaraan->id_kendaraan ?? '' }}">
                             <td class="py-3 px-4 border-b">
                                 <div>{{ ($servis->kendaraan->merk ?? 'Tidak Diketahui') . ' ' . ($servis->kendaraan->tipe ?? '') }}</div>
-                            </td>                            
+                            </td> 
                             <td class="py-3 px-4 border-b">{{ $servis->kendaraan->plat_nomor ?? '-' }}</td>
                             <td class="py-3 px-4 border-b">{{ \Carbon\Carbon::parse($servis->tgl_servis_real)->locale('id')->format('d-m-Y') }}</td>
-                            <td class="py-3 px-4 border-b text-{{ $servis->status == 'SUDAH' ? 'green' : 'red' }}-500">
-                                {{ strtoupper($servis->status) }}
+                            <td class="py-3 px-4 border-b">
+                                @php
+                                    $tglServis = \Carbon\Carbon::parse($servis->tgl_servis_selanjutnya);
+                                    $hariIni = \Carbon\Carbon::now();
+                                    $selisihHari = $hariIni->diffInDays($tglServis, false);
+                            
+                                    if ($selisihHari <= 30 && $selisihHari > 0) {
+                                        $status = 'Mendekati Jatuh Tempo';
+                                        $color = 'yellow';
+                                    } elseif ($selisihHari <= 0) {
+                                        $status = 'Jatuh Tempo';
+                                        $color = 'red';
+                                    } else {
+                                        $status = 'Sudah Dibayar';
+                                        $color = 'green';
+                                    }
+                                @endphp
+                            
+                                <span class="text-xs font-medium px-2.5 py-0.5 rounded text-{{ $color }}-500 bg-{{ $color }}-100">
+                                    {{ strtoupper($status) }}
+                                </span>
                             </td>
+                            
                             <td class="py-3 px-4 border-b">
                                 <a href="{{ route('admin.servisRutin.detail', $servis->id_servis_rutin) }}" 
                                     class="text-blue-500 hover:underline">Detail</a>
-                                <a href="{{ route('admin.servisRutin.create')}}" 
-                                    class="text-gray-500 hover:underline">Input</a>
-                                <a href="#" class="text-blue-500 hover:underline">Edit</a>
-                                <a href="#" class="text-red-500 hover:underline">Hapus</a>
+                                <a href="{{ route('admin.servisRutin.create', [
+                                    'id_kendaraan' => $servis->kendaraan->id_kendaraan ?? '',
+                                    'merk' => $servis->kendaraan->merk ?? 'Tidak Diketahui',
+                                    'tipe' => $servis->kendaraan->tipe ?? '',
+                                    'plat' => $servis->kendaraan->plat_nomor ?? '-',
+                                    'jadwal_servis' => $servis->tgl_servis_selanjutnya ?? '-'
+                                ]) }}" class="text-gray-500 hover:underline">Input</a>
+                                {{--  <a href="{{ route('admin.servisRutin.edit', [
+                                    'servis' => $servis,
+                                    'id_kendaraan' => $servis->kendaraan->id_kendaraan ?? '',
+                                    'merk' => $servis->kendaraan->merk ?? 'Tidak Diketahui',
+                                    'tipe' => $servis->kendaraan->tipe ?? '',
+                                    'plat' => $servis->kendaraan->plat_nomor ?? '-',
+                                    'jadwal_servis' => $servis->tgl_servis_selanjutnya ?? '-'
+                                ]) }}" class="text-blue-500 hover:underline">Edit</a>  --}}
+                                <a href="{{ route('admin.servisRutin.edit', ['id' => $servis->id_servis_rutin]) }}" class="text-blue-500 hover:underline">
+                                    Edit
+                                </a>
+                                
+                                <form action="{{ route('admin.servisRutin.destroy', $servis->id_servis_rutin) }}" method="POST" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-500 hover:underline"
+                                        onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">Hapus</button>
+                                </form>
                             </td>
                         </tr>
                         @endforeach
-
                     </tbody>
                 </table>
                 

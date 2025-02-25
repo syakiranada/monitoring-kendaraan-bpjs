@@ -21,16 +21,68 @@ use App\Models\ServisRutin;
 
 class PeminjamanPenggunaController extends Controller
 {
-    public function peminjamanPage()
+    // public function peminjamanPage(Request $request)
+    // {
+    //     $userId = Auth::id(); // Ambil ID user yang sedang login
+    //     $daftarPeminjaman = Peminjaman::with('kendaraan') // Ambil data kendaraan juga
+    //         ->where('user_id', $userId)
+    //         ->orderBy('created_at', 'desc') // Urutkan dari terbaru
+    //         ->paginate(2);
+         
+        
+    //     $search = $request->search;
+    //     $query = Peminjaman::with(['user', 'kendaraan'])->orderBy('tgl_mulai', 'desc');
+
+    //     // Search functionality
+    //     if ($request->filled('search')) {
+    //         $search = $request->search;
+    //         $query->where(function ($q) use ($search) {
+    //             $q->whereHas('user', function ($qUser) use ($search) {
+    //                 $qUser->where('name', 'like', "%$search%");
+    //             })
+    //             ->orWhereHas('kendaraan', function ($qKendaraan) use ($search) {
+    //                 $qKendaraan->where('merk', 'like', "%$search%")
+    //                         ->orWhere('tipe', 'like', "%$search%")
+    //                         ->orWhere('plat_nomor', 'like', "%$search%");
+    //             })
+    //             ->orWhere('tujuan', 'like', "%$search%")
+    //             ->orWhere('status_pinjam', 'like', "%$search%");
+    //         });
+    //     }    
+    //     return view('pengguna.peminjaman', compact('daftarPeminjaman'));
+    // }
+    public function peminjamanPage(Request $request)
     {
         $userId = Auth::id(); // Ambil ID user yang sedang login
-        $daftarPeminjaman = Peminjaman::with('kendaraan') // Ambil data kendaraan juga
-            ->where('user_id', $userId)
-            ->orderBy('created_at', 'desc') // Urutkan dari terbaru
-            ->get();
-        
-        return view('pengguna.peminjaman', compact('daftarPeminjaman'));
+        $search = $request->search;
+        // Buat query dasar dengan filter user
+        $query = Peminjaman::with(['user', 'kendaraan'])
+                    ->where('user_id', $userId)
+                    ->orderBy('created_at', 'desc');
+
+        // Jika ada input pencarian, tambahkan filter pencarian
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('user', function ($qUser) use ($search) {
+                        $qUser->where('name', 'like', "%$search%");
+                    })
+                    ->orWhereHas('kendaraan', function ($qKendaraan) use ($search) {
+                        $qKendaraan->where('merk', 'like', "%$search%")
+                                ->orWhere('tipe', 'like', "%$search%")
+                                ->orWhere('plat_nomor', 'like', "%$search%");
+                    })
+                    ->orWhere('tujuan', 'like', "%$search%")
+                    ->orWhere('status_pinjam', 'like', "%$search%");
+            });
+        }
+
+        // Atur urutan dan paginate hasil query
+        $daftarPeminjaman = $query->paginate(2);
+
+        return view('pengguna.peminjaman', compact('daftarPeminjaman', 'search'));
     }
+
     public function showForm()
     {
         return view('pengguna.formPeminjaman');
