@@ -40,7 +40,7 @@
                         <th scope="col" class="px-6 py-3">Plat Nomor</th>
                         <th scope="col" class="px-6 py-3">Tanggal Mulai</th>
                         <th scope="col" class="px-6 py-3">Tanggal Pengembalian</th>
-                        <th scope="col" class="px-6 py-3">Tujuan</th>
+                        {{-- <th scope="col" class="px-6 py-3">Tujuan</th> --}}
                         <th scope="col" class="px-6 py-3">Status</th>
                         <th scope="col" class="px-6 py-3">Aksi</th>
                     </tr>
@@ -53,9 +53,9 @@
                             </td>
                             <td class="px-6 py-4">{{ $item->kendaraan->merk }} {{ $item->kendaraan->tipe }}</td>
                             <td class="px-6 py-4">{{ $item->kendaraan->plat_nomor }}</td>
-                            <td class="px-6 py-4">{{ $item->tgl_mulai }}</td>
-                            <td class="px-6 py-4">{{ $item->tgl_selesai }}</td>
-                            <td class="px-6 py-4">{{ $item->tujuan }}</td>
+                            <td class="px-6 py-4">{{ $item->tgl_mulai ? \Carbon\Carbon::parse($item->tgl_mulai)->format('d-m-Y') : '-' }}</td>
+                            <td class="px-6 py-4">{{ $item->tgl_selesai ? \Carbon\Carbon::parse($item->tgl_selesai)->format('d-m-Y') : '-' }}</td>
+                            {{-- <td class="px-6 py-4">{{ $item->tujuan }}</td> --}}
                             <td class="px-6 py-4">
                                 <span class="px-2 py-1 text-xs font-semibold 
                                     {{ $item->status_pinjam == 'Telah Dikembalikan' ? 'text-green-800 bg-green-200' : ($item->status_pinjam == 'Ditolak' ? 'text-red-800 bg-red-200' : 'text-gray-800 bg-gray-200') }} 

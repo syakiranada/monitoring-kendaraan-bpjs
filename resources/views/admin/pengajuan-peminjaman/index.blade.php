@@ -4,7 +4,19 @@
 
 <x-app-layout>
     <div class="p-6">
-        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Daftar Pengajuan Peminjaman Kendaraan</h2>
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Daftar Pengajuan Peminjaman Kendaraan</h2>
+
+        {{-- @if (session('success'))
+            <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50" role="alert">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+                {{ session('error') }}
+            </div>
+        @endif --}}
 
         <!-- Search Form -->
         <form action="{{ route('admin.pengajuan-peminjaman.index') }}" method="GET" class="flex justify-end pb-4">
@@ -12,12 +24,12 @@
                 <input 
                     type="text" 
                     name="search"
-                    class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-60 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
+                    class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-60 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
                     placeholder="Cari peminjam, kendaraan, ..."
                     value="{{ request('search') }}"
                 >
                 <div class="absolute inset-y-0 start-0 flex items-center ps-3">
-                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                    <svg class="w-4 h-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
                     </svg>
                 </div>
@@ -25,12 +37,12 @@
         </form>
 
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                     <tr>
                         {{-- <th scope="col" class="p-4">
                             <div class="flex items-center">
-                                <input id="checkbox-all" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                <input id="checkbox-all" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500">
                             </div>
                         </th> --}}
                         <th scope="col" class="px-6 py-3">Nama Peminjam</th>
@@ -44,28 +56,28 @@
                 </thead>
                 <tbody>
                     @forelse ($peminjaman as $item)
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <tr class="bg-white border-b hover:bg-gray-50">
                             {{-- <td class="w-4 p-4">
                                 <div class="flex items-center">
-                                    <input type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                    <input type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500">
                                 </div>
                             </td> --}}
-                            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                 {{ $item->user->name }}
                             </td>
                             <td class="px-6 py-4">{{ $item->kendaraan->merk }} {{ $item->kendaraan->tipe }}</td>
                             <td class="px-6 py-4">{{ $item->kendaraan->plat_nomor }}</td>
-                            <td class="px-6 py-4">{{ $item->tgl_mulai }}</td>
-                            <td class="px-6 py-4">{{ $item->tgl_selesai }}</td>
+                            <td class="px-6 py-4">{{ $item->tgl_mulai ? \Carbon\Carbon::parse($item->tgl_mulai)->format('d-m-Y') : '-' }}</td>
+                            <td class="px-6 py-4">{{ $item->tgl_selesai ? \Carbon\Carbon::parse($item->tgl_selesai)->format('d-m-Y') : '-' }}</td>
                             <td class="px-6 py-4">{{ $item->tujuan }}</td>
                             <td class="flex space-x-2 px-6 py-4">
-                                <a href="{{ route('admin.pengajuan-peminjaman.detail', $item->id_peminjaman) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
+                                <a href="{{ route('admin.pengajuan-peminjaman.detail', ['id' => $item->id_peminjaman, 'page' => request()->query('page'), 'search' => request()->query('search')]) }}" class="text-blue-600 hover:underline">
                                     Detail
                                 </a>
                                 <!-- Form Setujui -->
                                 <form action="{{ route('admin.pengajuan-peminjaman.setujui', $item->id_peminjaman) }}" method="POST" id="setujui-form-{{ $item->id_peminjaman }}">
                                     @csrf
-                                    <button type="button" onclick="confirmAction('setujui', {{ $item->id_peminjaman }})" class="text-green-600 dark:text-green-500 hover:underline">
+                                    <button type="button" onclick="confirmAction('setujui', {{ $item->id_peminjaman }})" class="text-green-600 hover:underline">
                                         Setujui
                                     </button>
                                 </form>
@@ -73,7 +85,7 @@
                                 <!-- Form Tolak -->
                                 <form action="{{ route('admin.pengajuan-peminjaman.tolak', $item->id_peminjaman) }}" method="POST" id="tolak-form-{{ $item->id_peminjaman }}">
                                     @csrf
-                                    <button type="button" onclick="confirmAction('tolak', {{ $item->id_peminjaman }})" class="text-red-600 dark:text-red-500 hover:underline">
+                                    <button type="button" onclick="confirmAction('tolak', {{ $item->id_peminjaman }})" class="text-red-600 hover:underline">
                                         Tolak
                                     </button>
                                 </form>
@@ -91,7 +103,7 @@
 
         <!-- Pagination -->
         <div class="mt-4">
-            {{ $peminjaman->links() }}
+            {{ $peminjaman->appends(request()->query())->links() }}
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
@@ -115,17 +127,31 @@
                     // Jika ya, submit form yang sesuai
                     const form = document.getElementById(`${action}-form-${id}`);
                     form.submit();
-
-                    // Tampilkan pesan sukses setelah form dikirim
-                    Swal.fire({
-                        title: "Berhasil!",
-                        text: `Peminjaman telah ${action === 'setujui' ? 'disetujui' : 'ditolak'}`,
-                        icon: "success",
-                        confirmButtonColor: "#3085d6",
-                    });
                 }
             });
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+        // Cek jika ada flash message success
+        @if(session('success'))
+            Swal.fire({
+                title: "Berhasil!",
+                text: "{{ session('success') }}",
+                icon: "success",
+                confirmButtonColor: "#3085d6",
+            });
+        @endif
+
+        // Cek jika ada flash message error
+        @if(session('error'))
+            Swal.fire({
+                title: "Gagal!",
+                text: "{{ session('error') }}",
+                icon: "error",
+                confirmButtonColor: "#d33",
+            });
+        @endif
+    });
     </script>
 </x-app-layout>
 {{-- @endsection --}}

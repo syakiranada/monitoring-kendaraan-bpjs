@@ -49,8 +49,8 @@
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                             <td class="px-6 py-4">{{ $item->kendaraan->merk }} {{ $item->kendaraan->tipe }}</td>
                             <td class="px-6 py-4">{{ $item->kendaraan->plat_nomor }}</td>
-                            <td class="px-6 py-4">{{ $item->tgl_jatuh_tempo }}</td>
-                            <td class="px-6 py-4">{{ $item->tgl_bayar ?? '-' }}</td>
+                            <td class="px-6 py-4">{{ $item->tgl_jatuh_tempo ? \Carbon\Carbon::parse($item->tgl_jatuh_tempo)->format('d-m-Y') : '-' }}</td>
+                            <td class="px-6 py-4">{{ $item->tgl_bayar ? \Carbon\Carbon::parse($item->tgl_bayar)->format('d-m-Y') : '-' }}</td>
                             <td class="px-6 py-4">Rp{{ number_format($item->nominal + $item->biaya_pajak_lain, 0, ',', '.') }}</td>
                             <td class="px-6 py-4">
                                 {{ $item->user->name }}

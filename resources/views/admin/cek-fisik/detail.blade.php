@@ -19,7 +19,7 @@
             <div class="space-y-2">
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-600">Tanggal Cek Fisik</span>
-                    <span class="text-gray-900">{{ $cekFisik->tgl_cek_fisik }}</span>
+                    <span class="text-gray-900">{{ $cekFisik->tgl_cek_fisik ? \Carbon\Carbon::parse($cekFisik->tgl_cek_fisik)->format('d-m-Y') : '-' }}</span>
                 </div>
 
                 @foreach(['mesin', 'accu', 'air_radiator', 'air_wiper', 'body', 'ban', 'pengharum', 'kondisi_keseluruhan'] as $field)

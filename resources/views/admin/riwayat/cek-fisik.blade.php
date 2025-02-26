@@ -48,7 +48,7 @@
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                             <td class="px-6 py-4">{{ $item->kendaraan->merk }} {{ $item->kendaraan->tipe }}</td>
                             <td class="px-6 py-4">{{ $item->kendaraan->plat_nomor }}</td>
-                            <td class="px-6 py-4">{{ $item->tgl_cek_fisik }}</td>
+                            <td class="px-6 py-4">{{ $item->tgl_cek_fisik ? \Carbon\Carbon::parse($item->tgl_cek_fisik)->format('d-m-Y') : '-' }}</td>
                             <td class="px-6 py-4">{{ $item->kondisi_keseluruhan }}</td>
                             <td class="px-6 py-4">{{ $item->user->name }}</td>
                             <td class="px-6 py-4">
