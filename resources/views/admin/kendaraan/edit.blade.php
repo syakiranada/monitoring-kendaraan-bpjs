@@ -291,23 +291,6 @@
                 return;
             }
 
-            // ✅ Validasi tanggal pajak
-            let tanggalBayarPajak = document.querySelector('input[name="tanggal_bayar_pajak"]').value;
-            let tanggalJatuhTempoPajak = document.querySelector('input[name="tanggal_jatuh_tempo_pajak"]').value;
-
-            if (tanggalBayarPajak && tanggalJatuhTempoPajak) {
-                let bayar = new Date(tanggalBayarPajak);
-                let jatuhTempo = new Date(tanggalJatuhTempoPajak);
-                if (bayar >= jatuhTempo) {
-                    let alertDiv = document.getElementById('alertMessage');
-                    alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Tanggal jatuh tempo pajak harus lebih besar dari tanggal bayar pajak terakhir.';
-                    alertDiv.classList.remove('hidden');
-                    alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    setTimeout(() => alertDiv.classList.add('hidden'), 5000);
-                    return;
-                }
-            }
-
             // ✅ Format angka untuk nilai perolehan & nilai buku
             let nominalInput = document.querySelector('input[name="nilai_perolehan"]');
             let biayaLainInput = document.querySelector('input[name="nilai_buku"]');
