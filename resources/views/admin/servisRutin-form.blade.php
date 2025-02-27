@@ -42,6 +42,7 @@
                                 <input type="date" id="tglServisReal" name="tgl_servis_real" class="w-full p-2 border border-gray-300 rounded" required>
                             </div>
                             <div>
+                                <label class="block text-gray-700">Tanggal Servis Selanjutnya</label>
                                 <input type="date" id="tglServisSelanjutnya" name="tgl_servis_selanjutnya"
                                 class="w-full p-2 border border-gray-300 rounded bg-gray-100"
                                 readonly onfocus="this.removeAttribute('readonly')">
@@ -66,18 +67,18 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Upload Bukti Pembayaran Servis</label>
                                 <div class="flex flex-col items-center">
                                     <label id="uploadLabelBuktiBayar" class="cursor-pointer flex flex-col items-center justify-center w-32 h-14 border border-blue-500 text-blue-600 font-medium rounded-lg hover:bg-blue-100 transition">
-                                        <span id="uploadTextBuktiBayar" class="text-sm">Upload Photo</span>
-                                        <input type="file" name="bukti_bayar" id="fotoInputBuktiBayar" class="hidden">
+                                        <span id="uploadTextBuktiBayar" class="text-sm">Upload File</span>
+                                        <input type="file" name="bukti_bayar" id="fotoInputBuktiBayar" class="hidden" accept=".png, .jpg, .jpeg, .pdf">
                                     </label>
                                     <a href="#" id="removeFileBuktiBayar" class="hidden text-red-600 font-medium text-sm mt-2 hover:underline text-center">Remove</a>
                                 </div>
                             </div>
                             <div class="h-20 bg-gray-300" style="width: 0.5px;"></div>
                             <div class="mb-4">
-                                <p class="font-medium text-gray-700">Image requirements:</p>
+                                <p class="font-medium text-gray-700">File requirements:</p>
                                 <ul class="text-sm text-gray-600">
-                                    <li>1. Format: PNG, JPG, atau PDF</li>
-                                    <li>2. Ukuran maksimal: 5MB</li>
+                                    <li>1. Format: PNG, JPG, JPEG, atau PDF</li>
+                                    <li>2. Ukuran maksimal: 2MB</li>
                                     <li>3. Harus jelas dan tidak buram</li>
                                 </ul>
                             </div>

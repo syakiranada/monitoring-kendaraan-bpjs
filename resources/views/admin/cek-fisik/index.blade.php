@@ -51,7 +51,7 @@
                                 {{ $item->merk }} {{ $item->tipe }}
                             </td>
                             <td class="px-6 py-4">{{ $item->plat_nomor }}</td>
-                            <td class="px-6 py-4">{{ $item->tgl_cek_fisik_terakhir ? date('d-m-Y', strtotime($item->tgl_cek_fisik_terakhir)) : '-' }}</td>
+                            <td class="px-6 py-4">{{ $item->tgl_cek_fisik_terakhir ? \Carbon\Carbon::parse($item->tgl_cek_fisik_terakhir)->format('d-m-Y') : '-' }}</td>
                             <td class="flex space-x-2 px-6 py-4">
                                 <a href="{{ route('admin.cek-fisik.create', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page'), 'search' => request()->query('search')]) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
                                     Catat
@@ -88,7 +88,7 @@
 
         <!-- Pagination -->
         <div class="mt-4">
-            {{ $kendaraan->links() }}
+            {{ $kendaraan->appends(request()->query())->links() }}
         </div>
         {{-- <nav class="pb-4 flex items-center justify-end pt-4 px-12" aria-label="Table navigation">
             <div class="w-full md:w-auto flex justify-end">

@@ -13,6 +13,36 @@ class CekFisikController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $convertedDate = null;
+        $partialDate = null;
+
+        if ($search) {
+            // Jika pencarian adalah tanggal lengkap (d-m-Y)
+            if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $search)) {
+                try {
+                    // Mengubah tanggal yang dicari ke format Y-m-d
+                    $convertedDate = \Carbon\Carbon::createFromFormat('d-m-Y', $search)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    $convertedDate = null;
+                }
+            }
+
+            // Jika pencarian adalah tanggal parsial (misalnya d-m atau d saja)
+            if (preg_match('/^\d{2}-\d{2}$/', $search)) {
+                // Format pencarian parsial d-m (misalnya "18-02")
+                $partialDate = '%-' . $search . '%';
+            } elseif (preg_match('/^\d{2}$/', $search)) {
+                // Format pencarian parsial hanya hari (misalnya "18")
+                $partialDate = '%-' . $search . '%';
+            } elseif (preg_match('/^\d{1,2}$/', $search)) {
+                // Format pencarian parsial hanya bulan (misalnya "02")
+                $partialDate = '%' . $search . '-%';
+            } elseif (preg_match('/^\d{4}$/', $search)) {
+                // Format pencarian tahun saja (misalnya "2025")
+                $partialDate = $search . '%';
+            }
+        }
+
         $kendaraan = Kendaraan::leftJoin('cek_fisik', 'kendaraan.id_kendaraan', '=', 'cek_fisik.id_kendaraan')
             ->select(
                 'kendaraan.id_kendaraan',
@@ -22,11 +52,22 @@ class CekFisikController extends Controller
                 DB::raw('(SELECT tgl_cek_fisik FROM cek_fisik WHERE cek_fisik.id_kendaraan = kendaraan.id_kendaraan ORDER BY tgl_cek_fisik DESC LIMIT 1) as tgl_cek_fisik_terakhir')
             )
             ->groupBy('kendaraan.id_kendaraan', 'kendaraan.merk', 'kendaraan.tipe', 'kendaraan.plat_nomor')
-            ->when($search, function ($query, $search) {
-                return $query->where(function ($q) use ($search) {
-                    $q->where('kendaraan.merk', 'LIKE', "%{$search}%")
-                    ->orWhere('kendaraan.tipe', 'LIKE', "%{$search}%")
-                    ->orWhere('kendaraan.plat_nomor', 'LIKE', "%{$search}%");
+            ->when($search, function ($query, $search) use ($convertedDate, $partialDate) {
+                return $query->where(function ($q) use ($search, $convertedDate, $partialDate) {
+                    // Pencarian berdasarkan tanggal lengkap
+                    if ($convertedDate) {
+                        $q->orWhere(DB::raw('(SELECT tgl_cek_fisik FROM cek_fisik WHERE cek_fisik.id_kendaraan = kendaraan.id_kendaraan ORDER BY tgl_cek_fisik DESC LIMIT 1)'), $convertedDate);
+                    }
+
+                    // Pencarian berdasarkan tanggal parsial (misalnya 18-02 atau 18)
+                    if ($partialDate) {
+                        $q->orWhere(DB::raw('(SELECT tgl_cek_fisik FROM cek_fisik WHERE cek_fisik.id_kendaraan = kendaraan.id_kendaraan ORDER BY tgl_cek_fisik DESC LIMIT 1)'), 'like', $partialDate);
+                    }
+
+                    // Pencarian berdasarkan merk, tipe, atau plat nomor kendaraan
+                    $q->orWhere('kendaraan.merk', 'LIKE', "%{$search}%")
+                        ->orWhere('kendaraan.tipe', 'LIKE', "%{$search}%")
+                        ->orWhere('kendaraan.plat_nomor', 'LIKE', "%{$search}%");
                 });
             })
             ->paginate(10)
@@ -34,6 +75,7 @@ class CekFisikController extends Controller
 
         return view('admin.cek-fisik.index', compact('kendaraan'));
     }
+
 
     public function create($id_kendaraan)
     {

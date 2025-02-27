@@ -92,7 +92,7 @@
                             <p class="font-medium text-gray-700">Image requirements:</p>
                             <ul class="text-sm text-gray-600">
                                 <li>1. Format: PNG, JPG, atau PDF</li>
-                                <li>2. Ukuran maksimal: 5MB</li>
+                                <li>2. Ukuran maksimal: 2MB</li>
                                 <li>3. Foto harus jelas dan tidak buram</li>
                             </ul>
                         </div>

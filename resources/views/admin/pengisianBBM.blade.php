@@ -80,9 +80,9 @@
                             <tr>
                                 <th class="py-3 px-4 text-left">MEREK DAN TIPE</th>
                                 <th class="py-3 px-4 text-left">PLAT</th>
-                                <th class="py-3 px-4 text-left">TANGGAL PENGISIAN BBM</th>
+                                <th class="py-3 px-4 text-left">TANGGAL PENGISIAN BBM TERAKHIR</th>
                                 <th class="py-3 px-4 text-left">STATUS PEMINJAMAN</th>
-                                <th class="py-3 px-4 text-left">AKSI</th>
+                                <th class="py-3 px-4 text-center">AKSI</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -104,18 +104,25 @@
                                         {{ strtoupper($bbm->kendaraan?->status_ketersediaan) }}
                                     </span>
                                 </td>                                
-                                
-                                <td class="py-3 px-4 border-b">
-                                    <a href="{{ route('admin.pengisianBBM.detail', $bbm->id_bbm) }}" 
-                                        class="text-blue-500 hover:underline">Detail</a>
+                                <td class="py-3 px-4 border-b text-center">
+                                    <div class="flex justify-center space-x-4">
+                                        <a href="{{ route('admin.pengisianBBM.detail', $bbm->id_bbm) }}" class="text-blue-500 hover:underline">Detail</a>
+                                        <a href="{{ route('admin.pengisianBBM.edit', ['id' => $bbm->id_bbm]) }}" class="text-green-500 hover:underline">Edit</a>
+                                        <form action="{{ route('admin.pengisianBBM.destroy', $bbm->id_bbm) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-500 hover:underline"
+                                                onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">Hapus</button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="py-6 text-center text-gray-500">Tidak ada data pengisian BBM ditemukan</td>
+                                <td colspan="6" class="py-6 text-center text-gray-500">Tidak ada data pengisian BBM ditemukan</td>
                             </tr>
                             @endforelse
-                        </tbody>
+                        </tbody>                                                
                     </table>
                 </div>
                 <!-- Pagination -->

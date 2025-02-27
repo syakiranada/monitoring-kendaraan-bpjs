@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Peminjaman;
 use App\Models\Kendaraan;
 use App\Models\BBM;
+use Illuminate\Support\Facades\DB;
 
 class IsiBBMController extends Controller
 {
@@ -16,8 +17,14 @@ class IsiBBMController extends Controller
         // Query untuk kendaraan tersedia
         $kendaraanTersedia = Kendaraan::where('status_ketersediaan', 'Tersedia');
         
-        // Query untuk servis insidental
-        $query = BBM::with(['kendaraan']);
+        // Query untuk pengisian BBM terakhir dari setiap kendaraan
+        $query = BBM::select('b.*')
+            ->from(DB::raw('(SELECT id_kendaraan, MAX(tgl_isi) as max_tgl FROM bbm GROUP BY id_kendaraan) as latest'))
+            ->join('bbm as b', function($join) {
+                $join->on('b.id_kendaraan', '=', 'latest.id_kendaraan')
+                     ->on('b.tgl_isi', '=', 'latest.max_tgl');
+            })
+            ->with(['kendaraan']);
 
         // Implementasi pencarian jika ada
         if ($request->has('search')) {
@@ -30,7 +37,7 @@ class IsiBBMController extends Controller
                 ->orWhere('plat_nomor', 'like', "%{$search}%");
             });
             
-            // Terapkan pencarian ke servis insidental
+            // Terapkan pencarian ke pengisian BBM
             $query->whereHas('kendaraan', function($q) use ($search) {
                 $q->where('merek', 'like', "%{$search}%")
                 ->orWhere('tipe', 'like', "%{$search}%")
@@ -41,7 +48,7 @@ class IsiBBMController extends Controller
         // Eksekusi queries
         $kendaraanTersedia = $kendaraanTersedia->get();
         $pengisianBBMs = $query->orderBy('tgl_isi', 'desc')
-                                ->paginate(10);
+                              ->paginate(10);
 
         return view('admin.pengisianBBM', compact('kendaraanTersedia', 'pengisianBBMs'));
     }
@@ -79,21 +86,15 @@ class IsiBBMController extends Controller
                 'user_id' => $userId,
                 'tgl_isi' => $validated['tgl_isi'],
                 'nominal' => $validated['nominal'],
-                'jenis_bbm' => $validated['jenis_bbm'], // 👈 Tambahkan ini
+                'jenis_bbm' => $validated['jenis_bbm'],
             ];
             
             if (!empty($validated['id_peminjaman'])) {
                 $data['id_peminjaman'] = $validated['id_peminjaman'];
             }
             
-            // // Tambahkan id_peminjaman hanya jika tidak null
-            // if ($request->filled('id_peminjaman')) {
-            //     $data['id_peminjaman'] = $request->id_peminjaman;
-            // }
-            
             BBM::create($data);
     
-            // Redirect ke halaman admin.servisInsidental setelah berhasil
             return redirect()->route('admin.pengisianBBM')
                 ->with('success', 'Data pengisian BBM berhasil disimpan.');
         } catch (\Exception $e) {
@@ -109,4 +110,64 @@ class IsiBBMController extends Controller
         return view('admin.pengisianBBM-detail', compact('bbm'));
     }
 
+    public function edit($id)
+    {
+        $bbm = BBM::with('kendaraan')->findOrFail($id);
+        $kendaraan = Kendaraan::all();
+        
+        return view('admin.pengisianBBM-edit', [
+            'bbm' => $bbm,
+            'kendaraan' => $kendaraan
+        ]);
+    }
+    
+    public function update(Request $request, $id)
+    {
+        $request->merge([
+            'nominal' => str_replace('.', '', $request->nominal),
+        ]);
+        
+        $validated = $request->validate([
+            'tgl_isi' => 'required|date',
+            'nominal' => 'required|numeric|min:0',
+            'jenis_bbm' => 'required|string|in:Pertalite,Pertamax,Pertamax Turbo,Dexlite,Pertamina Dex',
+        ]);
+
+        $bbm = BBM::findOrFail($id);
+        
+        try {
+            $bbm->update([
+                'tgl_isi' => $validated['tgl_isi'],
+                'nominal' => $validated['nominal'],
+                'jenis_bbm' => $validated['jenis_bbm'],
+            ]);
+
+            return redirect()->route('admin.pengisianBBM')
+                ->with('success', 'Data pengisian BBM berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+        }
+    }
+    
+    public function destroy($id)
+    {
+        try {
+            $bbm = BBM::findOrFail($id);
+            $id_kendaraan = $bbm->id_kendaraan;
+            
+            // Hapus data pengisian BBM
+            $bbm->delete();
+            
+            // Cari pengisian BBM terakhir untuk kendaraan ini setelah penghapusan
+            $lastBBM = BBM::where('id_kendaraan', $id_kendaraan)
+                        ->orderBy('tgl_isi', 'desc')
+                        ->first();
+            
+            return redirect()->route('admin.pengisianBBM')
+                ->with('success', 'Data pengisian BBM berhasil dihapus.')
+                ->with('lastBBM', $lastBBM);
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+        }
+    }
 }

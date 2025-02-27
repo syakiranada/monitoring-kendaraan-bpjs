@@ -104,6 +104,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/pengisianBBM/create', [IsiBBMController::class, 'create'])->name('admin.pengisianBBM.create');
     Route::post('/admin/pengisianBBM', [IsiBBMController::class, 'store'])->name('admin.pengisianBBM.store');
     Route::get('/admin/pengisianBBM/{id}', [IsiBBMController::class, 'detail'])->name('admin.pengisianBBM.detail');
+    Route::get('/admin/pengisianBBM/{id}/edit', [IsiBBMController::class, 'edit'])->name('admin.pengisianBBM.edit');
+    Route::put('/admin/pengisianBBM/{id}', [IsiBBMController::class, 'update'])->name('admin.pengisianBBM.update');
+    Route::delete('/admin/pengisianBBM/{id}', [IsiBBMController::class, 'destroy'])->name('admin.pengisianBBM.destroy');
     
     Route::get('/admin/pengajuan-peminjaman', [PengajuanPeminjamanController::class, 'index'])->name('admin.pengajuan-peminjaman.index');
     Route::get('/admin/pengajuan-peminjaman/{id}', [PengajuanPeminjamanController::class, 'detail'])->name('admin.pengajuan-peminjaman.detail');

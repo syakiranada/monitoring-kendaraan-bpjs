@@ -52,7 +52,7 @@ class ServisRutinController extends Controller
             'kilometer' => 'required|numeric|min:0',
             'lokasi' => 'required|string|max:200',
             'harga' => 'required|numeric|min:0',
-            'bukti_bayar' => 'required|image|max:2048', // Max 2MB
+            'bukti_bayar' => 'required|mimes:jpg,jpeg,png,pdf|max:2048', // Max 2MB
         ]);
     
         $buktiBayarPath = $request->file('bukti_bayar')->store('bukti-bayar', 'public');
@@ -121,7 +121,7 @@ class ServisRutinController extends Controller
             'kilometer' => 'required|numeric|min:0',
             'lokasi' => 'required|string|max:200',
             'harga' => 'required|numeric|min:0',
-            'bukti_bayar' => 'nullable|image|max:2048', // Max 2MB
+            'bukti_bayar' => 'required|mimes:jpg,jpeg,png,pdf|max:2048', // Max 2MB
         ]);
 
         $servis = ServisRutin::findOrFail($id);
