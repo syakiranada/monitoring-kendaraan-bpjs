@@ -61,8 +61,8 @@ class ServisInsidentalPenggunaController extends Controller
             'harga' => 'required|numeric|min:0',
             'lokasi' => 'required|string|max:100',
             'deskripsi' => 'required|string|max:200',
-            'bukti_bayar' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120', // 5MB
-            'bukti_fisik' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120', // 5MB
+            'bukti_bayar' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048', // 5MB
+            'bukti_fisik' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048', // 5MB
         ]);
     
         // Pastikan user login

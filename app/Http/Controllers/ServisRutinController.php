@@ -133,7 +133,7 @@ class ServisRutinController extends Controller
         // Jika ada bukti bayar baru, hapus yang lama dan simpan yang baru
         if ($request->hasFile('bukti_bayar')) {
             if ($servis->bukti_bayar) {
-                ServisRutin::disk('public')->delete($servis->bukti_bayar);
+                Storage::disk('public')->delete($servis->bukti_bayar);
             }
             $buktiBayarPath = $request->file('bukti_bayar')->store('bukti-bayar', 'public');
             $validated['bukti_bayar'] = $buktiBayarPath;
@@ -177,9 +177,16 @@ class ServisRutinController extends Controller
             return redirect()->route('admin.servisRutin', ['id' => $servisSebelumnya->id_servis_rutin])
                 ->with('success', 'Data servis rutin berhasil dihapus.');
         }
-    
-        return redirect()->route('admin.servisRutin')
-            ->with('success', 'Data servis rutin berhasil dihapus.');
+
+        $servis = ServisRutin::find($id);
+
+        if (!$servis) {
+            return response()->json(['message' => 'Data tidak ditemukan'], 404);
+        }
+
+        $servis->delete();
+
+        return response()->json(['message' => 'Data berhasil dihapus'], 200);
     }
     
 }

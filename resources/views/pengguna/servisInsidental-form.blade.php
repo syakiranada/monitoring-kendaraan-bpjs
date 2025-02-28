@@ -18,7 +18,7 @@
                 <h1 class="text-3xl font-bold mb-8">Form Input Servis Insidental Kendaraan</h1>
                 <div class="bg-white p-8 rounded shadow-md">
                     <h2 class="text-xl font-semibold mb-4">Detail Servis</h2>
-                    <form id="servisForm" action="{{ route('servisInsidental.store') }}" method="POST" enctype="multipart/form-data">
+                    <form id="serviceForm" action="{{ route('servisInsidental.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
@@ -117,47 +117,156 @@
             </div>
         </div>
     
-        <!-- Display SweetAlert based on session messages -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-        <script>
-    
-            document.addEventListener("DOMContentLoaded", function () {
-                // Form submission with AJAX
-                const form = document.getElementById('servisForm');
-                
-                form.addEventListener('submit', async function (e) {
-                    e.preventDefault();
-                
-                    const formData = new FormData(this);
-                
-                    try {
-                        let response = await fetch(this.action, {
-                            method: 'POST',
-                            body: formData
-                        });
-                
-                        let data = await response.json().catch(() => null);
-                
-                        if (response.ok && data?.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil!',
-                                text: data.message || 'Data servis berhasil disimpan',
-                            }).then(() => {
-                                window.location.href = data.redirect || "{{ url()->previous() }}";
-                            });
-                        } else {
-                            throw new Error(data?.message || 'Gagal menyimpan data');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('serviceForm');
+            if (form) {
+                // Menambahkan fungsi validasi ukuran file
+                function validateFileSize() {
+                    const fileInput = form.querySelector('input[type="file"]');
+                    if (fileInput && fileInput.files.length > 0) {
+                        const maxSize = 2 * 1024 * 1024;
+                        if (fileInput.files[0].size > maxSize) {
+                            return false;
                         }
-                    } catch (error) {
+                    }
+                    return true;
+                }
+        
+                form.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    
+                    // Validasi ukuran file
+                    if (!validateFileSize()) {
                         Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal!',
-                            text: error.message || 'Terjadi kesalahan pada sistem',
+                            title: "Gagal!",
+                            text: "Ukuran file tidak boleh melebihi 2MB",
+                            icon: "error",
+                            confirmButtonColor: "#d33",
+                            confirmButtonText: "OK"
                         });
+                        return;
+                    }
+                    
+                    // Konfirmasi simpan data
+                    Swal.fire({
+                        title: "Konfirmasi",
+                        text: "Apakah Anda yakin ingin menyimpan data servis ini?",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Ya, Simpan!",
+                        cancelButtonText: "Batal"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Tampilkan loading
+                            Swal.fire({
+                                title: "Memproses...",
+                                text: "Mohon tunggu sebentar",
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            
+                            // Menggunakan AJAX untuk submit form
+                            const formData = new FormData(form);
+                            
+                            // Tambahkan parameter ajax=true untuk memudahkan deteksi di server
+                            formData.append('ajax', 'true');
+                            
+                            fetch(form.action, {
+                                method: form.method,
+                                body: formData,
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            })
+                            .then(response => {
+                                // Anggap saja berhasil jika status 2xx, bahkan jika bukan JSON
+                                if (response.ok) {
+                                    return { status: 'success' };
+                                } else {
+                                    throw new Error('Server error');
+                                }
+                            })
+                            .then(data => {
+                                // Notifikasi sukses
+                                Swal.fire({
+                                    title: "Berhasil!",
+                                    text: "Data servis berhasil disimpan",
+                                    icon: "success",
+                                    confirmButtonColor: "#3085d6",
+                                    confirmButtonText: "OK"
+                                }).then(() => {
+                                    // Redirect ke halaman pengguna.servisInsidental SETELAH klik OK
+                                    window.location.href = '/servisInsidental';
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                // Notifikasi gagal
+                                Swal.fire({
+                                    title: "Gagal!",
+                                    text: "Terjadi kesalahan saat menyimpan data",
+                                    icon: "error",
+                                    confirmButtonColor: "#d33",
+                                    confirmButtonText: "OK"
+                                });
+                            });
+                        }
+                    });
+                });
+            } else {
+                console.error('Form dengan id serviceForm tidak ditemukan');
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cek apakah ada flash message success
+            <?php if (session('success')): ?>
+                Swal.fire({
+                    title: "Berhasil!",
+                    text: "<?php echo session('success'); ?>",
+                    icon: "success",
+                    confirmButtonColor: "#3085d6",
+                    confirmButtonText: "OK"
+                });
+            <?php endif; ?>
+            
+            // Cek apakah ada flash message error
+            <?php if (session('error')): ?>
+                Swal.fire({
+                    title: "Gagal!",
+                    text: "<?php echo session('error'); ?>",
+                    icon: "error",
+                    confirmButtonColor: "#d33",
+                    confirmButtonText: "OK"
+                });
+            <?php endif; ?>
+        });
+
+            document.querySelectorAll(".kendaraan-row").forEach(row => {
+                row.addEventListener("click", async function () {
+                    let id_kendaraan = this.getAttribute("data-id");
+                    if (!id_kendaraan) return;
+
+                    try {
+                        let response = await fetch(`/api/kendaraan/${id_kendaraan}`);
+                        let data = await response.json();
+
+                        document.getElementById("merkTipe").value = `${data.merk} ${data.tipe}`;
+                        document.getElementById("nomorPlat").value = data.plat_nomor;
+                        document.getElementById("id_kendaraan").value = id_kendaraan;
+                    } catch (error) {
+                        console.error("Error fetching kendaraan data:", error);
                     }
                 });
+            });
                 
     
                 document.querySelectorAll(".kendaraan-row").forEach(row => {
@@ -178,7 +287,7 @@
                     });
                 });
     
-                function setupFileUpload(inputId, fileNameId, removeBtnId) {
+                {{--  function setupFileUpload(inputId, fileNameId, removeBtnId) {
                     const inputFile = document.getElementById(inputId);
                     const fileNameDisplay = document.getElementById(fileNameId);
                     const removeBtn = document.getElementById(removeBtnId);
@@ -201,8 +310,8 @@
                 }
             
                 setupFileUpload("fotoInputBuktiBayar", "fileNameBuktiBayar", "removeFileBuktiBayar");
-                setupFileUpload("fotoInputBuktiFisik", "fileNameBuktiFisik", "removeFileBuktiFisik");
-            });
+                setupFileUpload("fotoInputBuktiFisik", "fileNameBuktiFisik", "removeFileBuktiFisik");  --}}
+            {{--  });  --}}
     
             {{--  document.getElementById('hargaInput').addEventListener('input', function (e) {
                 // Ambil nilai input
@@ -221,6 +330,46 @@
             document.getElementById('hargaInput').addEventListener('input', function (e) {
                 let value = e.target.value.replace(/\D/g, '');
                 e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            });
+
+            // File upload handler for bukti bayar
+            const fotoInputBuktiBayar = document.getElementById('fotoInputBuktiBayar');
+            const uploadLabelBuktiBayar = document.getElementById('uploadLabelBuktiBayar');
+            const uploadTextBuktiBayar = document.getElementById('uploadTextBuktiBayar');
+            const removeFileBuktiBayar = document.getElementById('removeFileBuktiBayar');
+
+            fotoInputBuktiBayar.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    uploadTextBuktiBayar.textContent = this.files[0].name;
+                    removeFileBuktiBayar.classList.remove('hidden');
+                }
+            });
+
+            removeFileBuktiBayar.addEventListener('click', function(e) {
+                e.preventDefault();
+                fotoInputBuktiBayar.value = '';
+                uploadTextBuktiBayar.textContent = 'Upload';
+                removeFileBuktiBayar.classList.add('hidden');
+            });
+
+            // File upload handler for bukti bayar
+            const fotoInputBuktiFisik = document.getElementById('fotoInputBuktiFisik');
+            const uploadLabelBuktiFisik = document.getElementById('uploadLabelBuktiFisik');
+            const uploadTextBuktiFisik = document.getElementById('uploadTextBuktiFisik');
+            const removeFileBuktiFisik = document.getElementById('removeFileBuktiFisik');
+
+            fotoInputBuktiFisik.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    uploadTextBuktiFisik.textContent = this.files[0].name;
+                    removeFileBuktiFisik.classList.remove('hidden');
+                }
+            });
+
+            removeFileBuktiFisik.addEventListener('click', function(e) {
+                e.preventDefault();
+                fotoInputBuktiFisik.value = '';
+                uploadTextBuktiFisik.textContent = 'Upload';
+                removeFileBuktiFisik.classList.add('hidden');
             });
         </script>
     </body>

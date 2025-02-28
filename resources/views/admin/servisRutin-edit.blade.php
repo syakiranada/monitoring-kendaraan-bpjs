@@ -14,7 +14,7 @@
                 <h1 class="text-3xl font-bold mb-8">Form Edit Servis Rutin Kendaraan</h1>
                 <div class="bg-white p-8 rounded shadow-md">
                     <h2 class="text-xl font-semibold mb-4">Detail Servis</h2>
-                    <form action="{{ route('admin.servisRutin.update', $servis->id_servis_rutin) }}" method="POST" enctype="multipart/form-data">
+                    <form id="serviceForm" action="{{ route('admin.servisRutin.update', $servis->id_servis_rutin) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         <div class="grid grid-cols-2 gap-4 mb-4">
@@ -107,7 +107,162 @@
             </div>
         </div>
 
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('serviceForm');
+                if (form) {
+                    // Menambahkan fungsi validasi ukuran file
+                    function validateFileSize() {
+                        const fileInput = form.querySelector('input[type="file"]');
+                        if (fileInput && fileInput.files.length > 0) {
+                            const maxSize = 2 * 1024 * 1024;
+                            if (fileInput.files[0].size > maxSize) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+            
+                    if (result.isConfirmed) {
+                        event.preventDefault();
+                        
+                        // Validasi ukuran file
+                        if (!validateFileSize()) {
+                            Swal.fire({
+                                title: "Gagal!",
+                                text: "Ukuran file tidak boleh melebihi 2MB",
+                                icon: "error",
+                                confirmButtonColor: "#d33",
+                                confirmButtonText: "OK"
+                            });
+                            return;
+                        }
+                        
+                        // Konfirmasi edit data
+                        Swal.fire({
+                            title: "Konfirmasi",
+                            text: "Apakah Anda yakin ingin mengubah data servis ini?",
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonColor: "#3085d6",
+                            cancelButtonColor: "#d33",
+                            confirmButtonText: "Ya, Ubah!",
+                            cancelButtonText: "Batal"
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Tampilkan loading
+                                Swal.fire({
+                                    title: "Memproses...",
+                                    text: "Mohon tunggu sebentar",
+                                    allowOutsideClick: false,
+                                    didOpen: () => {
+                                        Swal.showLoading();
+                                    }
+                                });
+                                
+                                const formData = new FormData(form);
+                                formData.append('ajax', 'true');
+                                formData.append('_method', 'PUT');
+
+                                // Tambahkan CSRF token
+                                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                                formData.append('_token', csrfToken);
+
+                                fetch(form.action, {
+                                    method: 'PUT', // Tetap menggunakan POST, Laravel akan mengenali method spoofing
+                                    body: formData,
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    }
+                                })
+                                .then(response => {
+                                    // Anggap saja berhasil jika status 2xx, bahkan jika bukan JSON
+                                    fetch(form.action, { method: 'PUT', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(response => response.json()) // Pastikan response dikembalikan dalam JSON
+    .then(data => {
+        if (data.errors) {
+            let errorMessages = Object.values(data.errors).flat().join('\n');
+            Swal.fire({
+                title: "Gagal!",
+                text: errorMessages,
+                icon: "error",
+                confirmButtonColor: "#d33",
+                confirmButtonText: "OK"
+            });
+            throw new Error(errorMessages);
+        }
+        Swal.fire({
+            title: "Berhasil!",
+            text: "Data servis berhasil diperbarui",
+            icon: "success",
+            confirmButtonColor: "#3085d6",
+            confirmButtonText: "OK"
+        }).then(() => { window.location.href = '/admin/servisRutin'; });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+
+                                })
+                                .then(data => {
+                                    // Notifikasi sukses
+                                    Swal.fire({
+                                        title: "Berhasil!",
+                                        text: "Data servis berhasil diperbarui",
+                                        icon: "success",
+                                        confirmButtonColor: "#3085d6",
+                                        confirmButtonText: "OK"
+                                    }).then(() => {
+                                        // Redirect ke halaman admin.servisRutin SETELAH klik OK
+                                        window.location.href = '/admin/servisRutin';
+                                    });
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    // Notifikasi gagal
+                                    Swal.fire({
+                                        title: "Gagal!",
+                                        text: "Terjadi kesalahan saat memperbarui data",
+                                        icon: "error",
+                                        confirmButtonColor: "#d33",
+                                        confirmButtonText: "OK"
+                                    });
+                                });
+                            }
+                        });
+                    });
+                } else {
+                    console.error('Form dengan id serviceForm tidak ditemukan');
+                }
+            });
+        </script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Cek apakah ada flash message success
+                <?php if (session('success')): ?>
+                    Swal.fire({
+                        title: "Berhasil!",
+                        text: "<?php echo session('success'); ?>",
+                        icon: "success",
+                        confirmButtonColor: "#3085d6",
+                        confirmButtonText: "OK"
+                    });
+                <?php endif; ?>
+                
+                // Cek apakah ada flash message error
+                <?php if (session('error')): ?>
+                    Swal.fire({
+                        title: "Gagal!",
+                        text: "<?php echo session('error'); ?>",
+                        icon: "error",
+                        confirmButtonColor: "#d33",
+                        confirmButtonText: "OK"
+                    });
+                <?php endif; ?>
+            });
+
             // Ambil elemen input
             const tglServisReal = document.getElementById('tglServisReal');
             const tglServisSelanjutnya = document.getElementById('tglServisSelanjutnya');

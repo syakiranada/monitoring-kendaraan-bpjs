@@ -12,7 +12,7 @@
         <div class="flex justify-center p-8">
             <div class="w-full max-w-lg bg-white p-8 rounded shadow-md">
                 <h1 class="text-3xl font-bold mb-6">Edit Pengisian BBM Kendaraan</h1>
-                <form action="{{ route('admin.pengisianBBM.update', $bbm->id_bbm) }}" method="POST">
+                <form id="bbmForm" action="{{ route('admin.pengisianBBM.update', $bbm->id_bbm) }}" method="POST">
                     @csrf
                     @method('PUT')
                     <div class="mb-4">
@@ -48,7 +48,136 @@
                 </form>
             </div>
         </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('bbmForm');
+                if (form) {
+                    form.addEventListener('submit', function(event) {
+                        event.preventDefault(); // Mencegah form dikirim langsung
+            
+                        // Validasi ukuran file
+                        function validateFileSize() {
+                            const fileInput = form.querySelector('input[type="file"]');
+                            if (fileInput && fileInput.files.length > 0) {
+                                const maxSize = 2 * 1024 * 1024;
+                                if (fileInput.files[0].size > maxSize) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
+            
+                        if (!validateFileSize()) {
+                            Swal.fire({
+                                title: "Gagal!",
+                                text: "Ukuran file tidak boleh melebihi 2MB",
+                                icon: "error",
+                                confirmButtonColor: "#d33",
+                                confirmButtonText: "OK"
+                            });
+                            return;
+                        }
+            
+                        // Tampilkan konfirmasi
+                        Swal.fire({
+                            title: "Konfirmasi",
+                            text: "Apakah Anda yakin ingin mengubah data pengisian BBM ini?",
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonColor: "#3085d6",
+                            cancelButtonColor: "#d33",
+                            confirmButtonText: "Ya, Ubah!",
+                            cancelButtonText: "Batal"
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Tampilkan loading
+                                Swal.fire({
+                                    title: "Memproses...",
+                                    text: "Mohon tunggu sebentar",
+                                    allowOutsideClick: false,
+                                    didOpen: () => {
+                                        Swal.showLoading();
+                                    }
+                                });
+            
+                                const formData = new FormData(form);
+                                formData.append('_method', 'PUT');
+            
+                                // Ambil CSRF token
+                                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                                formData.append('_token', csrfToken);
+            
+                                fetch(form.action, {
+                                    method: 'POST', // Laravel mengenali _method: 'PUT'
+                                    body: formData,
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    }
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.errors) {
+                                        Swal.fire({
+                                            title: "Gagal!",
+                                            text: Object.values(data.errors).flat().join('\n'),
+                                            icon: "error",
+                                            confirmButtonColor: "#d33",
+                                            confirmButtonText: "OK"
+                                        });
+                                    } else {
+                                        Swal.fire({
+                                            title: "Berhasil!",
+                                            text: "Data pengisian BBM berhasil diperbarui",
+                                            icon: "success",
+                                            confirmButtonColor: "#3085d6",
+                                            confirmButtonText: "OK"
+                                        }).then(() => {
+                                            window.location.href = '/admin/pengisianBBM';
+                                        });
+                                    }
+                                })
+                                .catch(error => {
+                                    Swal.fire({
+                                        title: "Gagal!",
+                                        text: "Terjadi kesalahan saat memperbarui data",
+                                        icon: "error",
+                                        confirmButtonColor: "#d33",
+                                        confirmButtonText: "OK"
+                                    });
+                                    console.error('Error:', error);
+                                });
+                            }
+                        });
+                    });
+                }
+            });            
+        </script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                @if(session('success'))
+                    Swal.fire({
+                        title: "Berhasil!",
+                        text: "{{ session('success') }}",
+                        icon: "success",
+                        confirmButtonColor: "#3085d6",
+                        confirmButtonText: "OK"
+                    });
+                @endif
+            
+                @if(session('error'))
+                    Swal.fire({
+                        title: "Gagal!",
+                        text: "{{ session('error') }}",
+                        icon: "error",
+                        confirmButtonColor: "#d33",
+                        confirmButtonText: "OK"
+                    });
+                @endif
+            });
+
             document.getElementById('nominalInput').addEventListener('input', function (e) {
                 let value = e.target.value.replace(/\D/g, '');
                 e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
