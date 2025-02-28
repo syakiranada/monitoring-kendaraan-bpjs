@@ -9,6 +9,56 @@ use Illuminate\Support\Facades\Log;
 
 class PengajuanPeminjamanController extends Controller
 {
+    private function buildDateSearch($query, $column, $search)
+    {
+        // Check if search might be a date in various formats
+        // Format: d (day only - 1 to 31)
+        if (preg_match('/^(0?[1-9]|[12][0-9]|3[01])$/', $search)) {
+            $day = (int) $search;
+            $query->orWhereRaw("DAY($column) = ?", [$day]);
+        }
+        
+        // Format: m (month only - 1 to 12)
+        if (preg_match('/^(0?[1-9]|1[0-2])$/', $search)) {
+            $month = (int) $search;
+            $query->orWhereRaw("MONTH($column) = ?", [$month]);
+        }
+        
+        // Format: Y (year only - 4 digits)
+        if (preg_match('/^(20\d{2})$/', $search)) {
+            $year = (int) $search;
+            $query->orWhereRaw("YEAR($column) = ?", [$year]);
+        }
+        
+        // Format: d-m (day-month)
+        if (preg_match('/^(0?[1-9]|[12][0-9]|3[01])[\-\/](0?[1-9]|1[0-2])$/', $search)) {
+            $parts = preg_split('/[\-\/]/', $search);
+            $day = (int) $parts[0];
+            $month = (int) $parts[1];
+            $query->orWhereRaw("DAY($column) = ? AND MONTH($column) = ?", [$day, $month]);
+        }
+        
+        // Format: m-Y (month-year)
+        if (preg_match('/^(0?[1-9]|1[0-2])[\-\/](20\d{2})$/', $search)) {
+            $parts = preg_split('/[\-\/]/', $search);
+            $month = (int) $parts[0];
+            $year = (int) $parts[1];
+            $query->orWhereRaw("MONTH($column) = ? AND YEAR($column) = ?", [$month, $year]);
+        }
+        
+        // Format: d-m-Y (day-month-year)
+        if (preg_match('/^(0?[1-9]|[12][0-9]|3[01])[\-\/](0?[1-9]|1[0-2])[\-\/](20\d{2})$/', $search)) {
+            $parts = preg_split('/[\-\/]/', $search);
+            $day = (int) $parts[0];
+            $month = (int) $parts[1];
+            $year = (int) $parts[2];
+            $query->orWhereRaw("DAY($column) = ? AND MONTH($column) = ? AND YEAR($column) = ?", [$day, $month, $year]);
+        }
+        
+        // Also try the default LIKE search for backward compatibility
+        $query->orWhere($column, 'like', "%$search%");
+    }
+    
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -16,59 +66,9 @@ class PengajuanPeminjamanController extends Controller
             ->where('status_pinjam', 'Menunggu Persetujuan');
 
         // Search functionality
-        // if ($request->filled('search')) {
-        //     $search = $request->search;
-        //     $peminjaman->where(function ($q) use ($search) {
-        //         $q->whereHas('user', function ($qUser) use ($search) {
-        //             $qUser->where('name', 'like', "%$search%");
-        //         })
-        //         ->orWhereHas('kendaraan', function ($qKendaraan) use ($search) {
-        //             $qKendaraan->where('merk', 'like', "%$search%")
-        //                     ->orWhere('tipe', 'like', "%$search%")
-        //                     ->orWhere('plat_nomor', 'like', "%$search%");
-        //         })
-        //         ->orWhere('tujuan', 'like', "%$search%")
-        //         ->orWhere('tgl_mulai', 'like', "%$search%")
-        //         ->orWhere('tgl_selesai', 'like', "%$search%")
-        //         ;
-        //     });
-        // }
-
-        // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-
-            // Cek apakah format input search cocok dengan d-m-Y
-            if (preg_match('/^\d{1,2}-\d{1,2}-\d{4}$/', $search)) {
-                try {
-                    // Convert ke format Y-m-d untuk pencarian tanggal penuh
-                    $convertedDate = \Carbon\Carbon::createFromFormat('d-m-Y', $search)->format('Y-m-d');
-                } catch (\Exception $e) {
-                    $convertedDate = null;
-                }
-            } else {
-                $convertedDate = null;
-            }
-
-            // Cek apakah format input search cocok dengan d-m (tanpa tahun)
-            if (preg_match('/^\d{1,2}-\d{1,2}$/', $search)) {
-                try {
-                    // Pecah menjadi hari dan bulan
-                    [$day, $month] = explode('-', $search);
-                    // Pastikan formatnya dua digit
-                    $day = str_pad($day, 2, '0', STR_PAD_LEFT);
-                    $month = str_pad($month, 2, '0', STR_PAD_LEFT);
-
-                    // Ubah jadi format untuk LIKE query
-                    $partialDate = "%-$month-$day";
-                } catch (\Exception $e) {
-                    $partialDate = null;
-                }
-            } else {
-                $partialDate = null;
-            }
-
-            $peminjaman->where(function ($q) use ($search, $convertedDate, $partialDate) {
+            $peminjaman->where(function ($q) use ($search) {
                 $q->whereHas('user', function ($qUser) use ($search) {
                     $qUser->where('name', 'like', "%$search%");
                 })
@@ -77,23 +77,15 @@ class PengajuanPeminjamanController extends Controller
                             ->orWhere('tipe', 'like', "%$search%")
                             ->orWhere('plat_nomor', 'like', "%$search%");
                 })
-                ->orWhere('tujuan', 'like', "%$search%");
-
-                // Pencarian tanggal lengkap jika formatnya sesuai d-m-Y
-                if ($convertedDate) {
-                    $q->orWhere('tgl_mulai', $convertedDate)
-                    ->orWhere('tgl_selesai', $convertedDate);
-                }
-
-                // Pencarian parsial pada tanggal (contoh: 18-02)
-                if ($partialDate) {
-                    $q->orWhere('tgl_mulai', 'like', $partialDate)
-                    ->orWhere('tgl_selesai', 'like', $partialDate);
-                }
-
-                // Pencarian parsial umum (contoh: 18 saja)
-                $q->orWhere('tgl_mulai', 'like', "%$search%")
-                ->orWhere('tgl_selesai', 'like', "%$search%");
+                ->orWhere('tujuan', 'like', "%$search%")
+                // ->orWhere('tgl_mulai', 'like', "%$search%")
+                // ->orWhere('tgl_selesai', 'like', "%$search%");
+                ->orWhere(function ($q) use ($search) {
+                    $this->buildDateSearch($q, 'tgl_mulai', $search);
+                })
+                ->orWhere(function ($q) use ($search) {
+                    $this->buildDateSearch($q, 'tgl_selesai', $search);
+                });
             });
         }
 

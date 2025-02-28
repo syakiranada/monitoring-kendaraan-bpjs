@@ -72,6 +72,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Kelola Akun Pengguna
     Route::get('/admin/kelola-akun', [KelolaAkunController::class, 'index'])->name('admin.kelola-akun.index');
     Route::post('/admin/kelola-akun/import', [KelolaAkunController::class, 'import'])->name('admin.kelola-akun.import');
+    // Route::put('/admin/kelola-akun/{user}/toggle-status', [KelolaAkunController::class, 'toggleStatus'])->name('admin.kelola-akun.toggle-status');
+    Route::patch('/admin/kelola-akun/{id}/toggle-status', [KelolaAkunController::class, 'toggleStatus'])->name('admin.kelola-akun.toggle-status');
     //BERANDA
     Route::get('/admin/beranda', [BerandaController::class, 'admin'])->name('admin.beranda');
     // Route::get('/admin/kendaraan', [KendaraanController::class, 'adminIndex'])->name('admin.kendaraan');
