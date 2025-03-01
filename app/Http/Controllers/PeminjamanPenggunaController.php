@@ -78,7 +78,7 @@ class PeminjamanPenggunaController extends Controller
         }
 
         // Atur urutan dan paginate hasil query
-        $daftarPeminjaman = $query->paginate(2);
+        $daftarPeminjaman = $query->paginate(10);
 
         return view('pengguna.peminjaman', compact('daftarPeminjaman', 'search'));
     }
