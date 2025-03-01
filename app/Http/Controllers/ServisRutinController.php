@@ -45,6 +45,11 @@ class ServisRutinController extends Controller
     
     public function store(Request $request)
     {
+        $request->merge([
+            'harga' => str_replace('.', '', $request->harga),
+            'kilometer' => str_replace('.', '', $request->kilometer),
+        ]);   
+
         $validated = $request->validate([
             'id_kendaraan' => 'required|exists:kendaraan,id_kendaraan',
             'tgl_servis_real' => 'required|date',
@@ -111,32 +116,45 @@ class ServisRutinController extends Controller
             'jadwal_servis' => $servis->tgl_servis_selanjutnya ?? '-'
         ]);
     }
-    
-
 
     public function update(Request $request, $id)
     {
+        $request->merge([
+            'harga' => str_replace('.', '', $request->harga),
+            'kilometer' => str_replace('.', '', $request->kilometer),
+        ]);
+
+        $servis = ServisRutin::findOrFail($id);
+        $buktiValidasi = $servis->bukti_bayar ? 'nullable' : 'required';  
+
         $validated = $request->validate([
             'tgl_servis_real' => 'required|date_format:Y-m-d',
             'kilometer' => 'required|numeric|min:0',
             'lokasi' => 'required|string|max:200',
             'harga' => 'required|numeric|min:0',
-            'bukti_bayar' => 'required|mimes:jpg,jpeg,png,pdf|max:2048', // Max 2MB
+            'bukti_bayar' => $buktiValidasi . '|mimes:jpg,jpeg,png,pdf|max:2048', // Max 2MB
+            'remove_bukti_bayar' => 'nullable|boolean',
         ]);
-
-        $servis = ServisRutin::findOrFail($id);
 
         // Hitung ulang tanggal servis selanjutnya berdasarkan frekuensi servis kendaraan
         $frekuensiServis = $servis->kendaraan->frekuensi_servis ?? 1; // Default ke 1 bulan jika tidak ada
         $tglServisSelanjutnya = Carbon::parse($validated['tgl_servis_real'])->addMonths($frekuensiServis);
 
+        $buktiBayarPath = $servis->bukti_bayar;
+
+        if (isset($validated['remove_bukti_bayar']) && $validated['remove_bukti_bayar'] == 1) {
+            if ($servis->bukti_bayar) {
+                Storage::disk('public')->delete($servis->bukti_bayar);
+            }
+            $buktiBayarPath = null;
+        }
+
         // Jika ada bukti bayar baru, hapus yang lama dan simpan yang baru
         if ($request->hasFile('bukti_bayar')) {
             if ($servis->bukti_bayar) {
-                ServisRutin::disk('public')->delete($servis->bukti_bayar);
+                Storage::disk('public')->delete($servis->bukti_bayar);
             }
             $buktiBayarPath = $request->file('bukti_bayar')->store('bukti-bayar', 'public');
-            $validated['bukti_bayar'] = $buktiBayarPath;
         }
 
         // Update data servis rutin
@@ -146,7 +164,7 @@ class ServisRutinController extends Controller
             'kilometer' => $validated['kilometer'],
             'lokasi' => $validated['lokasi'],
             'harga' => $validated['harga'],
-            'bukti_bayar' => $validated['bukti_bayar'] ?? $servis->bukti_bayar,
+            'bukti_bayar' => $buktiBayarPath,
         ]);
 
         return redirect()->route('admin.servisRutin')
@@ -177,9 +195,16 @@ class ServisRutinController extends Controller
             return redirect()->route('admin.servisRutin', ['id' => $servisSebelumnya->id_servis_rutin])
                 ->with('success', 'Data servis rutin berhasil dihapus.');
         }
-    
-        return redirect()->route('admin.servisRutin')
-            ->with('success', 'Data servis rutin berhasil dihapus.');
+
+        $servis = ServisRutin::find($id);
+
+        if (!$servis) {
+            return response()->json(['message' => 'Data tidak ditemukan'], 404);
+        }
+
+        $servis->delete();
+
+        return response()->json(['message' => 'Data berhasil dihapus'], 200);
     }
     
 }

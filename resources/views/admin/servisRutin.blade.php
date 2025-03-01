@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Daftar Servis Rutin Kendaraan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -82,12 +83,13 @@
                                     Edit
                                 </a>
                                 
-                                <form action="{{ route('admin.servisRutin.destroy', $servis->id_servis_rutin) }}" method="POST" class="inline">
+                                <form action="{{ route('admin.servisRutin.destroy', $servis->id_servis_rutin) }}" method="POST" class="delete-form inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-500 hover:underline"
-                                        onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">Hapus</button>
-                                </form>
+                                    <button type="button" class="text-red-500 hover:underline delete-button" data-url="{{ route('admin.servisRutin.destroy', $servis->id_servis_rutin) }}">
+                                        Hapus
+                                    </button>
+                                </form>                                
                             </td>
                         </tr>
                         @endforeach
@@ -103,6 +105,97 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const deleteButtons = document.querySelectorAll('.delete-button');
+    
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    console.log("Tombol hapus diklik:", button);
+    
+                    const deleteUrl = button.getAttribute('data-url');
+    
+                    Swal.fire({
+                        title: "Konfirmasi",
+                        text: "Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#d33",
+                        cancelButtonColor: "#3085d6",
+                        confirmButtonText: "Ya, Hapus!",
+                        cancelButtonText: "Batal"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: "Menghapus...",
+                                text: "Mohon tunggu sebentar",
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+    
+                            fetch(deleteUrl, {
+                                method: 'POST', // Tetap POST karena Laravel butuh method spoofing
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                },
+                                body: new URLSearchParams({ _method: 'DELETE' }) // Kirim method spoofing DELETE
+                            })
+                            
+                            .then(response => {
+                                if (response.ok) {
+                                    return response.text(); // Bisa response.json() atau response.text()
+                                } else {
+                                    return response.json().then(err => { throw new Error(err.message || 'Terjadi kesalahan'); });
+                                }
+                            })
+                            .then(() => {
+                                Swal.fire({
+                                    title: "Berhasil!",
+                                    text: "Data berhasil dihapus",
+                                    icon: "success",
+                                    confirmButtonColor: "#3085d6",
+                                    confirmButtonText: "OK",
+                                    allowOutsideClick: false,
+                                }).then(() => {
+                                    window.location.reload(); // Refresh halaman setelah sukses
+                                });
+                            })
+                            
+                            .then(data => {
+                                Swal.fire({
+                                    title: "Berhasil!",
+                                    text: "Data berhasil dihapus",
+                                    icon: "success",
+                                    confirmButtonColor: "#3085d6",
+                                    confirmButtonText: "OK"
+                                }).then(() => {
+                                    window.location.reload(); // Reload halaman
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    title: "Gagal!",
+                                    text: "Terjadi kesalahan saat menghapus data",
+                                    icon: "error",
+                                    confirmButtonColor: "#d33",
+                                    confirmButtonText: "OK"
+                                });
+                            });
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+    
 </body>
 </html>
 

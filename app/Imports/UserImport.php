@@ -19,6 +19,7 @@ class UserImport implements ToModel, WithHeadingRow, WithValidation
             'email' => $row['email'],
             'password' => Hash::make($row['password']),
             'peran' => strtolower($row['peran']),
+            'status' => true,
         ]);
     }
 

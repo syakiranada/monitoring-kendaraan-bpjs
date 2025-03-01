@@ -54,6 +54,10 @@ class ServisInsidentalPenggunaController extends Controller
      */
     public function store(Request $request)
     {
+        $request->merge([
+            'harga' => str_replace('.', '', $request->harga),
+        ]);  
+        
         $validated = $request->validate([
             'id_kendaraan' => 'required|exists:kendaraan,id_kendaraan',
             'id_peminjaman' => 'nullable|exists:peminjaman,id_peminjaman', // Ubah menjadi nullable
@@ -61,8 +65,8 @@ class ServisInsidentalPenggunaController extends Controller
             'harga' => 'required|numeric|min:0',
             'lokasi' => 'required|string|max:100',
             'deskripsi' => 'required|string|max:200',
-            'bukti_bayar' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120', // 5MB
-            'bukti_fisik' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120', // 5MB
+            'bukti_bayar' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048', // 5MB
+            'bukti_fisik' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048', // 5MB
         ]);
     
         // Pastikan user login
