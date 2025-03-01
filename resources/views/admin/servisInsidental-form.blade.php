@@ -269,17 +269,8 @@
             });   
 
         document.getElementById('hargaInput').addEventListener('input', function (e) {
-            // Ambil nilai input
-            let value = e.target.value;
-        
-            // Hapus semua titik yang dimasukkan pengguna
-            value = value.replace(/\./g, '');
-        
-            // Pastikan hanya angka yang dapat diinput
-            value = value.replace(/[^0-9]/g, '');
-        
-            // Perbarui nilai input dengan angka yang sudah bersih
-            e.target.value = value;
+            let value = e.target.value.replace(/\D/g, '');
+            e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         });
 
         // File upload handler for bukti bayar

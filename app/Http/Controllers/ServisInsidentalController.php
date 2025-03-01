@@ -55,7 +55,10 @@ class ServisInsidentalController extends Controller
 
     public function store(Request $request)
     {
-        // Validasi input dari form
+        $request->merge([
+            'harga' => str_replace('.', '', $request->harga),
+        ]);   
+
         $validated = $request->validate([
             'id_kendaraan' => 'required|exists:kendaraan,id_kendaraan',
             'id_peminjaman' => 'nullable|exists:peminjaman,id_peminjaman',

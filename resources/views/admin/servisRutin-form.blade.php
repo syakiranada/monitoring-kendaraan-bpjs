@@ -51,11 +51,11 @@
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-gray-700">Kilometer Penggunaan</label>
-                                <input id="kilometer" type="text" name="kilometer" inputmode="numeric" pattern="\d*" class="w-full p-2 border border-gray-300 rounded" required data-raw="">
+                                <input id="kilometer" type="text" name="kilometer" class="w-full p-2 border border-gray-300 rounded" required data-raw="">
                             </div>
                             <div>
                                 <label class="block text-gray-700">Jumlah Pembayaran</label>
-                                <input id="harga" type="text" name="harga" inputmode="numeric" pattern="\d*" class="w-full p-2 border border-gray-300 rounded" required data-raw="">
+                                <input id="hargaInput" type="text" name="harga" class="w-full p-2 border border-gray-300 rounded" required data-raw="">
                             </div>
                         </div>
                         <div class="mb-4">
@@ -328,6 +328,16 @@
                 fotoInputBuktiBayar.value = '';
                 uploadTextBuktiBayar.textContent = 'Upload Photo';
                 removeFileBuktiBayar.classList.add('hidden');
+            });
+
+            document.getElementById('hargaInput').addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+                e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            });
+
+            document.getElementById('kilometer').addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+                e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
             });
             
         </script>

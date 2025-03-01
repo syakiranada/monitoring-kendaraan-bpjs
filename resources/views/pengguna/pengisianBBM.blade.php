@@ -30,7 +30,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($peminjamans as $peminjaman)
+                            @forelse ($peminjamans as $peminjaman)
                                 @if($peminjaman->status_pinjam == 'Disetujui')
                                     <tr class="kendaraan-row cursor-pointer" data-id="{{ $peminjaman->kendaraan->id_kendaraan ?? '' }}">
                                         <td class="py-3 px-4 border-b">
@@ -55,7 +55,17 @@
                                         </td>
                                     </tr>
                                 @endif
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="py-6 text-center text-gray-500">Tidak ada data peminjaman ditemukan</td>
+                                </tr>
+                            @endforelse
+
+                            @if(count($peminjamans) > 0 && !$peminjamans->contains('status_pinjam', 'Disetujui'))
+                                <tr>
+                                    <td colspan="5" class="py-6 text-center text-gray-500">Tidak ada data peminjaman dengan status disetujui</td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -124,12 +134,12 @@
                         </tbody>
                     </table>
                 </div>
-                <!-- Pagination -->
+                {{--  <!-- Pagination -->
                 <div class="flex justify-center items-center py-4">
                     <div class="bg-white rounded-lg shadow-md p-2">
                         {{ $pengisianBBMs->appends(request()->query())->links('pagination::tailwind') }}
                     </div>
-                </div>
+                </div>  --}}
             </div>
         </div>
     </body>

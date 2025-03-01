@@ -286,46 +286,6 @@
                         }
                     });
                 });
-    
-                {{--  function setupFileUpload(inputId, fileNameId, removeBtnId) {
-                    const inputFile = document.getElementById(inputId);
-                    const fileNameDisplay = document.getElementById(fileNameId);
-                    const removeBtn = document.getElementById(removeBtnId);
-            
-                    inputFile.addEventListener("change", function () {
-                        if (inputFile.files.length > 0) {
-                            fileNameDisplay.textContent = inputFile.files[0].name;
-                            fileNameDisplay.classList.remove("hidden");
-                            removeBtn.classList.remove("hidden");
-                        }
-                    });
-            
-                    removeBtn.addEventListener("click", function (e) {
-                        e.preventDefault();
-                        inputFile.value = "";
-                        fileNameDisplay.textContent = "";
-                        fileNameDisplay.classList.add("hidden");
-                        removeBtn.classList.add("hidden");
-                    });
-                }
-            
-                setupFileUpload("fotoInputBuktiBayar", "fileNameBuktiBayar", "removeFileBuktiBayar");
-                setupFileUpload("fotoInputBuktiFisik", "fileNameBuktiFisik", "removeFileBuktiFisik");  --}}
-            {{--  });  --}}
-    
-            {{--  document.getElementById('hargaInput').addEventListener('input', function (e) {
-                // Ambil nilai input
-                let value = e.target.value;
-            
-                // Hapus semua titik yang dimasukkan pengguna
-                value = value.replace(/\./g, '');
-            
-                // Pastikan hanya angka yang dapat diinput
-                value = value.replace(/[^0-9]/g, '');
-            
-                // Perbarui nilai input dengan angka yang sudah bersih
-                e.target.value = value;
-            });  --}}
 
             document.getElementById('hargaInput').addEventListener('input', function (e) {
                 let value = e.target.value.replace(/\D/g, '');

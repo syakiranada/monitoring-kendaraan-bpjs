@@ -1,5 +1,4 @@
 <x-app-layout>
-
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -54,15 +53,13 @@
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-gray-700">Kilometer Penggunaan</label>
-                                <input id="kilometer" type="text" name="kilometer" inputmode="numeric" pattern="\d*" 
-                                       class="w-full p-2 border border-gray-300 rounded" 
-                                       value="{{ $servis->kilometer ?? '' }}" required data-raw="">
+                                <input id="kilometer" type="text" name="kilometer" class="w-full p-2 border border-gray-300 rounded" 
+                                value="{{ number_format($servis->kilometer, 0, '', '.') }}"  required data-raw="">
                             </div>
                             <div>
                                 <label class="block text-gray-700">Jumlah Pembayaran</label>
-                                <input id="harga" type="text" name="harga" inputmode="numeric" pattern="\d*" 
-                                       class="w-full p-2 border border-gray-300 rounded" 
-                                       value="{{ $servis->harga ?? '' }}" required data-raw="">
+                                <input id="hargaInput" type="text" name="harga" class="w-full p-2 border border-gray-300 rounded" 
+                                value="{{ number_format($servis->harga, 0, '', '.') }}"  required data-raw="">
                             </div>
                         </div>
                         <div class="mb-4">
@@ -78,7 +75,7 @@
                                         <span id="uploadTextBuktiBayar" class="text-sm">
                                             {{ $servis->bukti_bayar ? 'Ganti File' : 'Upload File' }}
                                         </span>
-                                        <input type="file" name="bukti_bayar" id="fotoInputBuktiBayar" class="hidden" accept=".png, .jpg, .jpeg, .pdf">
+                                        <input type="file" name="bukti_bayar" id="fotoInputBuktiBayar" class="hidden" value="0" accept=".png, .jpg, .jpeg, .pdf">
                                     </label>
                                     @if($servis->bukti_bayar)
                                         <div class="mt-2 text-sm text-gray-700">File saat ini: {{ basename($servis->bukti_bayar) }}</div>
@@ -138,6 +135,7 @@
                             });
                             return;
                         }
+
                         
                         // Konfirmasi edit data
                         Swal.fire({
@@ -179,30 +177,30 @@
                                 .then(response => {
                                     // Anggap saja berhasil jika status 2xx, bahkan jika bukan JSON
                                     fetch(form.action, { method: 'PUT', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-    .then(response => response.json()) // Pastikan response dikembalikan dalam JSON
-    .then(data => {
-        if (data.errors) {
-            let errorMessages = Object.values(data.errors).flat().join('\n');
-            Swal.fire({
-                title: "Gagal!",
-                text: errorMessages,
-                icon: "error",
-                confirmButtonColor: "#d33",
-                confirmButtonText: "OK"
-            });
-            throw new Error(errorMessages);
-        }
-        Swal.fire({
-            title: "Berhasil!",
-            text: "Data servis berhasil diperbarui",
-            icon: "success",
-            confirmButtonColor: "#3085d6",
-            confirmButtonText: "OK"
-        }).then(() => { window.location.href = '/admin/servisRutin'; });
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
+                                .then(response => response.json()) // Pastikan response dikembalikan dalam JSON
+                                .then(data => {
+                                    if (data.errors) {
+                                        let errorMessages = Object.values(data.errors).flat().join('\n');
+                                        Swal.fire({
+                                            title: "Gagal!",
+                                            text: errorMessages,
+                                            icon: "error",
+                                            confirmButtonColor: "#d33",
+                                            confirmButtonText: "OK"
+                                        });
+                                        throw new Error(errorMessages);
+                                    }
+                                    Swal.fire({
+                                        title: "Berhasil!",
+                                        text: "Data servis berhasil diperbarui",
+                                        icon: "success",
+                                        confirmButtonColor: "#3085d6",
+                                        confirmButtonText: "OK"
+                                    }).then(() => { window.location.href = '/admin/servisRutin'; });
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                });
 
                                 })
                                 .then(data => {
@@ -343,7 +341,7 @@
             });
     
             removeFileBuktiBayar.addEventListener('click', function(e) {
-                e.preventDefault();
+                {{--  e.preventDefault();
                 fotoInputBuktiBayar.value = '';
                 uploadTextBuktiBayar.textContent = '{{ $servis->bukti_bayar ? "Ganti File" : "Upload Photo" }}';
                 removeFileBuktiBayar.classList.add('hidden');
@@ -351,6 +349,26 @@
                 @if(!$servis->bukti_bayar)
                 removeFileBuktiBayar.classList.add('hidden');
                 @endif
+            });
+
+            document.getElementById('removeFileBuktiBayar').addEventListener('click', function(e) {  --}}
+                e.preventDefault();
+                document.getElementById('removeInputBuktiBayar').value = '1';
+                // Sembunyikan info file saat ini
+                this.previousElementSibling.classList.add('hidden');
+                this.classList.add('hidden');
+                // Ganti teks upload menjadi "Upload File"
+                document.getElementById('uploadTextBuktiBayar').textContent = 'Upload File';
+            });
+
+            document.getElementById('hargaInput').addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+                e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            });
+
+            document.getElementById('kilometer').addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+                e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
             });
         </script>
     </body>
