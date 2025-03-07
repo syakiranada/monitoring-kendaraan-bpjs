@@ -9,42 +9,38 @@ use App\Models\ServisInsidental;
 use App\Models\Peminjaman;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 
 class ServisInsidentalController extends Controller
 {
     public function index(Request $request)
     {
-        // Query untuk kendaraan tersedia
-        $kendaraanTersedia = Kendaraan::where('status_ketersediaan', 'Tersedia');
-        
-        // Query untuk servis insidental
-        $query = ServisInsidental::with(['kendaraan']);
+        // Query kendaraan dengan servis insidental terakhir (jika ada)
+        $query = Kendaraan::select(
+                'kendaraan.*',
+                'servis_insidental.id_servis_insidental',
+                'servis_insidental.tgl_servis',
+                'servis_insidental.updated_at as servis_updated_at'
+            )
+            ->leftJoin(DB::raw('(SELECT id_kendaraan, MAX(updated_at) as max_jam FROM servis_insidental GROUP BY id_kendaraan) as latest'), function ($join) {
+                $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
+            })
+            ->leftJoin('servis_insidental', function ($join) {
+                $join->on('kendaraan.id_kendaraan', '=', 'servis_insidental.id_kendaraan')
+                    ->on('servis_insidental.updated_at', '=', 'latest.max_jam');
+            })
+            ->where('kendaraan.status_ketersediaan', '=', 'Tersedia')
+            ->orderBy('servis_insidental.tgl_servis', 'desc')
+            ->orderBy('servis_insidental.updated_at', 'desc')
+            ->paginate(10);
 
-        // Implementasi pencarian jika ada
-        if ($request->has('search')) {
-            $search = $request->search;
-            
-            // Terapkan pencarian ke kendaraan tersedia
-            $kendaraanTersedia->where(function($q) use ($search) {
-                $q->where('merek', 'like', "%{$search}%")
-                ->orWhere('tipe', 'like', "%{$search}%")
-                ->orWhere('plat_nomor', 'like', "%{$search}%");
-            });
-            
-            // Terapkan pencarian ke servis insidental
-            $query->whereHas('kendaraan', function($q) use ($search) {
-                $q->where('merek', 'like', "%{$search}%")
-                ->orWhere('tipe', 'like', "%{$search}%")
-                ->orWhere('plat_nomor', 'like', "%{$search}%");
-            });
-        }
-
-        // Eksekusi queries
-        $kendaraanTersedia = $kendaraanTersedia->get();
-        $servisInsidentals = $query->orderBy('tgl_servis', 'desc')
-                                ->paginate(10);
-
-        return view('admin.servisInsidental', compact('kendaraanTersedia', 'servisInsidentals'));
+        return view('admin.servisInsidental', [
+            'kendaraanTersedia' => Kendaraan::where('status_ketersediaan', 'Tersedia')->get(),
+            'servisInsidentals' => $query
+        ]);
     }
 
     public function create()
@@ -57,17 +53,17 @@ class ServisInsidentalController extends Controller
     {
         $request->merge([
             'harga' => str_replace('.', '', $request->harga),
-        ]);   
-
+        ]);  
+        
         $validated = $request->validate([
             'id_kendaraan' => 'required|exists:kendaraan,id_kendaraan',
-            'id_peminjaman' => 'nullable|exists:peminjaman,id_peminjaman',
+            'id_peminjaman' => 'nullable|exists:peminjaman,id_peminjaman', // Ubah menjadi nullable
             'tgl_servis' => 'required|date',
             'harga' => 'required|numeric|min:0',
             'lokasi' => 'required|string|max:100',
             'deskripsi' => 'required|string|max:200',
-            'bukti_bayar' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048', 
-            'bukti_fisik' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048', 
+            'bukti_bayar' => 'required|mimes:jpg,jpeg,png,pdf|max:2048', // 5MB
+            'bukti_fisik' => 'required|mimes:jpg,jpeg,png,pdf|max:2048', // 5MB
         ]);
     
         // Pastikan user login
@@ -77,39 +73,42 @@ class ServisInsidentalController extends Controller
         }
     
         try {
-            // Simpan bukti bayar jika ada
-            $buktiBayarPath = $request->hasFile('bukti_bayar') 
-                ? $request->file('bukti_bayar')->store('bukti-bayar', 'public') 
-                : null;
+            // Simpan gambar bukti bayar jika ada
+            $buktiBayarPath = null;
+            if ($request->hasFile('bukti_bayar')) {
+                $buktiBayarPath = $request->file('bukti_bayar')->store('bukti-bayar', 'public');
+            }
     
-            // Simpan bukti fisik jika ada
-            $buktiFisikPath = $request->hasFile('bukti_fisik') 
-                ? $request->file('bukti_fisik')->store('bukti-fisik', 'public') 
-                : null;
+            // Simpan gambar bukti fisik jika ada
+            $buktiFisikPath = null;
+            if ($request->hasFile('bukti_fisik')) {
+                $buktiFisikPath = $request->file('bukti_fisik')->store('bukti-fisik', 'public');
+            }
     
+            // Buat array data
             $data = [
-                'id_kendaraan' => $request->id_kendaraan,
-                'user_id' => $userId, // Use the authenticated user ID
-                'harga' => $request->harga,
-                'lokasi' => $request->lokasi,
-                'deskripsi' => $request->deskripsi,
-                'tgl_servis' => $request->tgl_servis,
-                'bukti_bayar' => $buktiBayarPath, // Add file paths to data array
-                'bukti_fisik' => $buktiFisikPath, // Add file paths to data array
+                'id_kendaraan' => $validated['id_kendaraan'],
+                'user_id' => $userId,
+                'harga' => $validated['harga'],
+                'lokasi' => $validated['lokasi'],
+                'deskripsi' => $validated['deskripsi'],
+                'bukti_bayar' => $buktiBayarPath,
+                'bukti_fisik' => $buktiFisikPath,
+                'tgl_servis' => $validated['tgl_servis'],
             ];
-            
-            // Tambahkan id_peminjaman hanya jika tidak null
-            if ($request->filled('id_peminjaman')) {
+    
+            // Tambahkan id_peminjaman ke data jika ada
+            if ($request->has('id_peminjaman') && $request->id_peminjaman) {
                 $data['id_peminjaman'] = $request->id_peminjaman;
             }
-            
+    
+            // Simpan data ke database
             ServisInsidental::create($data);
     
-            // Redirect ke halaman admin.servisInsidental setelah berhasil
-            return redirect()->route('admin.servisInsidental')
+            return redirect()->route('servisInsidental.index')
                 ->with('success', 'Data servis insidental berhasil disimpan.');
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage()]);
         }
     }
 
@@ -121,9 +120,201 @@ class ServisInsidentalController extends Controller
         return view('admin.servisInsidental-detail', compact('servis'));
     }
 
-    // public function create()
-    // {
-    //     $kendaraan = Kendaraan::all();
-    //     return view('admin.servisRutin-form', compact('kendaraan'));
-    // }
+    public function edit($id)
+    {
+        $servis = ServisInsidental::with('kendaraan')->findOrFail($id);
+
+        return view('admin.servisInsidental-edit', [
+            'servis' => $servis,
+            'merk' => $servis->kendaraan->merk ?? 'Tidak Diketahui',
+            'tipe' => $servis->kendaraan->tipe ?? '',
+            'plat' => $servis->kendaraan->plat_nomor ?? '-',
+        ]);
+    
+    }
+
+    public function update(Request $request, $id)
+    {
+        $servis = ServisInsidental::findOrFail($id);
+
+        $request->merge([
+            'harga' => str_replace('.', '', $request->harga),
+        ]);
+
+        $validated = $request->validate([
+            'tgl_servis' => 'required|date',
+            'harga' => 'required|numeric|min:0',
+            'lokasi' => 'required|string|max:100',
+            'deskripsi' => 'required|string|max:200',
+            'bukti_bayar' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048',
+            'bukti_fisik' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048',
+            'bukti_bayar_lama' => 'nullable|string',
+            'bukti_fisik_lama' => 'nullable|string',
+        ]);
+
+        try {
+            // Proses Bukti Bayar
+            if ($request->hasFile('bukti_bayar')) {
+                // Hapus file lama jika ada
+                if ($servis->bukti_bayar && Storage::disk('public')->exists($servis->bukti_bayar)) {
+                    Storage::disk('public')->delete($servis->bukti_bayar);
+                }
+                $buktiBayarPath = $request->file('bukti_bayar')->store('bukti-bayar', 'public');
+            } else {
+                // Gunakan file lama jika tidak ada file baru diupload
+                $buktiBayarPath = $validated['bukti_bayar_lama'] ?? $servis->bukti_bayar;
+            }
+
+            // Proses Bukti Fisik
+            if ($request->hasFile('bukti_fisik')) {
+                // Hapus file lama jika ada
+                if ($servis->bukti_fisik && Storage::disk('public')->exists($servis->bukti_fisik)) {
+                    Storage::disk('public')->delete($servis->bukti_fisik);
+                }
+                $buktiFisikPath = $request->file('bukti_fisik')->store('bukti-fisik', 'public');
+            } else {
+                // Gunakan file lama jika tidak ada file baru diupload
+                $buktiFisikPath = $validated['bukti_fisik_lama'] ?? $servis->bukti_fisik;
+            }
+
+            // Update data servis
+            $servis->update([
+                'tgl_servis' => $validated['tgl_servis'],
+                'harga' => $validated['harga'],
+                'lokasi' => $validated['lokasi'],
+                'deskripsi' => $validated['deskripsi'],
+                'bukti_bayar' => $buktiBayarPath,
+                'bukti_fisik' => $buktiFisikPath,
+            ]);
+
+            if ($request->ajax()) {
+                return response()->json(['success' => 'Data servis berhasil diperbarui']);
+            }
+
+            return redirect()->route('admin.servisInsidental.index')
+                ->with('success', 'Data servis berhasil diperbarui.');
+        } catch (\Exception $e) {
+            Log::error('Gagal update servis: ' . $e->getMessage());
+
+            if ($request->ajax()) {
+                return response()->json(['error' => 'Terjadi kesalahan saat memperbarui data'], 500);
+            }
+
+            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()]);
+        }
+    }
+
+    public function destroy($id)
+    {
+        $servis = ServisInsidental::findOrFail($id);
+    
+        try {
+            // Hapus file terkait jika ada
+            if ($servis->bukti_bayar) {
+                Storage::delete('public/' . $servis->bukti_bayar);
+            }
+    
+            if ($servis->bukti_fisik) {
+                Storage::delete('public/' . $servis->bukti_fisik);
+            }
+    
+            // Hapus data dari database
+            $servis->delete();
+    
+            // Cek jika request dari AJAX
+            if (request()->ajax()) {
+                return response()->json(['success' => 'Data berhasil dihapus']);
+            }
+    
+            return redirect()->route('servisInsidental.index')->with('success', 'Data berhasil dihapus');
+        } catch (\Exception $e) {
+            // Tangani error agar tidak mengembalikan HTML penuh
+            if (request()->ajax()) {
+                return response()->json(['error' => 'Terjadi kesalahan saat menghapus data'], 500);
+            }
+    
+            return redirect()->route('servisInsidental.index')->with('error', 'Terjadi kesalahan saat menghapus data');
+        }
+    }    
 }
+
+    // public function update(Request $request, $id)
+    // {
+
+    //     $request->merge([
+    //         'harga' => str_replace('.', '', $request->harga),
+    //     ]);
+
+    //     $servis = ServisInsidental::findOrFail($id);
+
+    //     // Kondisi untuk validasi bukti_bayar
+    //     $buktiValidasiBayar = $request->hasFile('bukti_bayar') ? 'required|mimes:jpg,jpeg,png,pdf|max:2048' : 'nullable|mimes:jpg,jpeg,png,pdf|max:2048';
+    //     //Kondisi untuk validasi bukti_fisik
+    //     $buktiValidasiFisik = $request->hasFile('bukti_fisik') ? 'required|mimes:jpg,jpeg,png,pdf|max:2048' : 'nullable|mimes:jpg,jpeg,png,pdf|max:2048';
+
+    //     $validated = $request->validate([
+    //         'id_kendaraan' => 'required|exists:kendaraan,id_kendaraan',
+    //         'id_peminjaman' => 'nullable|exists:peminjaman,id_peminjaman',
+    //         'tgl_servis' => 'required|date',
+    //         'harga' => 'required|numeric|min:0',
+    //         'lokasi' => 'required|string|max:100',
+    //         'deskripsi' => 'required|string|max:200',
+    //         'bukti_bayar' => $buktiValidasiBayar,
+    //         'bukti_fisik' => $buktiValidasiFisik,
+    //         'remove_bukti_bayar' => 'nullable|boolean',
+    //         'remove_bukti_fisik' => 'nullable|boolean',
+    //     ]);
+
+    //     $buktiBayarPath = $servis->bukti_bayar; // Inisialisasi dengan path lama
+    //     $buktiFisikPath = $servis->bukti_fisik; // Inisialisasi dengan path lama
+
+    //     if (isset($validated['remove_bukti_bayar']) && $validated['remove_bukti_bayar'] == 1) {
+    //         if ($servis->bukti_bayar) {
+    //             Storage::disk('public')->delete($servis->bukti_bayar);
+    //         }
+    //         $buktiBayarPath = null;
+    //     }
+
+    //     if (isset($validated['remove_bukti_fisik']) && $validated['remove_bukti_fisik'] == 1) {
+    //         if ($servis->bukti_fisik) {
+    //             Storage::disk('public')->delete($servis->bukti_fisik);
+    //         }
+    //         $buktiFisikPath = null;
+    //     }
+
+    //     // Hanya ubah path jika ada file baru diunggah
+    //     if ($request->hasFile('bukti_bayar')) {
+    //         if ($servis->bukti_bayar) {
+    //             Storage::disk('public')->delete($servis->bukti_bayar);
+    //         }
+    //         $buktiBayarPath = $request->file('bukti_bayar')->store('bukti-bayar', 'public');
+    //     }
+
+    //     if ($request->hasFile('bukti_fisik')) {
+    //         if ($servis->bukti_fisik) {
+    //             Storage::disk('public')->delete($servis->bukti_fisik);
+    //         }
+    //         $buktiFisikPath = $request->file('bukti_fisik')->store('bukti-fisik', 'public');
+    //     }
+
+    //     try {
+    //         $servis->update([
+    //             'id_kendaraan' => $validated['id_kendaraan'],
+    //             'id_peminjaman' => $validated['id_peminjaman'] ?? null,
+    //             'tgl_servis' => $validated['tgl_servis'],
+    //             'harga' => $validated['harga'],
+    //             'lokasi' => $validated['lokasi'],
+    //             'deskripsi' => $validated['deskripsi'],
+    //             'bukti_bayar' => $buktiBayarPath,
+    //             'bukti_fisik' => $buktiFisikPath,
+    //         ]);
+
+    //         return redirect()->route('admin.servisRutin')
+    //         ->with('success', 'Data servis rutin berhasil diperbarui.');
+    // } catch (\Exception $e) {
+    //     Log::error('Error updating servis insidental: ' . $e->getMessage());
+    //     return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()]);
+    // }
+            
+    // }
+

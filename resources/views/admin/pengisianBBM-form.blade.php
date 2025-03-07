@@ -15,7 +15,7 @@
                 <form id="bbmForm" action="{{ route('admin.pengisianBBM.store') }}" method="POST">
                     @csrf
                     <div class="mb-4">
-                        <label class="block text-gray-700">Merek dan Tipe Kendaraan</label>
+                        <label class="block text-gray-700">Merk dan Tipe Kendaraan</label>
                         <input type="text" name="merk_tipe" class="w-full p-2 border border-gray-300 rounded bg-gray-100" readonly value="{{ request('merk') . ' ' . request('tipe') }}">
                         <input type="hidden" name="id_kendaraan" value="{{ request('id_kendaraan') }}">
                         <input type="hidden" id="id_peminjaman" name="id_peminjaman" value="{{ request('id_peminjaman') }}">

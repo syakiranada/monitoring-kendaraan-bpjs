@@ -120,6 +120,9 @@
                         'admin.servisInsidental.create',
                         'admin.servisInsidental.store',
                         'admin.servisInsidental.detail',
+                        'admin.servisInsidental.edit',
+                        'admin.servisInsidental.update',
+                        'admin.servisInsidental.destroy'
                     ]],
                     ['icon' => 'gas-pump', 'title' => 'Pengisian BBM', 'route' => 'admin.pengisianBBM', 'active_routes' => [
                         'admin.pengisianBBM',
@@ -144,12 +147,18 @@
                         'servisInsidental.create',
                         'servisInsidental.store',
                         'servisInsidental.detail',
+                        'servisInsidental.edit',
+                        'servisInsidental.update',
+                        'servisInsidental.destroy'
                     ]],
                     ['icon' => 'gas-pump', 'title' => 'Pengisian BBM', 'route' => 'pengisianBBM', 'active_routes' => [
                         'pengisianBBM',
                         'pengisianBBM.create',
                         'pengisianBBM.store',
                         'pengisianBBM.detail',
+                        'pengisianBBM.edit',
+                        'pengisianBBM.update',
+                        'pengisianBBM.destroy'
                     ]],
                 ]);
             }

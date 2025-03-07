@@ -61,7 +61,7 @@
                             <div class="flex flex-col items-center">
                                 <label id="uploadLabelBuktiBayar" class="cursor-pointer flex flex-col items-center justify-center w-32 h-14 border border-blue-500 text-blue-600 font-medium rounded-lg hover:bg-blue-100 transition">
                                     <span id="uploadTextBuktiBayar" class="text-sm">Upload</span>
-                                    <input type="file" name="bukti_bayar" id="fotoInputBuktiBayar" class="hidden" accept=".jpg, .jpeg, .png, .pdf">
+                                    <input type="file" name="bukti_bayar" id="fotoInputBuktiBayar" class="hidden" accept=".jpg, .jpeg, .png, .pdf" required>
                                 </label>
                                 <p id="fileNameBuktiBayar" class="text-sm mt-2 text-gray-600 hidden"></p>
                                 <a href="#" id="removeFileBuktiBayar" class="hidden text-red-600 font-medium text-sm mt-2 hover:underline text-center">Remove</a>
@@ -77,7 +77,7 @@
                             <div class="flex flex-col items-center">
                                 <label id="uploadLabelBuktiFisik" class="cursor-pointer flex flex-col items-center justify-center w-32 h-14 border border-blue-500 text-blue-600 font-medium rounded-lg hover:bg-blue-100 transition">
                                     <span id="uploadTextBuktiFisik" class="text-sm">Upload</span>
-                                    <input type="file" name="bukti_fisik" id="fotoInputBuktiFisik" class="hidden" accept=".jpg, .jpeg, .png, .pdf">
+                                    <input type="file" name="bukti_fisik" id="fotoInputBuktiFisik" class="hidden" accept=".jpg, .jpeg, .png, .pdf" required>
                                 </label>
                                 <p id="fileNameBuktiFisik" class="text-sm mt-2 text-gray-600 hidden"></p>
                                 <a href="#" id="removeFileBuktiFisik" class="hidden text-red-600 font-medium text-sm mt-2 hover:underline text-center">Remove</a>

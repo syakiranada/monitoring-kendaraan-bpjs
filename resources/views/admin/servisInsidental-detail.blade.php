@@ -5,6 +5,10 @@
         <h2 class="text-lg font-semibold mb-4">{{ $servis->kendaraan->merk }} {{ $servis->kendaraan->tipe }}</h2>
         <div class="space-y-4">
             <div class="flex justify-between">
+                <span class="font-medium text-gray-600">Diinput Oleh</span>
+                <span>{{ $servis->user->name }}</span>
+            </div>
+            <div class="flex justify-between">
                 <span>Plat Nomor</span>
                 <span>{{ $servis->kendaraan->plat_nomor }}</span>
             </div>
@@ -41,9 +45,12 @@
                 @endif
             </div>
         </div>
-        <div class="mt-6">
+        <div class="mt-6 flex justify-between">
             <a href="{{ url()->previous() }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-md" style="background-color: #3b82f6;">
                 Kembali
+            </a>
+            <a href="{{ route('admin.servisInsidental.edit', ['id' => $servis->id_servis_insidental]) }}" class="text-white px-4 py-2 rounded hover:bg-yellow-600 shadow-md" style="background-color: #f59e0b;">
+                Edit
             </a>
         </div>  
     </div>

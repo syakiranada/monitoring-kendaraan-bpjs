@@ -9,30 +9,45 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ServisRutinController extends Controller
 {
     public function index(Request $request)
     {
+        // Cara 1: Gunakan query builder yang lebih eksplisit
+        $subquery = DB::table('servis_rutin')
+            ->selectRaw('MAX(id_servis_rutin) as max_id')
+            ->groupBy('id_kendaraan');
+        
+        $ids = $subquery->pluck('max_id')->toArray();
+        
         $query = ServisRutin::with(['kendaraan'])
-            ->whereIn('id_servis_rutin', function ($subquery) {
-                $subquery->selectRaw('MAX(id_servis_rutin)')
-                    ->from('servis_rutin')
-                    ->groupBy('id_kendaraan');
-            });
-    
+            ->whereIn('id_servis_rutin', $ids);
+        
         if ($request->has('search')) {
             $search = $request->search;
             $query->whereHas('kendaraan', function($q) use ($search) {
-                $q->where('merek', 'like', "%{$search}%")
+                $q->where('merk', 'like', "%{$search}%")  // Perhatikan perubahan 'merek' menjadi 'merk'
                   ->orWhere('tipe', 'like', "%{$search}%")
                   ->orWhere('plat_nomor', 'like', "%{$search}%");
             });
         }
+        
+        // Filter untuk kendaraan dengan aset 'guna' atau 'tidak guna'
+        $query->whereHas('kendaraan', function($q) {
+            $q->whereIn('aset', ['guna', 'tidak guna']);
+        });
     
+        $count = $query->count(); // Periksa jumlah record sebelum pagination
+        
         $servisRutins = $query->orderBy('tgl_servis_real', 'desc')
                               ->paginate(10);
-    
+        
+        // Tambahkan log untuk debugging
+        Log::info("Total records: {$count}, Page records: {$servisRutins->count()}");
+        
         return view('admin.servisRutin', compact('servisRutins'));
     }
     

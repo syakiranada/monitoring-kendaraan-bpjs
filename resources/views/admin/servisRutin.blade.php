@@ -23,7 +23,7 @@
                 <table class="min-w-full bg-white">
                     <thead class="bg-gray-100 text-gray-600">
                         <tr>
-                            <th class="py-3 px-4 text-left">Merek dan Tipe</th>
+                            <th class="py-3 px-4 text-left">Merk dan Tipe</th>
                             <th class="py-3 px-4 text-left">Plat</th>
                             <th class="py-3 px-4 text-left">Tanggal Servis Rutin</th>
                             <th class="py-3 px-4 text-left">Status</th>
@@ -32,6 +32,7 @@
                     </thead>
                     <tbody>
                         @foreach ($servisRutins as $servis)
+                        @if(isset($servis->kendaraan) && in_array($servis->kendaraan->aset, ['Guna', 'Tidak Guna']))
                         <tr class="kendaraan-row cursor-pointer" data-id="{{ $servis->kendaraan->id_kendaraan ?? '' }}">
                             <td class="py-3 px-4 border-b">
                                 <div>{{ ($servis->kendaraan->merk ?? 'Tidak Diketahui') . ' ' . ($servis->kendaraan->tipe ?? '') }}</div>
@@ -92,6 +93,7 @@
                                 </form>                                
                             </td>
                         </tr>
+                        @endif
                         @endforeach
                     </tbody>
                 </table>
@@ -99,7 +101,7 @@
                 <!-- Pagination -->
                 <div class="flex justify-center items-center py-4">
                     <div class="bg-white rounded-lg shadow-md p-2">
-                        {{ $servisRutins->links('pagination::tailwind') }}
+                        {{ $servisRutins->appends(request()->query())->links('pagination::tailwind') }}
                     </div>
                 </div>
             </div>

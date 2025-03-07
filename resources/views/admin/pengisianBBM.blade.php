@@ -11,7 +11,7 @@
     </head>
     <body class="bg-gray-100 font-sans">
         <div class="p-6 space-y-12">
-            <!-- Tabel Daftar Kendaraan (Only Available Vehicles) -->
+            {{--  <!-- Tabel Daftar Kendaraan (Only Available Vehicles) -->
             <div>
                 <div class="flex justify-between items-center mb-6">
                     <h1 class="text-3xl font-bold">Daftar Kendaraan Tersedia</h1>
@@ -64,66 +64,74 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </div>  --}}
     
             <!-- Tabel Daftar Riwayat BBM (Semua)-->
             <div>
                 <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-3xl font-bold">Riwayat Pengisian BBM</h1>
-                    <div class="relative">
-                        <input type="text" class="border rounded-lg py-2 px-4 pl-10 w-64" placeholder="Search">
+                    <h1 class="text-3xl font-bold">Daftar Pengisian BBM</h1>
+                    <form action="{{ route('admin.pengisianBBM') }}" method="GET" class="relative">
+                        <input type="text" name="search" class="border rounded-lg py-2 px-4 pl-10 w-64" placeholder="Search" value="{{ request('search') }}">
                         <i class="fas fa-search absolute left-3 top-3 text-gray-500"></i>
-                    </div>
+                    </form>
                 </div>
                 <div class="bg-white shadow-md rounded-lg overflow-hidden">
                     <table class="min-w-full bg-white">
                         <thead class="bg-gray-100 text-gray-600">
                             <tr>
-                                <th class="py-3 px-4 text-left">MEREK DAN TIPE</th>
+                                <th class="py-3 px-4 text-left">MERK DAN TIPE</th>
                                 <th class="py-3 px-4 text-left">PLAT</th>
-                                <th class="py-3 px-4 text-left">TANGGAL PENGISIAN BBM TERAKHIR</th>
-                                <th class="py-3 px-4 text-left">STATUS PEMINJAMAN</th>
+                                <th class="py-3 px-4 text-left">TANGGAL ISI BBM TERAKHIR</th>
+                                <th class="py-3 px-4 text-left">STATUS KETERSEDIAAN</th>
                                 <th class="py-3 px-4 text-center">AKSI</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($pengisianBBMs as $bbm)
-                            <tr class="kendaraan-row cursor-pointer" data-id="{{ $bbm->kendaraan->id_kendaraan ?? '' }}">
-                                <td class="py-3 px-4 border-b">
-                                    <div>{{ ($bbm->kendaraan->merk ?? 'Tidak Diketahui') . ' ' . ($bbm->kendaraan->tipe ?? '') }}</div>
-                                </td>  
-                                <td class="py-3 px-4 border-b">{{ $bbm->kendaraan->plat_nomor ?? '-' }}</td>
-                                <td class="py-3 px-4 border-b">{{ \Carbon\Carbon::parse($bbm->tgl_isi)->locale('id')->format('d-m-Y') }}</td>
-                                <td class="py-3 px-4 border-b">
-                                    <span class="text-xs font-medium px-2.5 py-0.5 rounded text-{{
-                                        $bbm->kendaraan?->status_ketersediaan == 'Tersedia' ? 'green' : 
-                                        ($bbm->kendaraan?->status_ketersediaan == 'Tidak Tersedia' ? 'red' : 'gray') 
-                                    }}-500 bg-{{
-                                        $bbm->kendaraan?->status_ketersediaan == 'Tersedia' ? 'green' : 
-                                        ($bbm->kendaraan?->status_ketersediaan == 'Tidak Tersedia' ? 'red' : 'gray') 
-                                    }}-100">
-                                        {{ strtoupper($bbm->kendaraan?->status_ketersediaan) }}
-                                    </span>
-                                </td>                                
-                                <td class="py-3 px-4 border-b text-center">
-                                    <div class="flex justify-center space-x-4">
-                                        <a href="{{ route('admin.pengisianBBM.detail', $bbm->id_bbm) }}" class="text-blue-500 hover:underline">Detail</a>
-                                        <a href="{{ route('admin.pengisianBBM.edit', ['id' => $bbm->id_bbm]) }}" class="text-green-500 hover:underline">Edit</a>
-                                        <form action="{{ route('admin.pengisianBBM.destroy', $bbm->id_bbm) }}" method="POST" class="inline form-delete">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button" class="text-red-500 hover:underline delete-button" 
-                                                    data-url="{{ route('admin.pengisianBBM.destroy', $bbm->id_bbm) }}">
-                                                Hapus
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
+                                <tr class="kendaraan-row cursor-pointer" data-id="{{ $bbm->id_kendaraan }}">
+                                    <td class="py-3 px-4 border-b">
+                                        <div>{{ ($bbm->merk ?? 'Tidak Diketahui') . ' ' . ($bbm->tipe ?? '') }}</div>
+                                    </td>  
+                                    <td class="py-3 px-4 border-b">{{ $bbm->plat_nomor ?? '-' }}</td>
+                                    <td class="py-3 px-4 border-b">{{ $bbm->tgl_isi ? \Carbon\Carbon::parse($bbm->tgl_isi)->locale('id')->format('d-m-Y') : '-' }}</td>
+                                    <td class="py-3 px-4 border-b">
+                                        <span class="text-xs font-medium px-2.5 py-0.5 rounded text-green-500 bg-green-100">
+                                            TERSEDIA
+                                        </span>
+                                    </td>                                
+                                    <td class="py-3 px-4 border-b text-center">
+                                        <div class="flex justify-center space-x-4">
+                                            <a href="{{ route('admin.pengisianBBM.create', [
+                                                        'id_kendaraan'   => $bbm->id_kendaraan,
+                                                        'merk'           => $bbm->merk ?? 'Tidak Diketahui',
+                                                        'tipe'           => $bbm->tipe ?? '',
+                                                        'plat'           => $bbm->plat_nomor ?? '-'
+                                                    ]) }}" class="text-blue-500 hover:underline">
+                                                        Input
+                                            </a>
+                                            @if ($bbm->id_bbm)
+                                            <a href="{{ route('admin.pengisianBBM.detail', $bbm->id_bbm) }}" class="text-blue-500 hover:underline">Detail</a>
+                                            <a href="{{ route('admin.pengisianBBM.edit', ['id' => $bbm->id_bbm]) }}" class="text-green-500 hover:underline">Edit</a>
+                                            <form action="{{ route('admin.pengisianBBM.destroy', $bbm->id_bbm) }}" method="POST" class="inline form-delete">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" class="text-red-500 hover:underline delete-button" 
+                                                        data-url="{{ route('admin.pengisianBBM.destroy', $bbm->id_bbm) }}">
+                                                    Hapus
+                                                </button>
+                                            </form>
+                                            @else
+                                                <span class="text-gray-400">Detail</span>
+                                                <span class="text-gray-400">Edit</span>
+                                                <span class="text-gray-400">Hapus</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
                             @empty
-                            <tr>
-                                <td colspan="6" class="py-6 text-center text-gray-500">Tidak ada data pengisian BBM ditemukan</td>
-                            </tr>
+                                <tr>
+                                    <td colspan="6" class="py-6 text-center text-gray-500">Tidak ada data pengisian BBM ditemukan</td>
+                                </tr>
                             @endforelse
                         </tbody>                                                
                     </table>

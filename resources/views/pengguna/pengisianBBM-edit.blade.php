@@ -12,11 +12,11 @@
         <div class="flex justify-center p-8">
             <div class="w-full max-w-lg bg-white p-8 rounded shadow-md">
                 <h1 class="text-3xl font-bold mb-6">Edit Pengisian BBM Kendaraan</h1>
-                <form id="bbmForm" action="{{ route('admin.pengisianBBM.update', $bbm->id_bbm) }}" method="POST">
+                <form id="bbmForm" action="{{ route('pengisianBBM.update', $bbm->id_bbm) }}" method="POST">
                     @csrf
                     @method('PUT')
                     <div class="mb-4">
-                        <label class="block text-gray-700">Merk dan Tipe Kendaraan</label>
+                        <label class="block text-gray-700">Merek dan Tipe Kendaraan</label>
                         <input type="text" class="w-full p-2 border border-gray-300 rounded bg-gray-100" readonly value="{{ $bbm->kendaraan->merk . ' ' . $bbm->kendaraan->tipe }}">
                     </div>
                     <div class="mb-4">
@@ -42,7 +42,7 @@
                         <input type="text" id="nominalInput" name="nominal" class="w-full p-2 border border-gray-300 rounded" value="{{ number_format($bbm->nominal, 0, '', '.') }}" required>
                     </div>
                     <div class="flex justify-between">
-                        <a href="{{ route('admin.pengisianBBM') }}" class="bg-gray-500 text-white px-4 py-2 rounded">Kembali</a>
+                        <a href="{{ route('pengisianBBM') }}" class="bg-gray-500 text-white px-4 py-2 rounded">Kembali</a>
                         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Simpan Perubahan</button>
                     </div>
                 </form>
@@ -134,7 +134,7 @@
                                             confirmButtonColor: "#3085d6",
                                             confirmButtonText: "OK"
                                         }).then(() => {
-                                            window.location.href = '/admin/pengisianBBM';
+                                            window.location.href = '/pengisianBBM';
                                         });
                                     }
                                 })
