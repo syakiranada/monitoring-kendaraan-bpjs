@@ -101,7 +101,7 @@
 
             if ($user->peran === 'admin') {
                 $menuItems = array_merge($menuItems, [
-                    ['icon' => 'home', 'title' => 'Beranda Admin', 'route' => 'admin.beranda', 'active_routes' => [
+                    ['icon' => 'home', 'title' => 'Beranda', 'route' => 'admin.beranda', 'active_routes' => [
                         'admin.beranda'
                     ]],
                     ['icon' => 'car', 'title' => 'Daftar Kendaraan', 'route' => 'kendaraan.daftar_kendaraan', 'active_routes' => [
@@ -168,7 +168,7 @@
                 ]);
             } elseif ($user->peran === 'pengguna') {
                 $menuItems = array_merge($menuItems, [
-                    ['icon' => 'home', 'title' => 'Beranda Pengguna', 'route' => 'beranda', 'active_routes' => [
+                    ['icon' => 'home', 'title' => 'Beranda', 'route' => 'beranda', 'active_routes' => [
                         'beranda'
                     ]],
                     ['icon' => 'car', 'title' => 'Daftar Kendaraan', 'route' => 'kendaraan'],
