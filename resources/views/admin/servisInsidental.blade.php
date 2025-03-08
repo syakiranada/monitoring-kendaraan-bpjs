@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body class="bg-gray-100 font-sans">
-    <div class="p-6 space-y-12">
-        <!-- Tabel Daftar Kendaraan (Only Available Vehicles) -->
+    {{--  <div class="p-6 space-y-12">  --}}
+        {{--  <!-- Tabel Daftar Kendaraan (Only Available Vehicles) -->
         <div>
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-3xl font-bold">Daftar Kendaraan Tersedia</h1>
@@ -62,10 +62,9 @@
                     </tbody>
                 </table>
             </div>
-        </div>
+        </div>  --}}
 
         <!-- Tabel Daftar Servis Insidental (All Vehicles) -->
-        <div>
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-3xl font-bold">Daftar Servis Insidental Kendaraan</h1>
                 <div class="relative">
@@ -77,7 +76,7 @@
                 <table class="min-w-full bg-white">
                     <thead class="bg-gray-100 text-gray-600">
                         <tr>
-                            <th class="py-3 px-4 text-left">MEREK DAN TIPE</th>
+                            <th class="py-3 px-4 text-left">MERK DAN TIPE</th>
                             <th class="py-3 px-4 text-left">PLAT</th>
                             <th class="py-3 px-4 text-left">TANGGAL SERVIS INSIDENTAL</th>
                             <th class="py-3 px-4 text-left">STATUS KETERSEDIAAN</th>
@@ -85,35 +84,173 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($servisInsidentals as $servis)
-                        <tr class="kendaraan-row cursor-pointer" data-id="{{ $servis->kendaraan->id_kendaraan ?? '' }}">
+                        @forelse ($servisInsidentals as $servis)
+                        <tr class="kendaraan-row cursor-pointer" data-id="{{ $servis->id_kendaraan }}">
                             <td class="py-3 px-4 border-b">
-                                <div>{{ ($servis->kendaraan->merk ?? 'Tidak Diketahui') . ' ' . ($servis->kendaraan->tipe ?? '') }}</div>
+                                <div>{{ $servis->merk ?? 'Tidak Diketahui' }} {{ $servis->tipe ?? '' }}</div>
                             </td> 
-                            <td class="py-3 px-4 border-b">{{ $servis->kendaraan->plat_nomor ?? '-' }}</td>
-                            <td class="py-3 px-4 border-b">{{ \Carbon\Carbon::parse($servis->tgl_servis)->locale('id')->format('d-m-Y') }}</td>
+                            <td class="py-3 px-4 border-b">{{ $servis->plat_nomor ?? '-' }}</td>
+                            <td class="py-3 px-4 border-b">{{ $servis->tgl_servis ? \Carbon\Carbon::parse($servis->tgl_servis)->locale('id')->format('d-m-Y') : '-' }}</td>
                             <td class="py-3 px-4 border-b">
-                                <span class="text-xs font-medium px-2.5 py-0.5 rounded text-{{
-                                    $servis->kendaraan?->status_ketersediaan == 'Tersedia' ? 'green' : 
-                                    ($servis->kendaraan?->status_ketersediaan == 'Tidak Tersedia' ? 'red' : 'gray') 
-                                }}-500 bg-{{
-                                    $servis->kendaraan?->status_ketersediaan == 'Tersedia' ? 'green' : 
-                                    ($servis->kendaraan?->status_ketersediaan == 'Tidak Tersedia' ? 'red' : 'gray') 
-                                }}-100">
-                                    {{ strtoupper($servis->kendaraan?->status_ketersediaan) }}
+                                <span class="text-xs font-medium px-2.5 py-0.5 rounded text-green-500 bg-green-100">
+                                    TERSEDIA
                                 </span>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="{{ route('admin.servisInsidental.detail', $servis->id_servis_insidental) }}" 
-                                    class="text-blue-500 hover:underline">Detail</a>
+                            </td> 
+                            <td class="py-3 px-4 border-b text-center">
+                                <div class="flex justify-center space-x-4">
+                                    <a href="{{ route('admin.servisInsidental.create', [
+                                        'id_kendaraan' => $servis->id_kendaraan,
+                                        'merk' => $servis->merk ?? 'Tidak Diketahui',
+                                        'tipe' => $servis->tipe ?? '',
+                                        'plat' => $servis->plat_nomor ?? '-'
+                                    ]) }}" class="text-blue-500 hover:underline">
+                                        Input
+                                    </a>
+                                    @if ($servis->id_servis_insidental)
+                                        <a href="{{ route('admin.servisInsidental.detail', $servis->id_servis_insidental) }}" class="text-blue-500 hover:underline">Detail</a>
+                                        <a href="{{ route('admin.servisInsidental.edit', ['id' => $servis->id_servis_insidental]) }}" class="text-green-500 hover:underline">Edit</a>
+                            
+                                        <form action="{{ route('admin.servisInsidental.destroy', $servis->id_servis_insidental) }}" method="POST" class="inline form-delete">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="text-red-500 hover:underline delete-button"
+                                                data-url="{{ route('admin.servisInsidental.destroy', $servis->id_servis_insidental) }}">
+                                                Hapus
+                                            </button>
+                                        </form>
+                                    @else
+                                        <span class="text-gray-400">Detail</span>
+                                        <span class="text-gray-400">Edit</span>
+                                        <span class="text-gray-400">Hapus</span>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="6" class="py-6 text-center text-gray-500">Tidak ada data servis insidental ditemukan</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
+            <!-- Pagination -->
+                <div class="flex justify-center items-center py-4">
+                    <div class="bg-white rounded-lg shadow-md p-2">
+                        {{ $servisInsidentals->appends(request()->query())->links('pagination::tailwind') }}
+                    </div>
+                </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const deleteForms = document.querySelectorAll('form.form-delete');
+    
+            deleteForms.forEach(form => {
+                const deleteButton = form.querySelector('.delete-button');
+                if (deleteButton) {
+                    deleteButton.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        
+                        // Ambil URL delete dari form action atau data attribute
+                        const deleteUrl = form.getAttribute('action') || form.dataset.deleteUrl;
+                        
+                        if (!deleteUrl) {
+                            console.error('URL untuk delete tidak ditemukan. Tambahkan action pada form atau data-delete-url attribute');
+                            return;
+                        }
+    
+                        Swal.fire({
+                            title: "Konfirmasi",
+                            text: "Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan!",
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonColor: "#d33",
+                            cancelButtonColor: "#3085d6",
+                            confirmButtonText: "Ya, Hapus!",
+                            cancelButtonText: "Batal"
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Tampilkan loading
+                                Swal.fire({
+                                    title: "Menghapus...",
+                                    text: "Mohon tunggu sebentar",
+                                    allowOutsideClick: false,
+                                    didOpen: () => {
+                                        Swal.showLoading();
+                                    }
+                                });
+    
+                                // Cek apakah element csrf token ada
+                                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                                if (!csrfToken) {
+                                    console.error('CSRF token tidak ditemukan, tambahkan <meta name="csrf-token" content="{{ csrf_token() }}"> di header');
+                                }
+    
+                                fetch(deleteUrl, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'X-CSRF-TOKEN': csrfToken || '',
+                                        'Content-Type': 'application/x-www-form-urlencoded'
+                                    },
+                                    body: new URLSearchParams({ _method: 'DELETE' })
+                                })
+                                .then(response => {
+                                    // Coba parse response sebagai JSON, jika gagal kembalikan sebagai text
+                                    const contentType = response.headers.get('content-type');
+                                    if (contentType && contentType.includes('application/json')) {
+                                        return response.json().then(data => {
+                                            if (!response.ok) {
+                                                throw new Error(data.message || 'Terjadi kesalahan saat menghapus data');
+                                            }
+                                            return data;
+                                        });
+                                    } else {
+                                        return response.text().then(text => {
+                                            if (!response.ok) {
+                                                throw new Error('Terjadi kesalahan saat menghapus data');
+                                            }
+                                            return { message: text || 'Data berhasil dihapus' };
+                                        });
+                                    }
+                                })
+                                .then(data => {
+                                    // Notifikasi sukses
+                                    Swal.fire({
+                                        title: "Berhasil!",
+                                        text: data.message || "Data berhasil dihapus",
+                                        icon: "success",
+                                        confirmButtonColor: "#3085d6",
+                                        confirmButtonText: "OK"
+                                    }).then(() => {
+                                        // Reload halaman atau redirect jika diperlukan
+                                        if (data.redirect) {
+                                            window.location.href = data.redirect;
+                                        } else {
+                                            window.location.reload();
+                                        }
+                                    });
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    // Notifikasi gagal
+                                    Swal.fire({
+                                        title: "Gagal!",
+                                        text: error.message || "Terjadi kesalahan saat menghapus data",
+                                        icon: "error",
+                                        confirmButtonColor: "#d33",
+                                        confirmButtonText: "OK"
+                                    });
+                                });
+                            }
+                        });
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
 </x-app-layout>

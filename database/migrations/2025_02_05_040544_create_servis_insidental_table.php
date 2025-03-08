@@ -19,8 +19,8 @@ return new class extends Migration
             $table->integer('harga');
             $table->string('lokasi', 100);
             $table->string('deskripsi', 200);
-            $table->string('bukti_bayar')->nullable(); // simpan path di sini
-            $table->string('bukti_fisik')->nullable(); // simpan path di sini
+            $table->string('bukti_bayar')->nullable();; // simpan path di sini
+            $table->string('bukti_fisik')->nullable();; // simpan path di sini
             $table->date('tgl_servis');
 
             // Foreign Key Constraints

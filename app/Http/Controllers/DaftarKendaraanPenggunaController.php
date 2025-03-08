@@ -38,7 +38,7 @@ class DaftarKendaraanPenggunaController extends Controller
         }
 
         // Dapatkan hasil query dengan pagination
-        $kendaraan = $query->paginate(5);
+        $kendaraan = $query->paginate(10);
 
         return view('pengguna.daftarKendaraan', compact('kendaraan', 'search'));
 }

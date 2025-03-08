@@ -9,53 +9,125 @@ use App\Models\Peminjaman;
 use App\Models\Kendaraan;
 use App\Models\BBM;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class IsiBBMController extends Controller
 {
-    public function index(Request $request)
-    {
-        // Query untuk kendaraan tersedia
-        $kendaraanTersedia = Kendaraan::where('status_ketersediaan', 'Tersedia');
-        
-        // Query untuk pengisian BBM terakhir dari setiap kendaraan
-        $query = BBM::select('b.*')
-            ->from(DB::raw('(SELECT id_kendaraan, MAX(tgl_isi) as max_tgl FROM bbm GROUP BY id_kendaraan) as latest'))
-            ->join('bbm as b', function($join) {
-                $join->on('b.id_kendaraan', '=', 'latest.id_kendaraan')
-                     ->on('b.tgl_isi', '=', 'latest.max_tgl');
-            })
-            ->with(['kendaraan']);
+    // public function index(Request $request)
+    // {
+    //     $query = Kendaraan::select(
+    //             'kendaraan.*',
+    //             'bbm.id_bbm',
+    //             'bbm.tgl_isi',
+    //             'bbm.updated_at as bbm_updated_at'
+    //         )
+    //         ->leftJoin(DB::raw('(SELECT id_kendaraan, MAX(updated_at) as max_jam FROM bbm GROUP BY id_kendaraan) as latest'), function ($join) {
+    //             $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
+    //         })
+    //         ->leftJoin('bbm', function ($join) {
+    //             $join->on('kendaraan.id_kendaraan', '=', 'bbm.id_kendaraan')
+    //                 ->on('bbm.updated_at', '=', 'latest.max_jam');
+    //         })
+    //         ->where('kendaraan.status_ketersediaan', '=', 'Tersedia')
+    //         ->orderBy('bbm.tgl_isi', 'desc')
+    //         ->orderBy('bbm.updated_at', 'desc')
+    //         ->paginate(10);
 
-        // Implementasi pencarian jika ada
-        if ($request->has('search')) {
-            $search = $request->search;
-            
-            // Terapkan pencarian ke kendaraan tersedia
-            $kendaraanTersedia->where(function($q) use ($search) {
-                $q->where('merek', 'like', "%{$search}%")
-                ->orWhere('tipe', 'like', "%{$search}%")
-                ->orWhere('plat_nomor', 'like', "%{$search}%");
-            });
-            
-            // Terapkan pencarian ke pengisian BBM
-            $query->whereHas('kendaraan', function($q) use ($search) {
-                $q->where('merek', 'like', "%{$search}%")
-                ->orWhere('tipe', 'like', "%{$search}%")
-                ->orWhere('plat_nomor', 'like', "%{$search}%");
+    //     return view('admin.pengisianBBM', [
+    //         'kendaraanTersedia' => Kendaraan::where('status_ketersediaan', 'Tersedia')->get(),
+    //         'pengisianBBMs' => $query
+    //     ]);
+    // }
+
+public function index(Request $request)
+{
+    $search = $request->input('search');
+    $query = Kendaraan::select(
+        'kendaraan.*',
+        'bbm.id_bbm',
+        'bbm.tgl_isi',
+        'bbm.updated_at as bbm_updated_at'
+    )
+    ->leftJoin(DB::raw('(SELECT id_kendaraan, MAX(updated_at) as max_jam FROM bbm GROUP BY id_kendaraan) as latest'), function ($join) {
+        $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
+    })
+    ->leftJoin('bbm', function ($join) {
+        $join->on('kendaraan.id_kendaraan', '=', 'bbm.id_kendaraan')
+            ->on('bbm.updated_at', '=', 'latest.max_jam');
+    })
+    ->where('kendaraan.status_ketersediaan', '=', 'Tersedia');
+
+    if (!empty($search)) {
+        // Logika pencarian tanggal
+        if (preg_match('/^\d{4}$/', $search)) { // Hanya tahun
+            $query->whereYear('bbm.tgl_isi', $search);
+        } elseif (preg_match('/^\d{2}$/', $search)) { // Hanya bulan atau tanggal
+            if (strlen($search) == 2 && $search <= 12) { // Asumsikan bulan
+                $query->whereMonth('bbm.tgl_isi', $search);
+            } else { // Asumsikan tanggal
+                $query->whereDay('bbm.tgl_isi', $search);
+            }
+        } elseif (preg_match('/^\d{2}-\d{4}$/', $search)) { // Bulan-Tahun
+            $parts = explode('-', $search);
+            $query->whereMonth('bbm.tgl_isi', $parts[0])->whereYear('bbm.tgl_isi', $parts[1]);
+        } elseif (preg_match('/^\d{4}-\d{2}$/', $search)) { // Tahun-Bulan
+            $parts = explode('-', $search);
+            $query->whereYear('bbm.tgl_isi', $parts[0])->whereMonth('bbm.tgl_isi', $parts[1]);
+        } elseif (preg_match('/^\d{2}-\d{2}-\d{4}$/', $search)) { // Tanggal-Bulan-Tahun (format lengkap)
+            try {
+                $searchDate = Carbon::createFromFormat('d-m-Y', $search);
+                $query->whereDate('bbm.tgl_isi', $searchDate);
+            } catch (\Exception $e) {
+                Log::error("Error parsing search date:", ['search' => $search, 'error' => $e->getMessage()]);
+            }
+        } else {
+
+        if (strtolower($search) == 'tersedia') {
+            $query->where('kendaraan.status_ketersediaan', '=', 'Tersedia');
+        } elseif (strtolower($search) == 'tidak tersedia') {
+            $query->where('kendaraan.status_ketersediaan', '=', 'Tidak Tersedia');
+        } else {
+            // Logika pencarian teks lainnya
+            $searchTerms = explode(' ', strtolower($search));
+            $searchTerms = array_filter($searchTerms);
+
+            $query->where(function ($query) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $query->where(function ($termQuery) use ($term) {
+                        $termQuery->whereRaw("LOWER(kendaraan.plat_nomor) LIKE ?", ["%$term%"])
+                            ->orWhereRaw("LOWER(kendaraan.merk) LIKE ?", ["%$term%"])
+                            ->orWhereRaw("LOWER(kendaraan.tipe) LIKE ?", ["%$term%"])
+                            ->orWhereRaw("LOWER(kendaraan.warna) LIKE ?", ["%$term%"])
+                            ->orWhereRaw("LOWER(kendaraan.jenis) LIKE ?", ["%$term%"])
+                            ->orWhereRaw("LOWER(kendaraan.aset) LIKE ?", ["%$term%"])
+                            ->orWhereRaw("LOWER(kendaraan.bahan_bakar) LIKE ?", ["%$term%"])
+                            ->orWhereRaw("LOWER(kendaraan.no_mesin) LIKE ?", ["%$term%"])
+                            ->orWhereRaw("LOWER(kendaraan.no_rangka) LIKE ?", ["%$term%"])
+                            ->orWhereRaw("CAST(kendaraan.kapasitas AS CHAR) LIKE ?", ["%$term%"])
+                            ->orWhereRaw("CAST(YEAR(kendaraan.tgl_pembelian) AS CHAR) LIKE ?", ["%$term%"])
+                            ->orWhereRaw("LOWER(kendaraan.frekuensi_servis) LIKE ?", ["%$term%"]);
+                    });
+                }
             });
         }
-
-        // Eksekusi queries
-        $kendaraanTersedia = $kendaraanTersedia->get();
-        $pengisianBBMs = $query->orderBy('tgl_isi', 'desc')
-                              ->paginate(10);
-
-        return view('admin.pengisianBBM', compact('kendaraanTersedia', 'pengisianBBMs'));
     }
+}
 
+    $pengisianBBMs = $query->orderBy('bbm.tgl_isi', 'desc')
+        ->orderBy('bbm.updated_at', 'desc')
+        ->paginate(10);
+
+    return view('admin.pengisianBBM', [
+        'kendaraanTersedia' => Kendaraan::where('status_ketersediaan', 'Tersedia')->get(),
+        'pengisianBBMs' => $pengisianBBMs
+    ]);
+}
+    
     public function create()
     {
-        $kendaraan = Kendaraan::all(); // Ambil semua data kendaraan
+        $kendaraan = Kendaraan::all();
         return view('admin.pengisianBBM-form', compact('kendaraan'));
     }
 
@@ -132,41 +204,73 @@ class IsiBBMController extends Controller
             'nominal' => 'required|numeric|min:0',
             'jenis_bbm' => 'required|string|in:Pertalite,Pertamax,Pertamax Turbo,Dexlite,Pertamina Dex',
         ]);
-
+    
         $bbm = BBM::findOrFail($id);
-        
+    
         try {
             $bbm->update([
                 'tgl_isi' => $validated['tgl_isi'],
                 'nominal' => $validated['nominal'],
                 'jenis_bbm' => $validated['jenis_bbm'],
             ]);
-
+    
+            if ($request->ajax()) {
+                return response()->json(['success' => 'Data pengisian BBM berhasil diperbarui']);
+            }
+    
             return redirect()->route('admin.pengisianBBM')
                 ->with('success', 'Data pengisian BBM berhasil diperbarui.');
         } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json(['error' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+            }
+    
             return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
-    }
+    }    
     
     public function destroy($id)
     {
         try {
             $bbm = BBM::findOrFail($id);
-            $id_kendaraan = $bbm->id_kendaraan;
             
-            // Hapus data pengisian BBM
+            // Simpan ID Kendaraan sebelum menghapus
+            $idKendaraan = $bbm->id_kendaraan;
+            
+            // Hapus bukti bayar jika ada
+            if ($bbm->bukti_bayar) {
+                Storage::disk('public')->delete($bbm->bukti_bayar);
+            }
+            
+            // Hapus data dari database
             $bbm->delete();
             
-            // Cari pengisian BBM terakhir untuk kendaraan ini setelah penghapusan
-            $lastBBM = BBM::where('id_kendaraan', $id_kendaraan)
-                        ->orderBy('tgl_isi', 'desc')
-                        ->first();
+            // Periksa jika request adalah AJAX
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json(['message' => 'Data berhasil dihapus'], 200);
+            }
             
+            // Cari record BBM sebelumnya untuk kendaraan yang sama
+            $bbmSebelumnya = BBM::where('id_kendaraan', $idKendaraan)
+                ->orderBy('tgl_isi', 'desc')
+                ->orderBy('updated_at', 'desc')
+                ->first();
+            
+            if ($bbmSebelumnya) {
+                return redirect()->route('admin.pengisianBBM', ['id' => $bbmSebelumnya->id])
+                    ->with('success', 'Data pengisian BBM berhasil dihapus.');
+            }
+            
+            // Jika tidak ada data BBM sebelumnya, kembali ke daftar
             return redirect()->route('admin.pengisianBBM')
-                ->with('success', 'Data pengisian BBM berhasil dihapus.')
-                ->with('lastBBM', $lastBBM);
+                ->with('success', 'Data pengisian BBM berhasil dihapus.');
+                
         } catch (\Exception $e) {
+            // Jika request AJAX, berikan response JSON
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json(['message' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+            }
+            
             return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
     }

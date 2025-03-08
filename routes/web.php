@@ -53,11 +53,17 @@ Route::middleware(['auth', 'user'])->group(function () {
     Route::get('/pengisianBBM/create', [IsiBBMPenggunaController::class, 'create'])->name('pengisianBBM.create');
     Route::post('/pengisianBBM', [IsiBBMPenggunaController::class, 'store'])->name('pengisianBBM.store');
     Route::get('/pengisianBBM/{id}', [IsiBBMPenggunaController::class, 'detail'])->name('pengisianBBM.detail');
+    Route::get('/pengisianBBM/{id}/edit', [IsiBBMPenggunaController::class, 'edit'])->name('pengisianBBM.edit');
+    Route::put('/pengisianBBM/{id}', [IsiBBMPenggunaController::class, 'update'])->name('pengisianBBM.update');
+    Route::delete('/pengisianBBM/{id}', [IsiBBMPenggunaController::class, 'destroy'])->name('pengisianBBM.destroy');
 
     Route::get('/servisInsidental', [ServisInsidentalPenggunaController::class, 'index'])->name('servisInsidental');
     Route::get('/servisInsidental/create', [ServisInsidentalPenggunaController::class, 'create'])->name('servisInsidental.create');
     Route::post('/servisInsidental', [ServisInsidentalPenggunaController::class, 'store'])->name('servisInsidental.store');
     Route::get('/servisInsidental/{id}', [ServisInsidentalPenggunaController::class, 'detail'])->name('servisInsidental.detail');
+    Route::get('/servisInsidental/{id}/edit', [ServisInsidentalPenggunaController::class, 'edit'])->name('servisInsidental.edit');
+    Route::put('/servisInsidental/{id}', [ServisInsidentalPenggunaController::class, 'update'])->name('servisInsidental.update');
+    Route::delete('/servisInsidental/{id}', [ServisInsidentalPenggunaController::class, 'destroy'])->name('servisInsidental.destroy');
 
     // Route::get('/kendaraan', [KendaraanController::class, 'index'])->name('kendaraan.index');
     // Route::get('/peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
@@ -72,6 +78,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Kelola Akun Pengguna
     Route::get('/admin/kelola-akun', [KelolaAkunController::class, 'index'])->name('admin.kelola-akun.index');
     Route::post('/admin/kelola-akun/import', [KelolaAkunController::class, 'import'])->name('admin.kelola-akun.import');
+    // Route::put('/admin/kelola-akun/{user}/toggle-status', [KelolaAkunController::class, 'toggleStatus'])->name('admin.kelola-akun.toggle-status');
+    Route::patch('/admin/kelola-akun/{id}/toggle-status', [KelolaAkunController::class, 'toggleStatus'])->name('admin.kelola-akun.toggle-status');
     //BERANDA
     Route::get('/admin/beranda', [BerandaController::class, 'admin'])->name('admin.beranda');
     // Route::get('/admin/kendaraan', [KendaraanController::class, 'adminIndex'])->name('admin.kendaraan');
@@ -99,6 +107,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/servisInsidental/create', [ServisInsidentalController::class, 'create'])->name('admin.servisInsidental.create');
     Route::post('/admin/servisInsidental', [ServisInsidentalController::class, 'store'])->name('admin.servisInsidental.store');
     Route::get('/admin/servisInsidental/{id}', [ServisInsidentalController::class, 'detail'])->name('admin.servisInsidental.detail');
+    Route::get('/admin/servisInsidental/{id}/edit', [ServisInsidentalController::class, 'edit'])->name('admin.servisInsidental.edit');
+    Route::put('/admin/servisInsidental/{id}', [ServisInsidentalController::class, 'update'])->name('admin.servisInsidental.update');
+    Route::delete('/admin/servisInsidental/{id}', [ServisInsidentalController::class, 'destroy'])->name('admin.servisInsidental.destroy');
 
     Route::get('/admin/pengisianBBM', [IsiBBMController::class, 'index'])->name('admin.pengisianBBM');
     Route::get('/admin/pengisianBBM/create', [IsiBBMController::class, 'create'])->name('admin.pengisianBBM.create');

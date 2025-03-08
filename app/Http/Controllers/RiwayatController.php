@@ -21,6 +21,59 @@ class RiwayatController extends Controller
         return view('admin.riwayat.index');
     }
 
+    /**
+     * Helper function to build date search conditions
+     */
+    private function buildDateSearch($query, $column, $search)
+    {
+        // Check if search might be a date in various formats
+        // Format: d (day only - 1 to 31)
+        if (preg_match('/^(0?[1-9]|[12][0-9]|3[01])$/', $search)) {
+            $day = (int) $search;
+            $query->orWhereRaw("DAY($column) = ?", [$day]);
+        }
+        
+        // Format: m (month only - 1 to 12)
+        if (preg_match('/^(0?[1-9]|1[0-2])$/', $search)) {
+            $month = (int) $search;
+            $query->orWhereRaw("MONTH($column) = ?", [$month]);
+        }
+        
+        // Format: Y (year only - 4 digits)
+        if (preg_match('/^(20\d{2})$/', $search)) {
+            $year = (int) $search;
+            $query->orWhereRaw("YEAR($column) = ?", [$year]);
+        }
+        
+        // Format: d-m (day-month)
+        if (preg_match('/^(0?[1-9]|[12][0-9]|3[01])[\-\/](0?[1-9]|1[0-2])$/', $search)) {
+            $parts = preg_split('/[\-\/]/', $search);
+            $day = (int) $parts[0];
+            $month = (int) $parts[1];
+            $query->orWhereRaw("DAY($column) = ? AND MONTH($column) = ?", [$day, $month]);
+        }
+        
+        // Format: m-Y (month-year)
+        if (preg_match('/^(0?[1-9]|1[0-2])[\-\/](20\d{2})$/', $search)) {
+            $parts = preg_split('/[\-\/]/', $search);
+            $month = (int) $parts[0];
+            $year = (int) $parts[1];
+            $query->orWhereRaw("MONTH($column) = ? AND YEAR($column) = ?", [$month, $year]);
+        }
+        
+        // Format: d-m-Y (day-month-year)
+        if (preg_match('/^(0?[1-9]|[12][0-9]|3[01])[\-\/](0?[1-9]|1[0-2])[\-\/](20\d{2})$/', $search)) {
+            $parts = preg_split('/[\-\/]/', $search);
+            $day = (int) $parts[0];
+            $month = (int) $parts[1];
+            $year = (int) $parts[2];
+            $query->orWhereRaw("DAY($column) = ? AND MONTH($column) = ? AND YEAR($column) = ?", [$day, $month, $year]);
+        }
+        
+        // Also try the default LIKE search for backward compatibility
+        $query->orWhere($column, 'like', "%$search%");
+    }
+
     public function peminjaman(Request $request)
     {
         $search = $request->search;
@@ -39,6 +92,14 @@ class RiwayatController extends Controller
                             ->orWhere('plat_nomor', 'like', "%$search%");
                 })
                 ->orWhere('tujuan', 'like', "%$search%")
+                // ->orWhere('tgl_mulai', 'like', "%$search%")
+                // ->orWhere('tgl_selesai', 'like', "%$search%")
+                ->orWhere(function ($q) use ($search) {
+                    $this->buildDateSearch($q, 'tgl_mulai', $search);
+                })
+                ->orWhere(function ($q) use ($search) {
+                    $this->buildDateSearch($q, 'tgl_selesai', $search);
+                })
                 ->orWhere('status_pinjam', 'like', "%$search%");
             });
         }
@@ -76,6 +137,14 @@ class RiwayatController extends Controller
                 })
                 ->orWhereHas('user', function ($qUser) use ($search) {
                     $qUser->where('name', 'like', "%$search%");
+                })
+                // ->orWhere('tgl_bayar', 'like', "%$search%")
+                // ->orWhere('tgl_jatuh_tempo', 'like', "%$search%");
+                ->orWhere(function ($q) use ($search) {
+                    $this->buildDateSearch($q, 'tgl_bayar', $search);
+                })
+                ->orWhere(function ($q) use ($search) {
+                    $this->buildDateSearch($q, 'tgl_jatuh_tempo', $search);
                 });
             });
         }
@@ -117,10 +186,19 @@ class RiwayatController extends Controller
                     $q->where('name', 'like', "%$search%");
                 })
                 ->orWhere('tahun', 'like', "%$search%")
-                ->orWhere('tgl_bayar', 'like', "%$search%")
+                // ->orWhere('tgl_bayar', 'like', "%$search%")
+                ->orWhere(function ($q) use ($search) {
+                    $this->buildDateSearch($q, 'tgl_bayar', $search);
+                })
                 ->orWhere('polis', 'like', "%$search%")
-                ->orWhere('tgl_perlindungan_awal', 'like', "%$search%")
-                ->orWhere('tgl_perlindungan_akhir', 'like', "%$search%")
+                // ->orWhere('tgl_perlindungan_awal', 'like', "%$search%")
+                // ->orWhere('tgl_perlindungan_akhir', 'like', "%$search%")
+                ->orWhere(function ($q) use ($search) {
+                    $this->buildDateSearch($q, 'tgl_perlindungan_awal', $search);
+                })
+                ->orWhere(function ($q) use ($search) {
+                    $this->buildDateSearch($q, 'tgl_perlindungan_akhir', $search);
+                })
                 ->orWhere('nominal', 'like', "%$search%")
                 ->orWhere('biaya_asuransi_lain', 'like', "%$search%");
             });
@@ -172,8 +250,14 @@ class RiwayatController extends Controller
                 ->orWhere('lokasi', 'like', "%$search%")
                 ->orWhere('harga', 'like', "%$search%")
                 ->orWhere('kilometer', 'like', "%$search%")
-                ->orWhere('tgl_servis_real', 'like', "%$search%")
-                ->orWhere('tgl_servis_selanjutnya', 'like', "%$search%");
+                // ->orWhere('tgl_servis_real', 'like', "%$search%")
+                // ->orWhere('tgl_servis_selanjutnya', 'like', "%$search%");
+                ->orWhere(function ($q) use ($search) {
+                    $this->buildDateSearch($q, 'tgl_servis_real', $search);
+                });
+                // ->orWhere(function ($q) use ($search) {
+                //     $this->buildDateSearch($q, 'tgl_servis_selanjutnya', $search);
+                // });
             });
         }
 
@@ -209,7 +293,10 @@ class RiwayatController extends Controller
                 })
                 ->orWhere('lokasi', 'like', "%$search%")
                 ->orWhere('harga', 'like', "%$search%")
-                ->orWhere('tgl_servis', 'like', "%$search%");
+                // ->orWhere('tgl_servis', 'like', "%$search%");
+                ->orWhere(function ($q) use ($search) {
+                    $this->buildDateSearch($q, 'tgl_servis', $search);
+                });
             });
         }
 
@@ -257,11 +344,10 @@ class RiwayatController extends Controller
             $query->whereDate('tgl_isi', '<=', $tgl_akhir);
         }
 
-        // Get the filtered data
-        $riwayatBBM = $query->with(['kendaraan', 'user'])->paginate(10);
+        $totalTransaksi = $query->sum('nominal');
 
-        // Calculate the total transaksi
-        $totalTransaksi = collect($riwayatBBM->items())->sum('nominal');
+        // Get the filtered data with pagination
+        $riwayatBBM = $query->with(['kendaraan', 'user'])->paginate(10);
 
         // Get the list of vehicles and users for the filter
         $kendaraanList = Kendaraan::all();
@@ -316,7 +402,10 @@ class RiwayatController extends Controller
                 ->orWhereHas('user', function ($q) use ($search) {
                     $q->where('name', 'like', "%$search%");
                 })
-                ->orWhere('tgl_cek_fisik', 'like', "%$search%");
+                // ->orWhere('tgl_cek_fisik', 'like', "%$search%");
+                ->orWhere(function ($q) use ($search) {
+                    $this->buildDateSearch($q, 'tgl_cek_fisik', $search);
+                });
             });
         }
 
