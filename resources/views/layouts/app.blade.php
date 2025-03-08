@@ -101,11 +101,40 @@
 
             if ($user->peran === 'admin') {
                 $menuItems = array_merge($menuItems, [
-                    ['icon' => 'home', 'title' => 'Beranda', 'route' => 'admin.beranda'],
-                    ['icon' => 'car', 'title' => 'Daftar Kendaraan', 'route' => 'kendaraan.daftar_kendaraan'],
+                    ['icon' => 'home', 'title' => 'Beranda Admin', 'route' => 'admin.beranda', 'active_routes' => [
+                        'admin.beranda'
+                    ]],
+                    ['icon' => 'car', 'title' => 'Daftar Kendaraan', 'route' => 'kendaraan.daftar_kendaraan', 'active_routes' => [
+                        'kendaraan.daftar_kendaraan',
+                        'kendaraan.tambah',
+                        'kendaraan.edit',
+                        'kendaraan.update',
+                        'kendaraan.detail',
+                        'kendaraan.hapus',
+                        'kendaraan.store',
+                        'kendaraan.hitungDepresiasi'
+                    ]],
                     ['icon' => 'file-lines', 'title' => 'Pengajuan Peminjaman', 'route' => 'admin.pengajuan-peminjaman.index'],
-                    ['icon' => 'money-bill', 'title' => 'Pajak', 'route' => 'pajak.daftar_kendaraan_pajak'],
-                    ['icon' => 'shield', 'title' => 'Asuransi', 'route' => 'asuransi.daftar_kendaraan_asuransi'],
+                    ['icon' => 'money-bill', 'title' => 'Pajak', 'route' => 'pajak.daftar_kendaraan_pajak', 'active_routes' => [
+                        'pajak.daftar_kendaraan_pajak',
+                        'pajak.kelola',
+                        'pajak.edit',
+                        'pajak.update',
+                        'pajak.detail',
+                        'pajak.hapus',
+                        'pajak.store',
+                        'pajak.deleteFile'
+                    ]],
+                    ['icon' => 'shield', 'title' => 'Asuransi', 'route' => 'asuransi.daftar_kendaraan_asuransi', 'active_routes' => [
+                        'asuransi.daftar_kendaraan_asuransi',
+                        'asuransi.kelola',
+                        'asuransi.edit',
+                        'asuransi.update',
+                        'asuransi.detail',
+                        'asuransi.hapus',
+                        'asuransi.store',
+                        'asuransi.deleteFile'
+                    ]], 
                     ['icon' => 'screwdriver-wrench', 'title' => 'Servis Rutin', 'route' => 'admin.servisRutin', 'active_routes' => [
                         'admin.servisRutin',
                         'admin.servisRutin.create',
@@ -139,7 +168,9 @@
                 ]);
             } elseif ($user->peran === 'pengguna') {
                 $menuItems = array_merge($menuItems, [
-                    ['icon' => 'home', 'title' => 'Beranda', 'route' => 'beranda'],
+                    ['icon' => 'home', 'title' => 'Beranda Pengguna', 'route' => 'beranda', 'active_routes' => [
+                        'beranda'
+                    ]],
                     ['icon' => 'car', 'title' => 'Daftar Kendaraan', 'route' => 'kendaraan'],
                     ['icon' => 'pen-to-square', 'title' => 'Peminjaman', 'route' => 'peminjaman'],
                     ['icon' => 'gears', 'title' => 'Servis Insidental', 'route' => 'servisInsidental', 'active_routes' => [
