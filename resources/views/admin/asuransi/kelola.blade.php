@@ -1,7 +1,4 @@
 <x-app-layout>
-{{-- @extends('layouts.sidebar')
-@section('content') --}}
-
     <div class="min-h-screen flex items-center justify-center py-12 px-4">
         <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-lg">
             <h2 class="text-2xl font-bold mb-6 text-center">Form Pembayaran Asuransi Kendaraan</h2>
@@ -45,14 +42,15 @@
                             class="w-full p-2.5 border rounded-lg">
                     </div>
                 </div>
-
+ 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Bayar</label>
                     <input type="date" 
                            name="tanggal_bayar" 
-                           class="w-full p-2.5 border rounded-lg">
+                           class="w-full p-2.5 border rounded-lg"
+                           max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}">
                 </div>
-
+                
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nominal Asuransi</label>
                     <div class="relative">
@@ -156,30 +154,45 @@
         document.getElementById('save-form').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            let tanggalBayar = document.querySelector('input[name="tanggal_bayar"]').value;
+            let tanggalBayarInput = document.querySelector('input[name="tanggal_bayar"]');
+            let tanggalBayar = tanggalBayarInput.value;
             let nominalTagihan = document.querySelector('input[name="nominal_tagihan"]').value;
             let tanggalAwalPerlindungan = document.querySelector('input[name="tgl_perlindungan_awal"]').value;
             let tanggalAkhirPerlindungan = document.querySelector('input[name="tgl_perlindungan_akhir"]').value;
             let fotoPolis = document.getElementById('fotoInputPolis').files.length;
             let fotoPembayaran = document.getElementById('fotoInputPembayaran').files.length;
-            if (!tanggalBayar || !nominalTagihan || !tanggalAwalPerlindungan || !tanggalAkhirPerlindungan) {
-                showAlert("Mohon isi semua kolom yang wajib sebelum menyimpan", 7000);
+            let alertDiv = document.getElementById('alertMessage');
+            
+            let today = new Date().toISOString().split('T')[0]; 
+            if (tanggalBayar > today) {
+                showAlert("Tanggal bayar tidak boleh lebih dari hari ini.", 7000);
                 return;
             }
+
+            if (!tanggalBayar || !nominalTagihan || !tanggalAwalPerlindungan || !tanggalAkhirPerlindungan) {
+                showAlert("Mohon isi semua kolom yang wajib sebelum menyimpan.", 7000);
+                return;
+            }
+
             if (fotoPolis === 0 || fotoPembayaran === 0) {
                 showAlert("Mohon unggah file Polis dan Bukti Pembayaran sebelum menyimpan!", 7000);
                 return;
             }
+
             let tglAwal = new Date(tanggalAwalPerlindungan);
             let tglAkhir = new Date(tanggalAkhirPerlindungan);
+
             if (tglAkhir <= tglAwal) {
                 showAlert("Tanggal perlindungan akhir harus lebih besar dari tanggal perlindungan awal!", 7000);
                 return;
             }
+
             let nominalInput = document.querySelector('input[name="nominal_tagihan"]');
             let biayaLainInput = document.querySelector('input[name="biaya_lain"]');
+
             nominalInput.value = nominalInput.value.replace(/[^\d]/g, '');
             biayaLainInput.value = biayaLainInput.value.replace(/[^\d]/g, '');
+
             Swal.fire({
                 title: "Konfirmasi",
                 text: "Apakah Anda yakin ingin menyimpan data pembayaran asuransi ini?",
@@ -202,6 +215,20 @@
                             document.getElementById('save-form').submit();
                         });
                     }, 500);
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const tanggalBayarInput = document.querySelector('input[name="tanggal_bayar"]');
+            
+            tanggalBayarInput.addEventListener('change', function() {
+                const selectedDate = this.value;
+                const today = new Date().toISOString().split('T')[0];
+
+                if (selectedDate > today) {
+                    showAlert("Tanggal bayar tidak boleh lebih dari hari ini.");
+                    this.value = today; 
                 }
             });
         });
@@ -289,4 +316,3 @@
         });
     </script>
 </x-app-layout>
-{{-- @endsection --}}

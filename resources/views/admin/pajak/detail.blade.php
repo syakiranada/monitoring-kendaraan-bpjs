@@ -1,6 +1,4 @@
 <x-app-layout>
-{{-- @extends('layouts.sidebar')
-@section('content') --}}
     <style>
         #pajakModal {
             display: none;
@@ -23,6 +21,10 @@
             </div>
             
             <div class="space-y-3">
+                <div class="flex items-start text-sm">
+                    <span class="text-gray-600 w-72">Admin Input</span>
+                    <span class="text-gray-900 flex-1">{{ $pajak->user->name }}</span>
+                </div>
                 <div class="flex items-start text-sm">
                     <span class="text-gray-600 w-72">Plat Nomor</span>
                     <span class="text-gray-900 flex-1">{{ $pajak->kendaraan->plat_nomor }}</span>
@@ -55,16 +57,25 @@
                     </span>
                 </div>
             
-                <div class="flex items-start text-sm">
-                    <span class="text-gray-600 w-72">Bukti Pembayaran</span>
+                @php
+                $pembayaranPath = $pajak->bukti_bayar_pajak ?? ''; 
+                $pembayaranExists = !empty($pembayaranPath) && 
+                    (Storage::exists($pembayaranPath) || 
+                     Storage::exists('public/' . $pembayaranPath) || 
+                     file_exists(storage_path('app/public/' . $pembayaranPath)));
+            @endphp
             
-                    @if($pajak->bukti_bayar_pajak)
-                        <a href="#" class="text-blue-600 hover:underline" 
-                           onclick="showModal('pajakModal', '{{ asset('storage/' . $pajak->bukti_bayar_pajak) }}')">Lihat bukti</a>
-                    @else
-                        <span class="text-gray-400">Tidak ada bukti</span>
-                    @endif
-                </div>
+            <div class="flex items-start text-sm">
+                <span class="text-gray-600 w-72">Bukti Pembayaran</span>
+            
+                @if($pembayaranExists)
+                    <a href="#" class="text-blue-600 hover:underline"
+                       onclick="showModal('pajakModal', '{{ asset('storage/' . $pembayaranPath) }}')">Lihat bukti</a>
+                @else
+                    <span class="text-gray-400">Tidak ada bukti</span>
+                @endif
+            </div>
+              
             
                 <button type="button" onclick="window.location.href='{{ route('pajak.daftar_kendaraan_pajak', ['page' => $currentPage, 'search' => request()->query('search', '')]) }}'" 
                     class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
@@ -123,8 +134,6 @@
             modal.classList.remove('flex');
             document.body.style.overflow = '';
         }
-    
-        // Close modal when clicking outside
         document.querySelectorAll('.fixed').forEach(modal => {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
@@ -133,7 +142,6 @@
             });
         });
     
-        // Close modal with Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 document.querySelectorAll('.fixed').forEach(modal => {
@@ -145,4 +153,3 @@
         });
     </script>
 </x-app-layout>
-{{-- @endsection --}}

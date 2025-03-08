@@ -1,6 +1,4 @@
 <x-app-layout>
-{{-- @extends('layouts.sidebar')
-@section('content') --}}
     <div class="min-h-screen flex items-center justify-center py-12 px-4">
         <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-lg">
             <h2 class="text-2xl font-bold mb-6 text-center">Form Edit Pembayaran Pajak Kendaraan</h2>
@@ -33,12 +31,13 @@
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Bayar</label>
-                    <input type="date" 
-                           name="tanggal_bayar" 
-                            value="{{ $pajak->tgl_bayar }}"
-                           class="w-full p-2.5 border rounded-lg">
-                    </div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Bayar</label>
+                        <input type="date" 
+                               name="tanggal_bayar" 
+                               value="{{ \Carbon\Carbon::parse($pajak->tgl_bayar)->format('Y-m-d') }}"
+                               max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}"
+                               class="w-full p-2.5 border rounded-lg">
+                    </div>                                       
                     <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Jatuh Tempo Selanjutnya</label>
                     <input type="date" 
@@ -47,7 +46,7 @@
                            class="w-full p-2.5 border rounded-lg">
                     </div>
                 </div>
-
+ 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nominal Tagihan</label>
                     <div class="relative">
@@ -136,28 +135,38 @@
         });
     
         document.getElementById('save-form').addEventListener('submit', function (event) {
-            event.preventDefault(); 
-            let tanggalBayar = document.querySelector('input[name="tanggal_bayar"]').value;
+            event.preventDefault();
+            
+            let tanggalBayarInput = document.querySelector('input[name="tanggal_bayar"]');
+            let tanggalBayar = tanggalBayarInput.value;
             let tanggalJatuhTempo = document.querySelector('input[name="tanggal_jatuh_tempo"]').value;
-            let nominalTagihan = document.querySelector('input[name="nominal_tagihan"]').value.replace(/\D/g, ''); // Ambil angka saja
+            let nominalTagihan = document.querySelector('input[name="nominal_tagihan"]').value.replace(/\D/g, ''); 
             let alertDiv = document.getElementById('alertMessage');
             let fotoPembayaran = document.getElementById('fotoInput').files[0];
             let existingPembayaran = "{{ $pajak->bukti_bayar_pajak }}";
             let isPembayaranFileDeleted = !fotoPembayaran && !existingPembayaran;
-
-            if (!tanggalBayar || !tanggalJatuhTempo || !nominalTagihan || parseInt(nominalTagihan) === 0 || 
-            isPembayaranFileDeleted) {
-                alertDiv.classList.remove('hidden'); 
-                setTimeout(() => alertDiv.classList.add('hidden'), 10000); 
-                return; 
+            let today = new Date().toISOString().split('T')[0]; 
+            if (tanggalBayar > today) {
+                alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Tanggal bayar tidak boleh lebih dari hari ini.';
+                alertDiv.classList.remove('hidden');
+                setTimeout(() => alertDiv.classList.add('hidden'), 10000);
+                return;
             }
-
+            
+            if (!tanggalBayar || !tanggalJatuhTempo || !nominalTagihan || parseInt(nominalTagihan) === 0 || 
+                isPembayaranFileDeleted) {
+                alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Mohon isi semua kolom yang wajib sebelum menyimpan.';
+                alertDiv.classList.remove('hidden');
+                setTimeout(() => alertDiv.classList.add('hidden'), 10000);
+                return;
+            }
+            
             let nominalInput = document.querySelector('input[name="nominal_tagihan"]');
             let biayaLainInput = document.querySelector('input[name="biaya_lain"]');
             
             nominalInput.value = nominalInput.value.replace(/[^\d]/g, '');
             biayaLainInput.value = biayaLainInput.value.replace(/[^\d]/g, '');
-
+            
             Swal.fire({
                 title: "Konfirmasi",
                 text: "Apakah Anda yakin ingin menyimpan perubahan data pembayaran pajak ini?",
@@ -176,6 +185,20 @@
                     }).then(() => {
                         event.target.submit();
                     });
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const tanggalBayarInput = document.querySelector('input[name="tanggal_bayar"]');
+            
+            tanggalBayarInput.addEventListener('change', function() {
+                const selectedDate = this.value;
+                const today = new Date().toISOString().split('T')[0];
+                
+                if (selectedDate > today) {
+                    showAlert("Tanggal bayar tidak boleh lebih dari hari ini.");
+                    this.value = today; 
                 }
             });
         });
@@ -209,15 +232,12 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Setelah berhasil menghapus, setel status bahwa file telah dihapus
                     console.log("File Pembayaran berhasil dihapus.");
                     document.getElementById('fotoInput').value = '';
                     document.getElementById('fileName').textContent = "Upload File";
                     document.getElementById('removeFile').classList.add('hidden');
                     location.reload();
-                    
-                    // Update status untuk validasi
-                    isPembayaranFileDeleted = true; // Menetapkan bahwa file telah dihapus
+                    isPembayaranFileDeleted = true; 
                     console.log("Status Pembayaran Setelah Dihapus: ", isPembayaranFileDeleted);
                 } else {
                     alert(data.error);
@@ -264,7 +284,9 @@
                     }
 
                     let shortFileName = shortenFileName(file.name);
-                    document.getElementById(uploadTextId).textContent = shortFileName;
+                    document.getElementById(uploadTextId).textContent = shortenFileName(file.name);
+
+
                     document.getElementById(removeButtonId).classList.remove('hidden');
                 }
             }
@@ -277,6 +299,14 @@
 
             document.getElementById('removeFile').addEventListener('click', function(event) {
                 event.preventDefault();
+                let newFileSelected = document.getElementById('fotoInput').files.length > 0;
+                if (newFileSelected) {
+                    document.getElementById('fotoInput').value = '';
+                    document.getElementById('fileName').textContent = "Upload Photo";
+                    document.getElementById('removeFile').classList.add('hidden');
+                    return;
+                }
+                
                 let pajakIdElement = document.querySelector('input[name="id_pajak"]');
                 if (!pajakIdElement) {
                     console.error("Elemen input[name='id_pajak'] tidak ditemukan!");
@@ -284,7 +314,7 @@
                 }
 
                 let pajakId = pajakIdElement.value;
-
+                
                 fetch('/pajak/delete-file', {
                     method: 'POST',
                     headers: {
@@ -298,19 +328,29 @@
                     if (data.success) {
                         console.log("File Pembayaran berhasil dihapus.");
                         document.getElementById('fotoInput').value = '';
-                        document.getElementById('uploadText').textContent = "Upload File";
+                        document.getElementById('fileName').textContent = "Upload Photo";
                         document.getElementById('removeFile').classList.add('hidden');
-                        location.reload();
-                    } else {
-                        showAlert(data.error);
+                    } else if (data.error && data.error !== "File tidak ditemukan") {
+                        alert(data.error);
                     }
                 })
                 .catch(error => console.error('Error:', error));
             });
 
-            function shortenFileName(fileName, maxLength = 15) {
-                return fileName.length > maxLength ? fileName.substring(0, maxLength) + '...' : fileName;
+
+        function shortenFileName(fileName, maxLength = 15) {
+                    if (fileName.length > maxLength) {
+                        return fileName.substring(0, maxLength) + '...';
+                    }
+                    return fileName;
+                }
+                document.getElementById('fotoInput').addEventListener('change', function(event) {
+            let file = event.target.files[0];
+            if (file) {
+                let shortFileName = shortenFileName(file.name, 15); 
+                document.getElementById('fileName').textContent = shortFileName;
+                document.getElementById('removeFile').classList.remove('hidden');
             }
+        });
     </script>
 </x-app-layout>
-{{-- @endsection --}}

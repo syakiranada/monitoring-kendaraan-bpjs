@@ -25,5 +25,6 @@ class DatabaseSeeder extends Seeder
         $this->call(BBMSeeder::class);
         $this->call(AsuransiSeeder::class);
         $this->call(PajakSeeder::class);
+        $this->call(HitungDepresiasiEventSeeder::class);
     }
 }

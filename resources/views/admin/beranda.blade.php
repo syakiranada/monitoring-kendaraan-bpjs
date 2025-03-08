@@ -11,29 +11,59 @@
         <div class="max-w-6xl mx-auto p-8">
             <h1 class="text-2xl font-bold text-gray-800 mb-6">Selamat Datang, {{ $user->name }}!</h1>
     
-            @if(count($peminjamanTerlambat) > 0)
-            <div class="p-4 mb-6 text-red-800 border border-red-300 rounded-lg bg-red-50" role="alert">
-                <div class="flex items-center gap-2 mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
-                        <path d="M4.214 3.227a.75.75 0 0 0-1.156-.955 8.97 8.97 0 0 0-1.856 3.825.75.75 0 0 0 1.466.316 7.47 7.47 0 0 1 1.546-3.186ZM16.942 2.272a.75.75 0 0 0-1.157.955 7.47 7.47 0 0 1 1.547 3.186.75.75 0 0 0 1.466-.316 8.971 8.971 0 0 0-1.856-3.825Z" />
-                        <path fill-rule="evenodd" d="M10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.91 32.91 0 0 0 3.256.508 3.5 3.5 0 0 0 6.972 0 32.903 32.903 0 0 0 3.256-.508.75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6Z" clip-rule="evenodd" />
-                    </svg>
-                    <h3 class="text-lg font-semibold">Pengembalian Kendaraan Dinas Terlambat!</h3>
-                </div>
-                <div class="space-y-2 pl-2">
-                    @foreach($peminjamanTerlambat as $pinjam)
-                    <div class="flex items-center gap-2">
-                        <span class="text-red-600">•</span>
-                        <p class="text-sm">
-                            <span class="font-medium">{{ $pinjam->user->name }}</span> telah melewati batas waktu pengembalian kendaraan dinas 
-                            <span class="font-medium">{{ $pinjam->kendaraan->merk }} {{ $pinjam->kendaraan->tipe }}</span>
-                            <span class="text-red-700">({{ $pinjam->kendaraan->plat_nomor }})</span>
-                        </p>
+            @if(count($peminjamanTerlambat) > 0 || count($peminjamanAkanJatuhTempo) > 0)
+            <div class="p-4 mb-6 border border-red-300 rounded-lg bg-red-50 shadow-md" role="alert">
+                {{-- Pengembalian Terlambat --}}
+                @if(count($peminjamanTerlambat) > 0)
+                    <div class="flex items-center gap-2 mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-6 text-red-700">
+                            <path d="M4.214 3.227a.75.75 0 0 0-1.156-.955 8.97 8.97 0 0 0-1.856 3.825.75.75 0 0 0 1.466.316 7.47 7.47 0 0 1 1.546-3.186Z" />
+                            <path d="M16.942 2.272a.75.75 0 0 0-1.157.955 7.47 7.47 0 0 1 1.547 3.186.75.75 0 0 0 1.466-.316 8.971 8.971 0 0 0-1.856-3.825Z" />
+                            <path fill-rule="evenodd" d="M10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.91 32.91 0 0 0 3.256.508 3.5 3.5 0 0 0 6.972 0 32.903 32.903 0 0 0 3.256-.508.75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6Z" clip-rule="evenodd" />
+                        </svg>
+                        <h3 class="text-lg font-semibold text-red-800">Pengembalian Kendaraan Dinas Terlambat!</h3>
                     </div>
-                    @endforeach
-                </div>
+                    <div class="space-y-2 pl-2 mb-4">
+                        @foreach($peminjamanTerlambat as $pinjam)
+                            <div class="flex items-center gap-2">
+                                <span class="text-red-600">•</span>
+                                <p class="text-sm text-red-800">
+                                    <span class="font-medium">{{ $pinjam->user->name }}</span> telah melewati batas waktu pengembalian kendaraan dinas  
+                                    <span class="font-medium">{{ $pinjam->kendaraan->merk }} {{ $pinjam->kendaraan->tipe }}</span>
+                                    <span class="text-red-700">({{ $pinjam->kendaraan->plat_nomor }})</span>.
+                                </p>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+
+                {{-- Pengembalian Dalam 3 Jam --}}
+                @if(count($peminjamanAkanJatuhTempo) > 0)
+                    <div class="flex items-center gap-2 mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-6 text-red-700">
+                            <path d="M4.214 3.227a.75.75 0 0 0-1.156-.955 8.97 8.97 0 0 0-1.856 3.825.75.75 0 0 0 1.466.316 7.47 7.47 0 0 1 1.546-3.186Z" />
+                            <path d="M16.942 2.272a.75.75 0 0 0-1.157.955 7.47 7.47 0 0 1 1.547 3.186.75.75 0 0 0 1.466-.316 8.971 8.971 0 0 0-1.856-3.825Z" />
+                            <path fill-rule="evenodd" d="M10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.91 32.91 0 0 0 3.256.508 3.5 3.5 0 0 0 6.972 0 32.903 32.903 0 0 0 3.256-.508.75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6Z" clip-rule="evenodd" />
+                        </svg>
+                        <h3 class="text-lg font-semibold text-red-800">Pengembalian Kendaraan Dinas Dalam 3 Jam!</h3>
+                    </div>
+                    <div class="space-y-2 pl-2">
+                        @foreach($peminjamanAkanJatuhTempo as $pinjam)
+                            <div class="flex items-center gap-2">
+                                <span class="text-red-600">•</span>
+                                <p class="text-sm text-red-800">
+                                    <span class="font-medium">{{ $pinjam->user->name }}</span> harus mengembalikan kendaraan dinas  
+                                    <span class="font-medium">{{ $pinjam->kendaraan->merk }} {{ $pinjam->kendaraan->tipe }}</span>
+                                    <span class="text-red-700">({{ $pinjam->kendaraan->plat_nomor }})</span>  
+                                    sebelum <span class="font-semibold">{{ \Carbon\Carbon::parse($pinjam->tgl_selesai . ' ' . $pinjam->jam_selesai)->format('H:i') }}</span>.
+                                </p>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
-            @endif
+        @endif
+
     
             @if(count($butuhCekFisik) > 0) 
             <div class="p-4 mb-6 text-yellow-800 border border-yellow-300 rounded-lg bg-yellow-50" role="alert">
@@ -92,7 +122,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
                             <path fill-rule="evenodd" d="M9.661 2.237a.531.531 0 0 1 .678 0 11.947 11.947 0 0 0 7.078 2.749.5.5 0 0 1 .479.425c.069.52.104 1.05.104 1.59 0 5.162-3.26 9.563-7.834 11.256a.48.48 0 0 1-.332 0C5.26 16.564 2 12.163 2 7c0-.538.035-1.069.104-1.589a.5.5 0 0 1 .48-.425 11.947 11.947 0 0 0 7.077-2.75Z" clip-rule="evenodd" />
                         </svg>
-                        <h3 class="text-lg font-semibold text-gray-900">Asuransi</h3>
+                        <h3 class="text-lg font-semibold text-gray-900">Asuransi Kendaraan</h3>
                     </div>
                     <div class="space-y-2">
                         @forelse($batasWaktu->where('tipe', 'Asuransi') as $index => $deadline)

@@ -5,39 +5,28 @@
             .custom-text {
                 font-size: 2rem; 
             }
-            
-            /* Main layout adjustments */
             #main-content {
                 width: 100%;
                 transition: padding-left 0.3s ease;
             }
-            
-            /* When sidebar is closed */
             body:not(.sidebar-open) #main-content {
                 padding-left: 0;
             }
-            
-            /* When sidebar is open */
             body.sidebar-open #main-content {
-                padding-left: 250px; /* Adjust based on your sidebar width */
+                padding-left: 250px; 
             }
-            
-            /* Ensure table is always properly aligned */
             .table-wrapper {
                 width: 95%;
                 max-width: 1400px;
                 margin: 0 auto;
                 overflow-x: auto;
             }
-            
-            /* Form alignment */
             .form-wrapper {
                 width: 95%;
                 max-width: 1400px;
                 margin: 0 auto;
             }
         </style>
-        
         @if(!empty($alerts))
             <div class="form-wrapper">
                 <div class="flex items-center w-full p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50" role="alert">
@@ -166,12 +155,9 @@
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Detect sidebar state on page load and window resize
         document.addEventListener('DOMContentLoaded', function() {
             adjustLayout();
             window.addEventListener('resize', adjustLayout);
-            
-            // Check if a sidebar toggle button exists and attach a listener
             const sidebarToggle = document.querySelector('.sidebar-toggle');
             if (sidebarToggle) {
                 sidebarToggle.addEventListener('click', function() {
@@ -182,15 +168,11 @@
         });
         
         function adjustLayout() {
-            // This function can be extended based on your sidebar implementation
-            // If you have a specific class or ID for the sidebar, you can check its visibility
-            const sidebar = document.querySelector('.sidebar'); // Change to your sidebar selector
+            const sidebar = document.querySelector('.sidebar'); 
             const mainContent = document.getElementById('main-content');
             
             if (sidebar && mainContent) {
-                // Check if sidebar is visible
                 const sidebarVisible = window.getComputedStyle(sidebar).display !== 'none';
-                
                 if (sidebarVisible) {
                     document.body.classList.add('sidebar-open');
                 } else {
@@ -219,7 +201,7 @@
                     if (!form) {
                         console.error("Form tidak ditemukan! Pastikan ID form benar.");
                         return;
-                    }
+                    } 
 
                     let currentPage = new URLSearchParams(window.location.search).get('page') || 1;
                     let actionUrl = form.getAttribute('action') + "?page=" + currentPage;

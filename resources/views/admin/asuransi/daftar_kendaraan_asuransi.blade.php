@@ -1,36 +1,32 @@
 <x-app-layout>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 col-md-6 col-sm-12">
+            </div>
+        </div>
+    </div>
     <div id="main-content" class="transition-all duration-300 w-full">
         <h2 class="custom-text font-extrabold mb-6 ml-6 pt-6">Daftar Asuransi Kendaraan</h2>
         <style>
             .custom-text {
                 font-size: 2rem; 
             }
-            
-            /* Main layout adjustments */
             #main-content {
                 width: 100%;
                 transition: padding-left 0.3s ease;
             }
-            
-            /* When sidebar is closed */
             body:not(.sidebar-open) #main-content {
                 padding-left: 0;
             }
-            
-            /* When sidebar is open */
             body.sidebar-open #main-content {
-                padding-left: 250px; /* Adjust based on your sidebar width */
+                padding-left: 250px; 
             }
-            
-            /* Ensure table is always properly aligned */
             .table-wrapper {
                 width: 95%;
                 max-width: 1400px;
                 margin: 0 auto;
                 overflow-x: auto;
             }
-            
-            /* Form alignment */
             .form-wrapper {
                 width: 95%;
                 max-width: 1400px;
@@ -150,12 +146,9 @@
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Detect sidebar state on page load and window resize
         document.addEventListener('DOMContentLoaded', function() {
             adjustLayout();
             window.addEventListener('resize', adjustLayout);
-            
-            // Check if a sidebar toggle button exists and attach a listener
             const sidebarToggle = document.querySelector('.sidebar-toggle');
             if (sidebarToggle) {
                 sidebarToggle.addEventListener('click', function() {
@@ -166,13 +159,10 @@
         });
         
         function adjustLayout() {
-            // This function can be extended based on your sidebar implementation
-            // If you have a specific class or ID for the sidebar, you can check its visibility
-            const sidebar = document.querySelector('.sidebar'); // Change to your sidebar selector
+            const sidebar = document.querySelector('.sidebar'); 
             const mainContent = document.getElementById('main-content');
             
             if (sidebar && mainContent) {
-                // Check if sidebar is visible
                 const sidebarVisible = window.getComputedStyle(sidebar).display !== 'none';
                 
                 if (sidebarVisible) {

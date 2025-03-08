@@ -1,6 +1,4 @@
 <x-app-layout>
-{{-- @extends('layouts.sidebar')
-@section('content') --}}
     <style>
         #polisModal,
         #pembayaranModal {
@@ -23,6 +21,10 @@
                 </h2>
             </div>
             <div class="space-y-3">
+                <div class="flex items-start text-sm">
+                    <span class="text-gray-600 w-72">Admin Input</span>
+                    <span class="text-gray-900">{{ $asuransi->user->name}}</span>
+                </div>
                 <div class="flex items-start text-sm">
                     <span class="text-gray-600 w-72">Plat Nomor</span>
                     <span class="text-gray-900">{{ $asuransi->kendaraan->plat_nomor }}</span>
@@ -65,25 +67,44 @@
                     <span class="text-gray-900">{{ \Carbon\Carbon::parse($asuransi->tgl_perlindungan_akhir)->format('d-m-Y') }}</span>
                 </div>
             
-                <div class="flex items-start text-sm">
-                    <span class="text-gray-600 w-72">Bukti Polis Asuransi</span>
-                    @if($asuransi->polis)
-                        <a href="#" class="text-blue-600 hover:underline" 
-                           onclick="showModal('polisModal', '{{ asset('storage/' . $asuransi->polis) }}')">Lihat bukti</a>
-                    @else
-                        <span class="text-gray-400">Tidak ada bukti</span>
-                    @endif
-                </div>
+                @php
+                $polisPath = $asuransi->polis ?? ''; 
+                $polisExists = !empty($polisPath) && 
+                    (Storage::exists($polisPath) || 
+                     Storage::exists('public/' . $polisPath) || 
+                     file_exists(storage_path('app/public/' . $polisPath)));
+            @endphp
             
-                <div class="flex items-start text-sm">
-                    <span class="text-gray-600 w-72">Bukti Pembayaran</span>
-                    @if($asuransi->bukti_bayar_asuransi)
-                        <a href="#" class="text-blue-600 hover:underline" 
-                           onclick="showModal('pembayaranModal', '{{ asset('storage/' . $asuransi->bukti_bayar_asuransi) }}')">Lihat bukti</a>
-                    @else
-                        <span class="text-gray-400">Tidak ada bukti</span>
-                    @endif
-                </div>
+            <div class="flex items-start text-sm">
+                <span class="text-gray-600 w-72">Bukti Polis Asuransi</span>
+                
+                @if($polisExists)
+                    <a href="#" class="text-blue-600 hover:underline"
+                        onclick="showModal('polisModal', '{{ asset('storage/' . $polisPath) }}')">Lihat bukti</a>
+                @else
+                    <span class="text-gray-400">Tidak ada bukti</span>
+                @endif
+            </div>
+            
+            @php
+                $pembayaranPath = $asuransi->bukti_bayar_asuransi ?? ''; 
+                $pembayaranExists = !empty($pembayaranPath) && 
+                    (Storage::exists($pembayaranPath) || 
+                     Storage::exists('public/' . $pembayaranPath) || 
+                     file_exists(storage_path('app/public/' . $pembayaranPath)));
+            @endphp
+            
+            <div class="flex items-start text-sm">
+                <span class="text-gray-600 w-72">Bukti Pembayaran</span>
+                
+                @if($pembayaranExists)
+                    <a href="#" class="text-blue-600 hover:underline"
+                        onclick="showModal('pembayaranModal', '{{ asset('storage/' . $pembayaranPath) }}')">Lihat bukti</a>
+                @else
+                    <span class="text-gray-400">Tidak ada bukti</span>
+                @endif
+            </div>
+                  
                 <button type="button" onclick="window.location.href='{{ route('asuransi.daftar_kendaraan_asuransi', ['page' => $currentPage, 'search' => request()->query('search', '')]) }}'" 
                     class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
                     Kembali
@@ -153,7 +174,6 @@
             document.body.style.overflow = '';
         }
     
-        // Close modal when clicking outside
         document.querySelectorAll('.fixed').forEach(modal => {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
@@ -162,7 +182,6 @@
             });
         });
     
-        // Close modal with Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 document.querySelectorAll('.fixed').forEach(modal => {
@@ -174,4 +193,3 @@
         });
     </script>
 </x-app-layout>
-{{-- @endsection --}}

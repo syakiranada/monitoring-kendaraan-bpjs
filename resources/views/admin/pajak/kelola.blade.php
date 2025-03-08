@@ -1,7 +1,4 @@
 <x-app-layout>
-{{-- @extends('layouts.sidebar')
-@section('content') --}}
-
     <div class="min-h-screen flex items-center justify-center py-12 px-4">
         <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-lg">
             <h2 class="text-2xl font-bold mb-6 text-center">Form Pembayaran Pajak Kendaraan</h2>
@@ -33,11 +30,12 @@
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Bayar</label>
-                    <input type="date" 
-                           name="tanggal_bayar" 
-                           class="w-full p-2.5 border rounded-lg">
-                    </div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Bayar</label>
+                        <input type="date" 
+                               name="tanggal_bayar" 
+                               max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}"
+                               class="w-full p-2.5 border rounded-lg">
+                    </div>                    
                     <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Jatuh Tempo</label>
                     <input type="date" 
@@ -46,7 +44,7 @@
                            class="w-full p-2.5 border rounded-lg">
                     </div>
                 </div>
-
+ 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nominal Tagihan</label>
                     <div class="relative">
@@ -121,56 +119,64 @@
 
         
     
-       document.getElementById('save-form').addEventListener('submit', function (event) {
-        event.preventDefault(); // Cegah submit langsung sebelum validasi selesai
-        console.log('Button clicked');
-
-            let tanggalBayar = document.querySelector('input[name="tanggal_bayar"]').value;
+        document.getElementById('save-form').addEventListener('submit', function (event) {
+            event.preventDefault(); 
+            
+            let tanggalBayarInput = document.querySelector('input[name="tanggal_bayar"]');
+            let tanggalBayar = tanggalBayarInput.value;
             let tanggalJatuhTempo = document.querySelector('input[name="tanggal_jatuh_tempo"]').value;
             let nominalTagihan = document.querySelector('input[name="nominal_tagihan"]').value;
             let buktiBayar = document.querySelector('input[name="foto"]').files.length;
 
-            console.log('Form values:', {
-                tanggalBayar,
-                tanggalJatuhTempo,
-                nominalTagihan,
-                buktiBayar
-            });
+            let alertDiv = document.getElementById('alertMessage');
+            let today = new Date().toISOString().split('T')[0]; 
 
             if (!tanggalBayar || !tanggalJatuhTempo || !nominalTagihan || buktiBayar === 0) {
-                console.log('Validation failed');
-                let alertDiv = document.getElementById('alertMessage');
+                alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Mohon isi semua kolom yang wajib sebelum menyimpan.';
                 alertDiv.classList.remove('hidden');
                 setTimeout(() => alertDiv.classList.add('hidden'), 10000);
                 return;
             }
 
-            console.log('Validation passed, showing SweetAlert');
+            if (tanggalBayar > today) {
+                alertDiv.innerHTML = '<span class="font-medium">Peringatan!</span> Tanggal bayar tidak boleh lebih dari hari ini.';
+                alertDiv.classList.remove('hidden');
+                setTimeout(() => alertDiv.classList.add('hidden'), 10000);
+                return;
+            }
 
             Swal.fire({
                 title: "Konfirmasi",
                 text: "Apakah Anda yakin ingin menyimpan data pembayaran pajak ini?",
-                icon: "warning", 
+                icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#3085d6",
                 cancelButtonColor: "#d33",
                 confirmButtonText: "Ya",
                 cancelButtonText: "Tidak"
             }).then((result) => {
-                console.log('SweetAlert result:', result);
                 if (result.isConfirmed) {
-                    console.log('User confirmed, showing success message');
                     Swal.fire({
                         title: "Berhasil!",
                         text: "Data pembayaran pajak berhasil disimpan.",
                         icon: "success"
                     }).then(() => {
-                        console.log('Submitting form');
-                        event.target.submit();  
-                        console.log('Form submitted');
+                        this.submit();
                     });
-                } else {
-                    console.log('User cancelled');
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const tanggalBayarInput = document.querySelector('input[name="tanggal_bayar"]');
+            
+            tanggalBayarInput.addEventListener('change', function() {
+                const selectedDate = this.value;
+                const today = new Date().toISOString().split('T')[0];
+                
+                if (selectedDate > today) {
+                    showAlert("Tanggal bayar tidak boleh lebih dari hari ini.");
+                    this.value = today; 
                 }
             });
         });
@@ -230,4 +236,3 @@
         }
     </script>
 </x-app-layout>
-{{-- @endsection --}}

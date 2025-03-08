@@ -1,10 +1,8 @@
 <x-app-layout>
-{{-- @extends('layouts.sidebar')
-@section('content') --}}
-            @php 
-                $currentPage = request()->query('page');
-            @endphp
-            <input type="hidden" name="current_page" value="{{ $currentPage }}">
+    @php 
+        $currentPage = request()->query('page');
+    @endphp
+    <input type="hidden" name="current_page" value="{{ $currentPage }}">
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="space-y-3 bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
@@ -179,6 +177,4 @@
                 class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition mt-0 w-fit text-left">
                 Kembali
             </button>         
-        
 </x-app-layout>
-{{-- @endsection --}}
