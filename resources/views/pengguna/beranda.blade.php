@@ -22,6 +22,16 @@
                     align-items: center;
                     margin-top: 2px;
                 }
+                .mobile-table-cell {
+                    white-space: normal;
+                    word-break: break-word;
+                }
+                .mobile-status {
+                    display: inline-block;
+                    width: 100%;
+                    text-align: center;
+                    margin-top: 4px;
+                }
             }
         </style>
     </head>
@@ -111,25 +121,28 @@
                             <tbody>
                                 @foreach($peminjaman as $pinjam)
                                 <tr class="bg-white border-b">
-                                    <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
+                                    <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap mobile-table-cell">
                                         {{ $pinjam->kendaraan->merk }} {{ $pinjam->kendaraan->tipe }}
                                     </th>
-                                    <td class="px-4 py-3">
+                                    <td class="px-4 py-3 mobile-table-cell">
                                         {{ $pinjam->kendaraan->plat_nomor }}
                                     </td>
-                                    <td class="px-4 py-3">
+                                    <td class="px-4 py-3 mobile-table-cell">
                                         {{ \Carbon\Carbon::parse($pinjam->tgl_selesai)->format('d-m-Y') }}
+                                        <span class="block text-xs text-gray-500 sm:hidden">
+                                            {{ \Carbon\Carbon::parse($pinjam->jam_selesai)->format('H:i') }}
+                                        </span>
                                     </td>
                                     <td class="px-4 py-3 hidden sm:table-cell">
                                        {{ \Carbon\Carbon::parse($pinjam->jam_selesai)->format('H:i') }}
                                     </td>
                                     <td class="px-4 py-3">
                                         @if(strtoupper($pinjam->status_pinjam) === 'BELUM DIKEMBALIKAN')
-                                            <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                                            <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded mobile-status">
                                                 BELUM DIKEMBALIKAN
                                             </span>
                                         @else
-                                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded mobile-status">
                                                 SUDAH DISETUJUI
                                             </span>
                                         @endif
@@ -146,4 +159,4 @@
         </div>
     </body>
     </html>
-    </x-app-layout>
+</x-app-layout>
