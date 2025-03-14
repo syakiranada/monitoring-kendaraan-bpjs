@@ -1,7 +1,7 @@
 <x-app-layout>
-    <div class="min-h-screen flex items-center justify-center py-16 px-8">
-        <div class="max-w-4xl w-full bg-white p-12 rounded-lg shadow-lg">
-            <h2 class="text-2xl font-bold mb-6 text-center">Form Edit Kendaraan</h2>
+    <div class="min-h-screen flex items-center justify-center py-16 px-4 sm:px-8">
+        <div class="max-w-4xl w-full bg-white p-4 sm:p-8 md:p-12 rounded-lg shadow-lg">
+            <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center">Form Edit Kendaraan</h2>
             <form id="save-form" action="{{ route('kendaraan.update', ['id' => $kendaraan->id_kendaraan]) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
@@ -12,7 +12,7 @@
                 <input type="hidden" name="user_id" value="{{ auth()->id() }}">
                 <input type="hidden" name="search" value="{{ request()->query('search', '') }}">
 
-                <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Merk</label>
                         <input type="text" 
@@ -34,9 +34,9 @@
                                value="{{ $kendaraan->plat_nomor }}"
                                class="w-full p-2.5 border rounded-lg">
                     </div>
-                </div>
+                {{-- </div>
 
-                <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4"> --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Warna</label>
                         <input type="text" 
@@ -61,9 +61,9 @@
                             <option value="Lelang" {{ $kendaraan->aset == 'Lelang' ? 'selected' : '' }}>Lelang</option>
                         </select>
                     </div>                    
-                </div>
+                {{-- </div>
 
-                <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4"> --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Beli</label>
                         <input type="date" 
@@ -96,9 +96,9 @@
                                    oninput="formatRupiah(this)">
                         </div>
                     </div>
-                </div>
+                {{-- </div>
 
-                <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4"> --}}
                     <div>
                         <label for="bahan_bakar" class="block mb-2 text-sm font-medium text-gray-900">Bahan Bakar</label>
                         <select id="bahan_bakar" name="bahan_bakar" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
@@ -121,9 +121,9 @@
                                value="{{ $kendaraan->no_rangka }}"
                                class="w-full p-2.5 border rounded-lg">
                     </div>
-                </div>
+                {{-- </div>
 
-                <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4"> --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Bayar Asuransi Terakhir</label>
                         <input type="date" 
@@ -146,9 +146,9 @@
                             value="{{ $asuransi->tgl_perlindungan_akhir ?? '' }}"
                             class="w-full p-2.5 border rounded-lg">
                     </div>
-                </div>
+                {{-- </div>
 
-                <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4"> --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Bayar Pajak Terakhir</label>
                         <input type="date" 
@@ -172,9 +172,9 @@
                             max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}"
                             class="w-full p-2.5 border rounded-lg">
                     </div>
-                </div>
+                {{-- </div>
 
-                <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4"> --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Frekuensi Servis (Bulan)</label>
                         <input type="number" 
@@ -202,15 +202,17 @@
                     </div>
                 </div>
 
-                <div class="flex justify-end space-x-4 mb-2 mt-4">
-                    <button type="button" onclick="window.location.href='{{ route('kendaraan.daftar_kendaraan',  ['page' => $currentPage, 'search' => request()->query('search')]) }}'" class="bg-red-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition">
+                <div class="flex flex-col sm:flex-row justify-end sm:space-x-4 space-y-2 sm:space-y-0 mt-4">
+                    <button type="button" onclick="window.location.href='{{ route('kendaraan.daftar_kendaraan',  ['page' => $currentPage, 'search' => request()->query('search')]) }}'" 
+                        class="bg-red-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition w-fit min-w-[100px]">
                         Batal
-                    </button>                    
-                    <button type="submit" id="saveButton" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition">
+                    </button>      
+                    <button type="submit" id="saveButton" 
+                        class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition w-fit min-w-[100px]">           
                         Simpan
                     </button>
                 </div>
-
+                
                 <div id="alertMessage" class="hidden p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
                     <span class="font-medium">Peringatan!</span> Mohon isi semua kolom yang wajib sebelum menyimpan.
                 </div>

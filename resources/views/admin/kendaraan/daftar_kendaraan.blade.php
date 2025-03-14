@@ -1,32 +1,107 @@
 <x-app-layout>
     <div id="main-content" class="transition-all duration-300 w-full">
         <h2 class="custom-text font-extrabold mb-6 ml-6 pt-6">Daftar Kendaraan </h2>
+        <!-- Common CSS for responsive layout -->
         <style>
             .custom-text {
                 font-size: 2rem; 
             }
+            
             #main-content {
                 width: 100%;
                 transition: padding-left 0.3s ease;
             }
+            
             body:not(.sidebar-open) #main-content {
                 padding-left: 0;
             }
+            
             body.sidebar-open #main-content {
                 padding-left: 250px; 
             }
+            
             .table-wrapper {
                 width: 95%;
                 max-width: 1400px;
                 margin: 0 auto;
                 overflow-x: auto;
             }
+            
             .form-wrapper {
                 width: 95%;
                 max-width: 1400px;
                 margin: 0 auto;
             }
+            
+            /* Responsive table styles */
+            @media (min-width: 768px) {
+                table th, table td {
+                    white-space: nowrap;
+                }
+                
+                /* Column width specifications */
+                table th:nth-child(1), table td:nth-child(1) { width: 17%; !important;}
+                table th:nth-child(2), table td:nth-child(2) { width: 10%; !important;}
+                table th:nth-child(3), table td:nth-child(3) { width: 10%; !important;}
+                table th:nth-child(4), table td:nth-child(4) { width: 15%; !important;}
+                table th:nth-child(5), table td:nth-child(5) { width: 18%; !important;}
+                table th:nth-child(6), table td:nth-child(6) { width: 15%; !important;}
+                
+                /* Column header styling */
+                table th {
+                    white-space: normal;
+                    vertical-align: middle !important;
+                    padding: 12px 6px;
+                    text-align: left;
+                    height: auto;
+                    display: table-cell;
+                    font-size: 0.75rem;
+                }
+            }
+            
+            /* Mobile optimization */
+            @media (max-width: 767px) {
+                .table-wrapper {
+                    width: 100%;
+                    overflow-x: scroll;
+                }
+                
+                table th, table td {
+                    min-width: 120px;
+                }
+                
+                table th:nth-child(1), table td:nth-child(1) { min-width: 150px; }
+                table th:nth-child(3), table td:nth-child(3) { min-width: 100px; }
+                table th:nth-child(4), table td:nth-child(4) { min-width: 120px; }
+            }
+            
+            @media (max-width: 640px) {
+                .custom-text {
+                    font-size: 1.25rem;
+                    text-align: center;
+                    margin-left: 0;
+                }
+                
+                .search-field {
+                    width: 100%;
+                }
+                
+                .form-wrapper form {
+                    margin-bottom: 1rem;
+                }
+            }
+            
+            /* Status badges */
+            .status-badge {
+                display: inline-block;
+                padding: 0.25rem 0.5rem;
+                border-radius: 9999px;
+                font-size: 0.75rem;
+                font-weight: 500;
+                white-space: nowrap;
+            }
         </style>
+        
         @if(!empty($alerts))
             <div class="form-wrapper">
                 <div class="flex items-center w-full p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50" role="alert">
@@ -52,13 +127,14 @@
             </div>
         @endif
         
+        <!-- Responsive search form -->
         <div class="form-wrapper">
-            <form action="{{ route('kendaraan.daftar_kendaraan') }}" method="GET" class="flex justify-end pb-4">
-                <div class="relative me-1">
+            <form action="{{ route('kendaraan.daftar_kendaraan') }}" method="GET" class="flex flex-col sm:flex-row items-center sm:justify-end pb-4">
+                <div class="relative me-1 w-full sm:w-auto mb-2 sm:mb-0">
                     <input 
                         type="text" 
                         name="search"
-                        class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-48 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
+                        class="search-field block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-full sm:w-48 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
                         placeholder="Cari Kendaraan"
                         value="{{ request('search') }}"
                     >
@@ -71,8 +147,9 @@
             </form>
         </div>
         
-        <div class="form-wrapper flex justify-between items-center pb-4">
-            <div class="relative"> 
+        <!-- Responsive add button -->
+        <div class="form-wrapper flex flex-col sm:flex-row justify-between items-center pb-4">
+            <div class="relative w-full sm:w-auto mb-2 sm:mb-0"> 
                 <a href="{{ route('kendaraan.tambah', ['page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" 
                     class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2">
                      + Tambah
@@ -80,6 +157,7 @@
             </div>
         </div>
         
+        <!-- Responsive table -->
         <div class="table-wrapper">
             <table class="w-full mx-auto text-sm text-left text-gray-500">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50">
@@ -109,30 +187,32 @@
                                 @endif
                             </td>
                             <td class="px-6 py-3">
-                                <a href="{{ route('kendaraan.detail', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" 
-                                   class="font-medium text-blue-600 hover:underline">
-                                    Detail
-                                </a>
-                            
-                                @if ($item->aset !== 'Lelang' && $item->aset !== 'LELANG')
-                                    <a href="{{ route('kendaraan.edit', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" 
-                                       class="font-medium text-yellow-600 hover:underline ml-2">
-                                        Edit
-                                    </a> 
-                            
-                                    <form id="delete-form-{{ $item->id_kendaraan }}" 
-                                        action="{{ route('kendaraan.hapus', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1), 'search' => rawurldecode(request()->query('search'))]) }}" 
-                                        method="POST" 
-                                        style="display: none;">
-                                      @csrf
-                                      @method('DELETE') 
-                                    </form>
-                                  
-                                    <button class="font-medium text-red-600 hover:underline ml-2" 
-                                            onclick="confirmDelete({{ $item->id_kendaraan }})">
-                                        Hapus
-                                    </button>
-                                @endif
+                                <div class="flex flex-col sm:flex-row gap-1 items-start">
+                                    <a href="{{ route('kendaraan.detail', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" 
+                                       class="font-medium text-blue-600 hover:underline">
+                                        Detail
+                                    </a>
+                                
+                                    @if ($item->aset !== 'Lelang' && $item->aset !== 'LELANG')
+                                        <a href="{{ route('kendaraan.edit', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" 
+                                           class="font-medium text-yellow-600 hover:underline sm:ml-2">
+                                            Edit
+                                        </a> 
+                                
+                                        <form id="delete-form-{{ $item->id_kendaraan }}" 
+                                            action="{{ route('kendaraan.hapus', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page', 1), 'search' => rawurldecode(request()->query('search'))]) }}" 
+                                            method="POST" 
+                                            style="display: none;">
+                                          @csrf
+                                          @method('DELETE') 
+                                        </form>
+                                      
+                                        <button class="font-medium text-red-600 hover:underline sm:ml-2" 
+                                                onclick="confirmDelete({{ $item->id_kendaraan }})">
+                                            Hapus
+                                        </button>
+                                    @endif
+                                </div>
                             </td>                                                             
                         </tr>
                     @empty
@@ -144,6 +224,7 @@
             </table>
         </div>
 
+        <!-- Responsive pagination -->
         <div class="form-wrapper">
             <nav class="pb-4 flex items-center justify-end pt-4" aria-label="Table navigation">
                 <div class="w-full md:w-auto flex justify-end">
@@ -153,6 +234,7 @@
         </div>
     </div>
     
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -179,9 +261,21 @@
                     document.body.classList.remove('sidebar-open');
                 }
             }
+            
+            // Handle mobile responsiveness
+            const isMobile = window.innerWidth < 768;
+            if (isMobile) {
+                document.body.classList.remove('sidebar-open');
+                if (mainContent) {
+                    mainContent.style.paddingLeft = '0';
+                }
+            }
         }
        
         function confirmDelete(id_kendaraan) {
+            // Adjust SweetAlert size for mobile
+            const isMobile = window.innerWidth < 768;
+            
             Swal.fire({
                 title: "Konfirmasi",
                 text: "Apakah Anda yakin ingin menghapus kendaraan ini? Tindakan ini tidak dapat dibatalkan!",
@@ -190,7 +284,8 @@
                 confirmButtonColor: "#d33",
                 cancelButtonColor: "#3085d6",
                 confirmButtonText: "Ya, hapus!",
-                cancelButtonText: "Batal"
+                cancelButtonText: "Batal",
+                width: isMobile ? '90%' : '32em'
             }).then((result) => {
                 console.log("Result dari Swal:", result);
 
@@ -210,7 +305,8 @@
                     Swal.fire({
                         title: "Berhasil!",
                         text: "Kendaraan berhasil dihapus.",
-                        icon: "success"
+                        icon: "success",
+                        width: isMobile ? '90%' : '32em'
                     }).then(() => {
                         console.log("Mengirim form untuk menghapus kendaraan.");
                         form.submit();
