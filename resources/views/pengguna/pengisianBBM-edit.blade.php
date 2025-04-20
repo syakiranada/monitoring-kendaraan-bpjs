@@ -33,9 +33,27 @@
                             <option value="Pertamina Dex" {{ $bbm->jenis_bbm == 'Pertamina Dex' ? 'selected' : '' }}>Pertamina Dex</option>
                         </select>
                     </div>
-                    <div class="mb-4">
+                    <div class="gap-4 mb-4">
+                        @php
+                        $tglMulai = optional($bbm->peminjaman)->tgl_mulai;
+                        $tglSelesai = optional($bbm->peminjaman)->tgl_selesai;
+                    @endphp
+                        <div>
                         <label class="block text-gray-700">Tanggal Pengisian BBM</label>
-                        <input type="date" name="tgl_isi" class="w-full p-2 border border-gray-300 rounded" value="{{ $bbm->tgl_isi }}" required>
+
+                        <input 
+                            type="date" 
+                            name="tgl_isi" 
+                            class="w-full p-2 border border-gray-300 rounded" 
+                            value="{{ $bbm->tgl_isi }}"
+                            required
+                            @if($tglMulai) min="{{ \Carbon\Carbon::parse($tglMulai)->format('Y-m-d') }}" @endif
+                            @if($tglSelesai) max="{{ \Carbon\Carbon::parse($tglSelesai)->format('Y-m-d') }}" @endif
+                        >
+                        <small class="text-gray-500 text-sm">
+                            Pilih tanggal antara {{ \Carbon\Carbon::parse($tglMulai)->format('d M Y') }} dan {{ \Carbon\Carbon::parse($tglSelesai)->format('d M Y') }}.
+                        </small>
+                        </div>
                     </div>
                     <div class="mb-4">
                         <label class="block text-gray-700">Nominal (Rp)</label>

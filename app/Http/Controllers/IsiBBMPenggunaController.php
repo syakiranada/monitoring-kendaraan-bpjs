@@ -160,7 +160,21 @@ class IsiBBMPenggunaController extends Controller{
 
     public function create(Request $request)
     {
+        // Ambil id_peminjaman dari request (misalnya dari query string atau URL)
+        $id_peminjaman = $request->input('id_peminjaman');
+        
+        // Cek apakah id_peminjaman ada, dan jika tidak, tampilkan error atau redirect
+        if (!$id_peminjaman) {
+            // Misalnya, redirect kembali dengan pesan error
+            return redirect()->back()->with('error', 'ID Peminjaman tidak ditemukan.');
+        }
+
+        // Ambil data peminjaman berdasarkan id_peminjaman
+        $peminjaman = Peminjaman::findOrFail($id_peminjaman);
+
+        // Pastikan kamu mem-passing data ke view dengan benar
         return view('pengguna.pengisianBBM-form', [
+            'peminjaman' => $peminjaman, 
             'id_peminjaman' => $request->id_peminjaman,
             'id_kendaraan' => $request->id_kendaraan,
             'merk' => $request->merk,
@@ -168,6 +182,7 @@ class IsiBBMPenggunaController extends Controller{
             'plat' => $request->plat
         ]);
     }
+
 
     public function store(Request $request)
     {
@@ -221,14 +236,15 @@ class IsiBBMPenggunaController extends Controller{
 
     public function edit($id)
     {
-        $bbm = BBM::with('kendaraan')->findOrFail($id);
+        $bbm = BBM::with(['kendaraan', 'peminjaman'])->findOrFail($id); // include relasi peminjaman
         $kendaraan = Kendaraan::all();
-        
+    
         return view('pengguna.pengisianBBM-edit', [
             'bbm' => $bbm,
             'kendaraan' => $kendaraan
         ]);
     }
+    
     
     public function update(Request $request, $id)
     {

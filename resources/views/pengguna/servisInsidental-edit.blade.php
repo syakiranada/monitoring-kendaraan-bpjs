@@ -32,10 +32,27 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4 mb-4">
+                        @php
+                            $tglMulai = optional($servis->peminjaman)->tgl_mulai;
+                            $tglSelesai = optional($servis->peminjaman)->tgl_selesai;
+                        @endphp
+
                             <div>
                                 <label class="block text-gray-700">Tanggal Servis</label>
-                                <input type="date" name="tgl_servis" class="w-full p-2 border border-gray-300 rounded" value="{{ $servis->tgl_servis }}" required>
+                                <input 
+                                type="date" 
+                                name="tgl_servis" 
+                                class="w-full p-2 border border-gray-300 rounded"
+                                value="{{ $servis->tgl_servis }}" 
+                                required
+                                @if($tglMulai) min="{{ \Carbon\Carbon::parse($tglMulai)->format('Y-m-d') }}" @endif
+                                @if($tglSelesai) max="{{ \Carbon\Carbon::parse($tglSelesai)->format('Y-m-d') }}" @endif
+                            >
+                            <small class="text-gray-500 text-sm">
+                                Pilih tanggal antara {{ \Carbon\Carbon::parse($tglMulai)->format('d M Y') }} dan {{ \Carbon\Carbon::parse($tglSelesai)->format('d M Y') }}.
+                            </small>
                             </div>
+
                             <div>
                                 <label class="block text-gray-700">Jumlah Pembayaran</label>
                                 <input type="text" id="hargaInput" name="harga" class="w-full p-2 border border-gray-300 rounded" value="{{ number_format($servis->harga, 0, '', '.') }}" required>

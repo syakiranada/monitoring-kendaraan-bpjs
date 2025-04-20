@@ -15,34 +15,6 @@ use Illuminate\Support\Facades\Log;
 
 class ServisInsidentalPenggunaController extends Controller
 {
-    // public function index(Request $request)
-    // {
-    //     $userId = Auth::id();
-    
-    //     // Get peminjaman data filtered by user_id
-    //     $peminjamans = Peminjaman::where('user_id', $userId)
-    //                             ->with('kendaraan')
-    //                             ->orderBy('created_at', 'desc')
-    //                             ->get();
-        
-    //     // Build query for servis insidental with search functionality
-    //     $query = ServisInsidental::where('user_id', $userId)
-    //                             ->with(['kendaraan', 'peminjaman']);
-
-    //     // Apply search if provided
-    //     if ($request->has('search') && !empty($request->search)) {
-    //         $search = $request->search;
-    //         $query->whereHas('kendaraan', function($q) use ($search) {
-    //             $q->where('merk', 'like', "%{$search}%")
-    //               ->orWhere('tipe', 'like', "%{$search}%")
-    //               ->orWhere('plat_nomor', 'like', "%{$search}%");
-    //         });
-    //     }
-
-    //     // Get paginated results
-        
-    // }
-
     public function index(Request $request)
     {
         $userId = Auth::id();
@@ -185,15 +157,26 @@ class ServisInsidentalPenggunaController extends Controller
         return view('pengguna.servisInsidental', compact('peminjamans', 'servisInsidentals', 'searchDaftar', 'searchRiwayat'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        $kendaraan = Kendaraan::all(); // Ambil semua data kendaraan
-        return view('pengguna.servisInsidental-form', compact('kendaraan'));
+        // Ambil id_peminjaman dari request (misalnya dari query string atau URL)
+        $id_peminjaman = $request->input('id_peminjaman');
+        
+        // Cek apakah id_peminjaman ada, dan jika tidak, tampilkan error atau redirect
+        if (!$id_peminjaman) {
+            // Misalnya, redirect kembali dengan pesan error
+            return redirect()->back()->with('error', 'ID Peminjaman tidak ditemukan.');
+        }
+
+        // Ambil data peminjaman berdasarkan id_peminjaman
+        $peminjaman = Peminjaman::findOrFail($id_peminjaman);
+
+        // Ambil semua data kendaraan
+        $kendaraan = Kendaraan::all();
+
+        return view('pengguna.servisInsidental-form', compact('kendaraan', 'peminjaman'));
     }
 
-    /**
-     * Menyimpan data servis insidental ke database.
-     */
     public function store(Request $request)
     {
         $request->merge([
@@ -267,10 +250,13 @@ class ServisInsidentalPenggunaController extends Controller
 
     public function edit($id)
     {
-        $servis = ServisInsidental::findOrFail($id);
+        $servis = ServisInsidental::with(['kendaraan', 'peminjaman'])->findOrFail($id); // include relasi peminjaman
         $kendaraan = Kendaraan::all();
     
-        return view('pengguna.servisInsidental-edit', compact('servis', 'kendaraan'));
+        return view('pengguna.servisInsidental-edit', [
+            'servis' => $servis,
+            'kendaraan' => $kendaraan
+        ]);
     }
 
     public function update(Request $request, $id)
