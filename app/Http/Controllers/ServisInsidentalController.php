@@ -16,32 +16,131 @@ use Illuminate\Contracts\Filesystem\FileNotFoundException;
 
 class ServisInsidentalController extends Controller
 {
+    // public function index(Request $request)
+    // {
+    //     // Query kendaraan dengan servis insidental terakhir (jika ada)
+    //     $query = Kendaraan::select(
+    //             'kendaraan.*',
+    //             'servis_insidental.id_servis_insidental',
+    //             'servis_insidental.tgl_servis',
+    //             'servis_insidental.updated_at as servis_updated_at'
+    //         )
+    //         ->leftJoin(DB::raw('(SELECT id_kendaraan, MAX(updated_at) as max_jam FROM servis_insidental GROUP BY id_kendaraan) as latest'), function ($join) {
+    //             $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
+    //         })
+    //         ->leftJoin('servis_insidental', function ($join) {
+    //             $join->on('kendaraan.id_kendaraan', '=', 'servis_insidental.id_kendaraan')
+    //                 ->on('servis_insidental.updated_at', '=', 'latest.max_jam');
+    //         })
+    //         ->where('kendaraan.status_ketersediaan', '=', 'Tersedia')
+    //         ->orderBy('servis_insidental.tgl_servis', 'desc')
+    //         ->orderBy('servis_insidental.updated_at', 'desc')
+    //         ->paginate(10);
+
+    //     return view('admin.servisInsidental', [
+    //         'kendaraanTersedia' => Kendaraan::where('status_ketersediaan', 'Tersedia')->get(),
+    //         'servisInsidentals' => $query
+    //     ]);
+    // }
+
     public function index(Request $request)
     {
-        // Query kendaraan dengan servis insidental terakhir (jika ada)
+        $search = $request->input('search');
         $query = Kendaraan::select(
-                'kendaraan.*',
-                'servis_insidental.id_servis_insidental',
-                'servis_insidental.tgl_servis',
-                'servis_insidental.updated_at as servis_updated_at'
-            )
-            ->leftJoin(DB::raw('(SELECT id_kendaraan, MAX(updated_at) as max_jam FROM servis_insidental GROUP BY id_kendaraan) as latest'), function ($join) {
-                $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
-            })
-            ->leftJoin('servis_insidental', function ($join) {
-                $join->on('kendaraan.id_kendaraan', '=', 'servis_insidental.id_kendaraan')
-                    ->on('servis_insidental.updated_at', '=', 'latest.max_jam');
-            })
-            ->where('kendaraan.status_ketersediaan', '=', 'Tersedia')
-            ->orderBy('servis_insidental.tgl_servis', 'desc')
+            'kendaraan.*',
+            'servis_insidental.id_servis_insidental',
+            'servis_insidental.tgl_servis',
+            'servis_insidental.updated_at as servis_updated_at'
+        )
+        ->leftJoin(DB::raw('(SELECT id_kendaraan, MAX(updated_at) as max_jam FROM servis_insidental GROUP BY id_kendaraan) as latest'), function ($join) {
+            $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
+        })
+        ->leftJoin('servis_insidental', function ($join) {
+            $join->on('kendaraan.id_kendaraan', '=', 'servis_insidental.id_kendaraan')
+                ->on('servis_insidental.updated_at', '=', 'latest.max_jam');
+        })
+        ->where('kendaraan.status_ketersediaan', '=', 'Tersedia');
+
+        if (!empty($search)) {
+            // Logika pencarian tanggal
+            if (preg_match('/^\d{4}$/', $search)) { // Hanya tahun
+                $query->whereYear('servis_insidental.tgl_servis', $search);
+            } elseif (preg_match('/^\d{2}$/', $search)) { // Hanya bulan atau tanggal
+                if (strlen($search) == 2 && $search <= 12) { // Asumsikan bulan
+                    $query->whereMonth('servis_insidental.tgl_servis', $search);
+                } else { // Asumsikan tanggal
+                    $query->whereDay('servis_insidental.tgl_servis', $search);
+                }
+            } elseif (preg_match('/^\d{2}-\d{4}$/', $search)) { // Bulan-Tahun
+                $parts = explode('-', $search);
+                $query->whereMonth('servis_insidental.tgl_servis', $parts[0])->whereYear('servis_insidental.tgl_servis', $parts[1]);
+            } elseif (preg_match('/^\d{4}-\d{2}$/', $search)) { // Tahun-Bulan
+                $parts = explode('-', $search);
+                $query->whereYear('servis_insidental.tgl_servis', $parts[0])->whereMonth('servis_insidental.tgl_servis', $parts[1]);
+            } elseif (preg_match('/^\d{2}-\d{2}-\d{4}$/', $search)) { // Tanggal-Bulan-Tahun (format lengkap)
+                try {
+                    $searchDate = Carbon::createFromFormat('d-m-Y', $search);
+                    $query->whereDate('servis_insidental.tgl_servis', $searchDate);
+                } catch (\Exception $e) {
+                    Log::error("Error parsing search date:", ['search' => $search, 'error' => $e->getMessage()]);
+                }
+            } else {
+                // Logika pencarian teks lainnya
+                // Inside your search logic, modify this part
+                $searchTerms = explode(' ', strtolower($search));
+                $searchTerms = array_filter($searchTerms); // filter empty terms
+
+                if (!empty($searchTerms)) {
+                    $query->where(function ($outerQuery) use ($searchTerms) {
+                        // Check if any term is a year format
+                        $yearTerm = null;
+                        foreach ($searchTerms as $index => $term) {
+                            if (preg_match('/^\d{4}$/', $term)) {
+                                $yearTerm = $term;
+                                unset($searchTerms[$index]); // Remove from regular search terms
+                                break;
+                            }
+                        }
+
+                        if ($yearTerm) {
+                            $outerQuery->whereYear('servis_insidental.tgl_servis', $yearTerm);
+                        }
+                        
+                        // Continue with regular text search for remaining terms
+                        foreach ($searchTerms as $term) {
+                            $outerQuery->where(function ($innerQuery) use ($term) {
+                                // OR antar kolom
+                                $innerQuery->orWhereRaw("LOWER(kendaraan.plat_nomor) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.merk) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.tipe) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.warna) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.jenis) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.aset) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.bahan_bakar) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.no_mesin) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.no_rangka) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("CAST(kendaraan.kapasitas AS CHAR) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.frekuensi_servis) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("CAST(YEAR(servis_insidental.tgl_servis) AS CHAR) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LPAD(MONTH(servis_insidental.tgl_servis), 2, '0') LIKE ?", ["%{$term}%"])
+                                    ->orWhereRaw("LPAD(DAY(servis_insidental.tgl_servis), 2, '0') LIKE ?", ["%{$term}%"]);
+                            });
+                        }
+                    });
+                }
+            }
+        }
+
+        $servisInsidentals = $query->orderBy('servis_insidental.tgl_servis', 'desc')
             ->orderBy('servis_insidental.updated_at', 'desc')
             ->paginate(10);
 
         return view('admin.servisInsidental', [
             'kendaraanTersedia' => Kendaraan::where('status_ketersediaan', 'Tersedia')->get(),
-            'servisInsidentals' => $query
+            'servisInsidentals' => $servisInsidentals
         ]);
     }
+
 
     public function create()
     {

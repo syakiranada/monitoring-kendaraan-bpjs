@@ -93,10 +93,10 @@ public function index(Request $request)
             $searchTerms = explode(' ', strtolower($search));
             $searchTerms = array_filter($searchTerms);
 
-            $query->where(function ($query) use ($searchTerms) {
+            $query->where(function ($outerQuery) use ($searchTerms) {
                 foreach ($searchTerms as $term) {
-                    $query->where(function ($termQuery) use ($term) {
-                        $termQuery->whereRaw("LOWER(kendaraan.plat_nomor) LIKE ?", ["%$term%"])
+                    $outerQuery->where(function ($innerQuery) use ($term) {
+                        $innerQuery->orWhereRaw("LOWER(kendaraan.plat_nomor) LIKE ?", ["%$term%"])
                             ->orWhereRaw("LOWER(kendaraan.merk) LIKE ?", ["%$term%"])
                             ->orWhereRaw("LOWER(kendaraan.tipe) LIKE ?", ["%$term%"])
                             ->orWhereRaw("LOWER(kendaraan.warna) LIKE ?", ["%$term%"])
@@ -107,10 +107,14 @@ public function index(Request $request)
                             ->orWhereRaw("LOWER(kendaraan.no_rangka) LIKE ?", ["%$term%"])
                             ->orWhereRaw("CAST(kendaraan.kapasitas AS CHAR) LIKE ?", ["%$term%"])
                             ->orWhereRaw("CAST(YEAR(kendaraan.tgl_pembelian) AS CHAR) LIKE ?", ["%$term%"])
-                            ->orWhereRaw("LOWER(kendaraan.frekuensi_servis) LIKE ?", ["%$term%"]);
+                            ->orWhereRaw("LOWER(kendaraan.frekuensi_servis) LIKE ?", ["%$term%"])
+                            ->orWhereRaw("CAST(YEAR(bbm.tgl_isi) AS CHAR) LIKE ?", ["%$term%"])
+                            ->orWhereRaw("LPAD(MONTH(bbm.tgl_isi), 2, '0') LIKE ?", ["%{$term}%"])
+                            ->orWhereRaw("LPAD(DAY(bbm.tgl_isi), 2, '0') LIKE ?", ["%{$term}%"]);
                     });
                 }
             });
+                       
         }
     }
 }

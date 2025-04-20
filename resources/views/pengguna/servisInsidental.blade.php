@@ -13,10 +13,13 @@
             <div>
                 <div class="flex justify-between items-center mb-6">
                     <h1 class="text-3xl font-bold">Daftar Kendaraan Dipinjam</h1>
-                    <div class="relative">
-                        <input type="text" class="border rounded-lg py-2 px-4 pl-10 w-64" placeholder="Search">
+                    <form action="{{ route('servisInsidental') }}" method="GET" class="relative">
+                        <input type="text" name="search_daftar" class="border rounded-lg py-2 px-4 pl-10 w-64" placeholder="Search" value="{{ request('search_daftar') }}">
                         <i class="fas fa-search absolute left-3 top-3 text-gray-500"></i>
-                    </div>
+                        @if(request('search_riwayat'))
+                            <input type="hidden" name="search_riwayat" value="{{ request('search_riwayat') }}">
+                        @endif
+                    </form>
                 </div>
                 <div class="bg-white shadow-md rounded-lg overflow-hidden">
                     <table class="min-w-full bg-white">
@@ -70,14 +73,18 @@
                 </div>
             </div>
     
-            <!-- Tabel Daftar Servis Insidental -->
+            <!-- Tabel Riwayat Servis Insidental -->
             <div>
                 <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-3xl font-bold">Daftar Servis Insidental Kendaraan</h1>
-                    <div class="relative">
-                        <input type="text" class="border rounded-lg py-2 px-4 pl-10 w-64" placeholder="Search">
+                    <h1 class="text-3xl font-bold">Riwayat Servis Insidental Kendaraan</h1>
+                    <form action="{{ route('servisInsidental') }}" method="GET" class="relative">
+                        <input type="text" name="search_riwayat" class="border rounded-lg py-2 px-4 pl-10 w-64" placeholder="Search" value="{{ request('search_riwayat') }}">
                         <i class="fas fa-search absolute left-3 top-3 text-gray-500"></i>
-                    </div>
+
+                        @if(request('search_daftar'))
+                            <input type="hidden" name="search_daftar" value="{{ request('search_daftar') }}">
+                        @endif
+                    </form>
                 </div>
                 <div class="bg-white shadow-md rounded-lg overflow-hidden">
                     <table class="min-w-full bg-white">
@@ -94,7 +101,7 @@
                             @forelse ($servisInsidentals as $servis)
                             <tr class="kendaraan-row cursor-pointer" data-id="{{ $servis->kendaraan->id_kendaraan ?? '' }}">
                                 <td class="py-3 px-4 border-b">
-                                    <div>{{ ($peminjaman->kendaraan->merk ?? 'Tidak Diketahui') . ' ' . ($peminjaman->kendaraan->tipe ?? '') }}</div>
+                                    <div>{{ ($servis->kendaraan->merk ?? 'Tidak Diketahui') . ' ' . ($servis->kendaraan->tipe ?? '') }}</div>
                                 </td>  
                                 <td class="py-3 px-4 border-b">{{ $servis->kendaraan->plat_nomor ?? '-' }}</td>
                                 <td class="py-3 px-4 border-b">{{ \Carbon\Carbon::parse($servis->tgl_servis)->locale('id')->format('d-m-Y') }}</td>
@@ -121,7 +128,7 @@
                                 </td>                                
                                 
                                 <td class="py-3 px-4 border-b">
-                                    <a href="{{ route('servisInsidental.detail', $servis->id_servis_insidental) }}" 
+                                    <a href="{{ route('servisInsidental.detail', ['id' => $servis->id_servis_insidental, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" 
                                         class="text-blue-500 hover:underline mr-2">Detail</a>
                                     
                                     @if($servis->peminjaman->status_pinjam == 'Disetujui')
@@ -149,12 +156,12 @@
                         </tbody>
                     </table>
                 </div>
-                {{--  <!-- Pagination -->
+                <!-- Pagination -->
                 <div class="flex justify-center items-center py-4">
                     <div class="bg-white rounded-lg shadow-md p-2">
                         {{ $servisInsidentals->appends(request()->query())->links('pagination::tailwind') }}
                     </div>
-                </div>  --}}
+                </div>
             </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
