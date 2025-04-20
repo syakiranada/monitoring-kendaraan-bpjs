@@ -114,7 +114,10 @@
                         'kendaraan.store',
                         'kendaraan.hitungDepresiasi'
                     ]],
-                    ['icon' => 'file-lines', 'title' => 'Pengajuan Peminjaman', 'route' => 'admin.pengajuan-peminjaman.index'],
+                    ['icon' => 'file-lines', 'title' => 'Pengajuan Peminjaman', 'route' => 'admin.pengajuan-peminjaman.index', 'active_routes' => [
+                        'admin.pengajuan-peminjaman.index',
+                        'admin.pengajuan-peminjaman.detail',
+                    ]],
                     ['icon' => 'money-bill', 'title' => 'Pajak', 'route' => 'pajak.daftar_kendaraan_pajak', 'active_routes' => [
                         'pajak.daftar_kendaraan_pajak',
                         'pajak.kelola',
@@ -162,9 +165,33 @@
                         'admin.pengisianBBM.update',
                         'admin.pengisianBBM.destroy'
                     ]],
-                    ['icon' => 'list-check', 'title' => 'Cek Fisik', 'route' => 'admin.cek-fisik.index'],
-                    ['icon' => 'clock-rotate-left', 'title' => 'Riwayat', 'route' => 'admin.riwayat.index'],
-                    ['icon' => 'users', 'title' => 'Kelola Akun', 'route' => 'admin.kelola-akun.index'],
+                    ['icon' => 'list-check', 'title' => 'Cek Fisik', 'route' => 'admin.cek-fisik.index', 'active_routes' => [
+                        'admin.cek-fisik.index',
+                        'admin.cek-fisik.create',
+                        'admin.cek-fisik.edit',
+                        'admin.cek-fisik.detail',
+                    ]],
+                    ['icon' => 'clock-rotate-left', 'title' => 'Riwayat', 'route' => 'admin.riwayat.index', 'active_routes' => [
+                        'admin.riwayat.index',
+                        'admin.riwayat.asuransi',
+                        'admin.riwayat.cek-fisik',
+                        'admin.riwayat.pajak',
+                        'admin.riwayat.peminjaman',
+                        'admin.riwayat.pengisian-bbm',
+                        'admin.riwayat.servis-insidental',
+                        'admin.riwayat.servis-rutin',
+                        'admin.riwayat.detail-asuransi',
+                        'admin.riwayat.detail-cek-fisik',
+                        'admin.riwayat.detail-pajak',
+                        'admin.riwayat.detail-peminjaman',
+                        'admin.riwayat.detail-pengisian-bbm',
+                        'admin.riwayat.detail-servis-insidental',
+                        'admin.riwayat.detail-servis-rutin',
+                    ]],
+                    ['icon' => 'users', 'title' => 'Kelola Akun', 'route' => 'admin.kelola-akun.index', 'active_routes' => [
+                        'admin.kelola-akun.index',
+                        'admin.kelola-akun.edit',
+                    ]],
                 ]);
             } elseif ($user->peran === 'pengguna') {
                 $menuItems = array_merge($menuItems, [

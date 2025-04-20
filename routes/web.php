@@ -80,6 +80,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/admin/kelola-akun/import', [KelolaAkunController::class, 'import'])->name('admin.kelola-akun.import');
     // Route::put('/admin/kelola-akun/{user}/toggle-status', [KelolaAkunController::class, 'toggleStatus'])->name('admin.kelola-akun.toggle-status');
     Route::patch('/admin/kelola-akun/{id}/toggle-status', [KelolaAkunController::class, 'toggleStatus'])->name('admin.kelola-akun.toggle-status');
+    Route::get('/admin/kelola-akun/{id}/edit', [KelolaAkunController::class, 'edit'])->name('admin.kelola-akun.edit');
+    Route::patch('/admin/kelola-akun/{id}/update', [KelolaAkunController::class, 'update'])->name('admin.kelola-akun.update');
+    Route::post('/admin/kelola-akun/{id}/reset-password', [KelolaAkunController::class, 'resetPassword'])->name('admin.kelola-akun.reset-password');
+
     //BERANDA
     Route::get('/admin/beranda', [BerandaController::class, 'admin'])->name('admin.beranda');
     // Route::get('/admin/kendaraan', [KendaraanController::class, 'adminIndex'])->name('admin.kendaraan');

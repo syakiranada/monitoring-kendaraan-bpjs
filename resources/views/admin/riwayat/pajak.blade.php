@@ -40,7 +40,6 @@
                         <th scope="col" class="px-6 py-3">Tanggal Jatuh Tempo</th>
                         <th scope="col" class="px-6 py-3">Tanggal Pembayaran</th>
                         <th scope="col" class="px-6 py-3">Total Pembayaran</th>
-                        <th scope="col" class="px-6 py-3">Admin Input</th>
                         <th scope="col" class="px-6 py-3">Aksi</th>
                     </tr>
                 </thead>
@@ -52,9 +51,6 @@
                             <td class="px-6 py-4">{{ $item->tgl_jatuh_tempo ? \Carbon\Carbon::parse($item->tgl_jatuh_tempo)->format('d-m-Y') : '-' }}</td>
                             <td class="px-6 py-4">{{ $item->tgl_bayar ? \Carbon\Carbon::parse($item->tgl_bayar)->format('d-m-Y') : '-' }}</td>
                             <td class="px-6 py-4">Rp{{ number_format($item->nominal + $item->biaya_pajak_lain, 0, ',', '.') }}</td>
-                            <td class="px-6 py-4">
-                                {{ $item->user->name }}
-                            </td>
                             <td class="px-6 py-4">
                                 <!-- Button for "Detail" -->
                                 <a href="{{ route('admin.riwayat.detail-pajak', ['id' => $item->id_pajak, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" class="text-blue-600 dark:text-blue-500 hover:underline">

@@ -11,7 +11,7 @@
                 Kembali
             </a>
         </div> 
-        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Riwayat Pengisian BBM</h2>
+        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Riwayat Pengisian BBM Kendaraan</h2>
         
         <!-- Filter Form -->
         <form action="{{ route('admin.riwayat.pengisian-bbm') }}" method="GET" class="space-y-4">
@@ -42,12 +42,12 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Awal</label>
-                    <input type="date" name="tgl_awal" class="block w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white" value="{{ request('tgl_awal') }}">
+                    <input type="date" id="tgl_awal" name="tgl_awal" class="block w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white" value="{{ request('tgl_awal') }}">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Akhir</label>
-                    <input type="date" name="tgl_akhir" class="block w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white" value="{{ request('tgl_akhir') }}">
+                    <input type="date" id="tgl_akhir" name="tgl_akhir" class="block w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white" value="{{ request('tgl_akhir') }}">
                 </div>
             </div>
 
@@ -70,7 +70,7 @@
                         <th scope="col" class="px-6 py-3">Plat Nomor</th>
                         <th scope="col" class="px-6 py-3">Tanggal Pengisian</th>
                         <th scope="col" class="px-6 py-3">Biaya</th>
-                        <th scope="col" class="px-6 py-3">User Input</th>
+                        {{-- <th scope="col" class="px-6 py-3">User Input</th> --}}
                         <th scope="col" class="px-6 py-3">Aksi</th>
                     </tr>
                 </thead>
@@ -81,7 +81,7 @@
                             <td class="px-6 py-4">{{ $item->kendaraan->plat_nomor }}</td>
                             <td class="px-6 py-4">{{ $item->tgl_isi ? \Carbon\Carbon::parse($item->tgl_isi)->format('d-m-Y') : '-' }}</td>
                             <td class="px-6 py-4">Rp{{ number_format($item->nominal, 0, ',', '.') }}</td>
-                            <td class="px-6 py-4">{{ $item->user->name }}</td>
+                            {{-- <td class="px-6 py-4">{{ $item->user->name }}</td> --}}
                             <td class="px-6 py-4">
                                 {{-- <a href="{{ route('admin.riwayat.detail-pengisian-bbm', ['id' => $item->id_bbm, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
                                     Detail
@@ -100,7 +100,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center px-6 py-4">Tidak ada riwayat pengisian BBM.</td>
+                            <td colspan="5" class="text-center px-6 py-4">Tidak ada riwayat pengisian BBM.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -112,5 +112,30 @@
             {{ $riwayatBBM->appends(request()->query())->links() }}
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const tglAwal = document.getElementById('tgl_awal');
+        const tglAkhir = document.getElementById('tgl_akhir');
+
+        tglAwal.addEventListener('change', () => {
+            tglAkhir.min = tglAwal.value;
+            if (tglAkhir.value && tglAkhir.value < tglAwal.value) {
+                tglAkhir.value = '';
+            }
+        });
+
+        function validateDateRange() {
+            if (tglAwal.value && tglAkhir.value && tglAkhir.value < tglAwal.value) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Tanggal Tidak Valid',
+                    text: 'Tanggal Akhir tidak boleh lebih awal dari Tanggal Awal!',
+                    confirmButtonText: 'OK'
+                });
+                return false;
+            }
+            return true;
+        }
+    </script>
 </x-app-layout>
 {{-- @endsection --}}

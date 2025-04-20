@@ -11,7 +11,7 @@
                 Kembali
             </a>
         </div> 
-        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Riwayat Servis Rutin</h2>
+        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Riwayat Servis Rutin Kendaraan</h2>
         
         <!-- Search Form -->
         <form action="{{ route('admin.riwayat.servis-rutin') }}" method="GET" class="flex justify-end pb-4">
@@ -40,7 +40,6 @@
                         <th scope="col" class="px-6 py-3">Tanggal Servis</th>
                         <th scope="col" class="px-6 py-3">Kilometer</th>
                         <th scope="col" class="px-6 py-3">Biaya</th>
-                        <th scope="col" class="px-6 py-3">Admin Input</th>
                         <th scope="col" class="px-6 py-3">Aksi</th>
                     </tr>
                 </thead>
@@ -52,7 +51,6 @@
                             <td class="px-6 py-4">{{ $item->tgl_servis_real ? \Carbon\Carbon::parse($item->tgl_servis_real)->format('d-m-Y') : '-' }}</td>
                             <td class="px-6 py-4">{{ number_format($item->kilometer, 0, ',', '.') }}</td>
                             <td class="px-6 py-4">Rp{{ number_format($item->harga, 0, ',', '.') }}</td>
-                            <td class="px-6 py-4">{{ $item->user->name }}</td>
                             <td class="px-6 py-4">
                                 <a href="{{ route('admin.riwayat.detail-servis-rutin', ['id' => $item->id_servis_rutin, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
                                     Detail

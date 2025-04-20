@@ -66,28 +66,56 @@ class PengajuanPeminjamanController extends Controller
             ->where('status_pinjam', 'Menunggu Persetujuan');
 
         // Search functionality
+        // SEARCH 1 KOLOM
+        // if ($request->filled('search')) {
+        //     $search = $request->search;
+        //     $peminjaman->where(function ($q) use ($search) {
+        //         $q->whereHas('user', function ($qUser) use ($search) {
+        //             $qUser->where('name', 'like', "%$search%");
+        //         })
+        //         ->orWhereHas('kendaraan', function ($qKendaraan) use ($search) {
+        //             $qKendaraan->where('merk', 'like', "%$search%")
+        //                     ->orWhere('tipe', 'like', "%$search%")
+        //                     ->orWhere('plat_nomor', 'like', "%$search%");
+        //         })
+        //         ->orWhere('tujuan', 'like', "%$search%")
+        //         // ->orWhere('tgl_mulai', 'like', "%$search%")
+        //         // ->orWhere('tgl_selesai', 'like', "%$search%");
+        //         ->orWhere(function ($q) use ($search) {
+        //             $this->buildDateSearch($q, 'tgl_mulai', $search);
+        //         })
+        //         ->orWhere(function ($q) use ($search) {
+        //             $this->buildDateSearch($q, 'tgl_selesai', $search);
+        //         });
+        //     });
+        // }
+
         if ($request->filled('search')) {
-            $search = $request->search;
-            $peminjaman->where(function ($q) use ($search) {
-                $q->whereHas('user', function ($qUser) use ($search) {
-                    $qUser->where('name', 'like', "%$search%");
-                })
-                ->orWhereHas('kendaraan', function ($qKendaraan) use ($search) {
-                    $qKendaraan->where('merk', 'like', "%$search%")
-                            ->orWhere('tipe', 'like', "%$search%")
-                            ->orWhere('plat_nomor', 'like', "%$search%");
-                })
-                ->orWhere('tujuan', 'like', "%$search%")
-                // ->orWhere('tgl_mulai', 'like', "%$search%")
-                // ->orWhere('tgl_selesai', 'like', "%$search%");
-                ->orWhere(function ($q) use ($search) {
-                    $this->buildDateSearch($q, 'tgl_mulai', $search);
-                })
-                ->orWhere(function ($q) use ($search) {
-                    $this->buildDateSearch($q, 'tgl_selesai', $search);
-                });
+            $searchWords = explode(' ', $request->search); // pisahkan jadi array kata
+        
+            $peminjaman->where(function ($q) use ($searchWords) {
+                foreach ($searchWords as $word) {
+                    $q->where(function ($q2) use ($word) {
+                        $q2->whereHas('user', function ($qUser) use ($word) {
+                                $qUser->where('name', 'like', "%$word%");
+                            })
+                            ->orWhereHas('kendaraan', function ($qKendaraan) use ($word) {
+                                $qKendaraan->where('merk', 'like', "%$word%")
+                                           ->orWhere('tipe', 'like', "%$word%")
+                                           ->orWhere('plat_nomor', 'like', "%$word%");
+                            })
+                            ->orWhere('tujuan', 'like', "%$word%")
+                            ->orWhere(function ($q3) use ($word) {
+                                $this->buildDateSearch($q3, 'tgl_mulai', $word);
+                            })
+                            ->orWhere(function ($q3) use ($word) {
+                                $this->buildDateSearch($q3, 'tgl_selesai', $word);
+                            });
+                    });
+                }
             });
         }
+        
 
         // pagination
         $peminjaman = $peminjaman->paginate(10);

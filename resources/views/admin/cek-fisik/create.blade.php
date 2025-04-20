@@ -42,13 +42,23 @@
                 </div>
 
                 @php
-                    $options = ['Baik', 'Usang', 'Rusak'];
+                    $dropdownOptions = [
+                        'mesin' => ['Baik', 'Usang', 'Rusak'],
+                        'accu' => ['Penuh', 'Kurang Penuh'],
+                        'air_radiator' => ['Penuh', 'Kurang Penuh'],
+                        'air_wiper' => ['Penuh', 'Kurang Penuh'],
+                        'body' => ['Baik', 'Terdapat Kerusakan'],
+                        'ban' => ['Baik', 'Kurang Angin'],
+                        'pengharum' => ['Ada', 'Tidak Ada'],
+                        'kondisi_keseluruhan' => ['Baik', 'Usang', 'Rusak']
+                    ];
                 @endphp
-                
-                @foreach(['mesin', 'accu', 'air_radiator', 'air_wiper', 'body', 'ban', 'pengharum', 'kondisi_keseluruhan'] as $field)
+
+                @foreach($dropdownOptions as $field => $options)
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">{{ ucfirst(str_replace('_', ' ', $field)) }}</label>
-                        <select name="{{ $field }}" class="w-full p-2.5 border rounded-lg">
+                        <select name="{{ $field }}" class="w-full p-2.5 border rounded-lg" required>
+                            <option value="">- Pilih Kondisi {{ ucfirst(str_replace('_', ' ', $field)) }} -</option>
                             @foreach($options as $option)
                                 <option value="{{ $option }}">{{ $option }}</option>
                             @endforeach
@@ -89,10 +99,12 @@
              });
              
              if (!valid) {
-                 let alertDiv = document.getElementById('alertMessage');
-                 alertDiv.classList.remove('hidden');
-                 setTimeout(() => alertDiv.classList.add('hidden'), 3000);
-                 return;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Mohon isi semua kolom yang wajib sebelum menyimpan!'
+                });
+                return;
              }
              
              Swal.fire({
