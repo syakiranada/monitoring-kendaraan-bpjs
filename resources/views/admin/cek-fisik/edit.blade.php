@@ -24,10 +24,19 @@
                 </div>
 
                 @php
-                    $options = ['Baik', 'Usang', 'Rusak'];
+                    $dropdownOptions = [
+                        'mesin' => ['Baik', 'Usang', 'Rusak'],
+                        'accu' => ['Penuh', 'Kurang Penuh'],
+                        'air_radiator' => ['Penuh', 'Kurang Penuh'],
+                        'air_wiper' => ['Penuh', 'Kurang Penuh'],
+                        'body' => ['Baik', 'Terdapat Kerusakan'],
+                        'ban' => ['Baik', 'Kurang Angin'],
+                        'pengharum' => ['Ada', 'Tidak Ada'],
+                        'kondisi_keseluruhan' => ['Baik', 'Usang', 'Rusak']
+                    ];
                 @endphp
-                
-                @foreach(['mesin', 'accu', 'air_radiator', 'air_wiper', 'body', 'ban', 'pengharum', 'kondisi_keseluruhan'] as $field)
+
+                @foreach($dropdownOptions as $field => $options)
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">{{ ucfirst(str_replace('_', ' ', $field)) }}</label>
                         <select name="{{ $field }}" class="w-full p-2.5 border rounded-lg">

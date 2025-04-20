@@ -12,12 +12,6 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Jalankan setiap hari jam 00:00
-        $schedule->command('kendaraan:hitung-depresiasi')
-                ->daily()
-                ->at('00:00')
-                ->appendOutputTo(storage_path('logs/depresiasi.log'));
-        // $schedule->command('inspire')->hourly();
     }
 
     /**

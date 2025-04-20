@@ -101,11 +101,43 @@
 
             if ($user->peran === 'admin') {
                 $menuItems = array_merge($menuItems, [
-                    ['icon' => 'home', 'title' => 'Beranda', 'route' => 'admin.beranda'],
-                    ['icon' => 'car', 'title' => 'Daftar Kendaraan', 'route' => 'kendaraan.daftar_kendaraan'],
-                    ['icon' => 'file-lines', 'title' => 'Pengajuan Peminjaman', 'route' => 'admin.pengajuan-peminjaman.index'],
-                    ['icon' => 'money-bill', 'title' => 'Pajak', 'route' => 'pajak.daftar_kendaraan_pajak'],
-                    ['icon' => 'shield', 'title' => 'Asuransi', 'route' => 'asuransi.daftar_kendaraan_asuransi'],
+                    ['icon' => 'home', 'title' => 'Beranda', 'route' => 'admin.beranda', 'active_routes' => [
+                        'admin.beranda'
+                    ]],
+                    ['icon' => 'car', 'title' => 'Daftar Kendaraan', 'route' => 'kendaraan.daftar_kendaraan', 'active_routes' => [
+                        'kendaraan.daftar_kendaraan',
+                        'kendaraan.tambah',
+                        'kendaraan.edit',
+                        'kendaraan.update',
+                        'kendaraan.detail',
+                        'kendaraan.hapus',
+                        'kendaraan.store',
+                        'kendaraan.hitungDepresiasi'
+                    ]],
+                    ['icon' => 'file-lines', 'title' => 'Pengajuan Peminjaman', 'route' => 'admin.pengajuan-peminjaman.index', 'active_routes' => [
+                        'admin.pengajuan-peminjaman.index',
+                        'admin.pengajuan-peminjaman.detail',
+                    ]],
+                    ['icon' => 'money-bill', 'title' => 'Pajak', 'route' => 'pajak.daftar_kendaraan_pajak', 'active_routes' => [
+                        'pajak.daftar_kendaraan_pajak',
+                        'pajak.kelola',
+                        'pajak.edit',
+                        'pajak.update',
+                        'pajak.detail',
+                        'pajak.hapus',
+                        'pajak.store',
+                        'pajak.deleteFile'
+                    ]],
+                    ['icon' => 'shield', 'title' => 'Asuransi', 'route' => 'asuransi.daftar_kendaraan_asuransi', 'active_routes' => [
+                        'asuransi.daftar_kendaraan_asuransi',
+                        'asuransi.kelola',
+                        'asuransi.edit',
+                        'asuransi.update',
+                        'asuransi.detail',
+                        'asuransi.hapus',
+                        'asuransi.store',
+                        'asuransi.deleteFile'
+                    ]], 
                     ['icon' => 'screwdriver-wrench', 'title' => 'Servis Rutin', 'route' => 'admin.servisRutin', 'active_routes' => [
                         'admin.servisRutin',
                         'admin.servisRutin.create',
@@ -120,6 +152,9 @@
                         'admin.servisInsidental.create',
                         'admin.servisInsidental.store',
                         'admin.servisInsidental.detail',
+                        'admin.servisInsidental.edit',
+                        'admin.servisInsidental.update',
+                        'admin.servisInsidental.destroy'
                     ]],
                     ['icon' => 'gas-pump', 'title' => 'Pengisian BBM', 'route' => 'admin.pengisianBBM', 'active_routes' => [
                         'admin.pengisianBBM',
@@ -130,13 +165,39 @@
                         'admin.pengisianBBM.update',
                         'admin.pengisianBBM.destroy'
                     ]],
-                    ['icon' => 'list-check', 'title' => 'Cek Fisik', 'route' => 'admin.cek-fisik.index'],
-                    ['icon' => 'clock-rotate-left', 'title' => 'Riwayat', 'route' => 'admin.riwayat.index'],
-                    ['icon' => 'users', 'title' => 'Kelola Akun', 'route' => 'admin.kelola-akun.index'],
+                    ['icon' => 'list-check', 'title' => 'Cek Fisik', 'route' => 'admin.cek-fisik.index', 'active_routes' => [
+                        'admin.cek-fisik.index',
+                        'admin.cek-fisik.create',
+                        'admin.cek-fisik.edit',
+                        'admin.cek-fisik.detail',
+                    ]],
+                    ['icon' => 'clock-rotate-left', 'title' => 'Riwayat', 'route' => 'admin.riwayat.index', 'active_routes' => [
+                        'admin.riwayat.index',
+                        'admin.riwayat.asuransi',
+                        'admin.riwayat.cek-fisik',
+                        'admin.riwayat.pajak',
+                        'admin.riwayat.peminjaman',
+                        'admin.riwayat.pengisian-bbm',
+                        'admin.riwayat.servis-insidental',
+                        'admin.riwayat.servis-rutin',
+                        'admin.riwayat.detail-asuransi',
+                        'admin.riwayat.detail-cek-fisik',
+                        'admin.riwayat.detail-pajak',
+                        'admin.riwayat.detail-peminjaman',
+                        'admin.riwayat.detail-pengisian-bbm',
+                        'admin.riwayat.detail-servis-insidental',
+                        'admin.riwayat.detail-servis-rutin',
+                    ]],
+                    ['icon' => 'users', 'title' => 'Kelola Akun', 'route' => 'admin.kelola-akun.index', 'active_routes' => [
+                        'admin.kelola-akun.index',
+                        'admin.kelola-akun.edit',
+                    ]],
                 ]);
             } elseif ($user->peran === 'pengguna') {
                 $menuItems = array_merge($menuItems, [
-                    ['icon' => 'home', 'title' => 'Beranda', 'route' => 'beranda'],
+                    ['icon' => 'home', 'title' => 'Beranda', 'route' => 'beranda', 'active_routes' => [
+                        'beranda'
+                    ]],
                     ['icon' => 'car', 'title' => 'Daftar Kendaraan', 'route' => 'kendaraan'],
                     ['icon' => 'pen-to-square', 'title' => 'Peminjaman', 'route' => 'peminjaman'],
                     ['icon' => 'gears', 'title' => 'Servis Insidental', 'route' => 'servisInsidental', 'active_routes' => [
@@ -144,12 +205,18 @@
                         'servisInsidental.create',
                         'servisInsidental.store',
                         'servisInsidental.detail',
+                        'servisInsidental.edit',
+                        'servisInsidental.update',
+                        'servisInsidental.destroy'
                     ]],
                     ['icon' => 'gas-pump', 'title' => 'Pengisian BBM', 'route' => 'pengisianBBM', 'active_routes' => [
                         'pengisianBBM',
                         'pengisianBBM.create',
                         'pengisianBBM.store',
                         'pengisianBBM.detail',
+                        'pengisianBBM.edit',
+                        'pengisianBBM.update',
+                        'pengisianBBM.destroy'
                     ]],
                 ]);
             }

@@ -5,6 +5,10 @@
             <h2 class="text-lg font-semibold mb-4">{{ $bbm->kendaraan->merk }} {{ $bbm->kendaraan->tipe }}</h2>
             <div class="space-y-4">
                 <div class="flex justify-between">
+                    <span class="font-medium text-gray-600">Diinput Oleh</span>
+                    <span>{{ $bbm->user->name }}</span>
+                </div>
+                <div class="flex justify-between">
                     <span>Plat Nomor</span>
                     <span>{{ $bbm->kendaraan->plat_nomor }}</span>
                 </div>
@@ -21,10 +25,15 @@
                     <span>Rp {{ number_format($bbm->nominal, 0, ',', '.') }}</span>
                 </div>
             </div>
-            <div class="mt-6">
+            <div class="mt-6 flex justify-between">
                 <a href="{{ url()->previous() }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-md" style="background-color: #3b82f6;">
                     Kembali
                 </a>
+                @if($bbm->peminjaman->status_pinjam == 'Disetujui')
+                    <a href="{{ route('pengisianBBM.edit', ['id' => $bbm->id_bbm]) }}" class="text-white px-4 py-2 rounded hover:bg-yellow-600 shadow-md" style="background-color: #f59e0b;">
+                        Edit
+                    </a>
+                @endif
             </div>        
         </div>
     </div>

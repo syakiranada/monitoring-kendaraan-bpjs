@@ -11,7 +11,7 @@
                 Kembali
             </a>
         </div> 
-        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Riwayat Servis Insidental</h2>
+        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Riwayat Servis Insidental Kendaraan</h2>
         
         <!-- Search Form -->
         <form action="{{ route('admin.riwayat.servis-insidental') }}" method="GET" class="flex justify-end pb-4">
@@ -39,7 +39,7 @@
                         <th scope="col" class="px-6 py-3">Plat Nomor</th>
                         <th scope="col" class="px-6 py-3">Tanggal Servis</th>
                         <th scope="col" class="px-6 py-3">Biaya</th>
-                        <th scope="col" class="px-6 py-3">User Input</th>
+                        {{-- <th scope="col" class="px-6 py-3">User Input</th> --}}
                         <th scope="col" class="px-6 py-3">Aksi</th>
                     </tr>
                 </thead>
@@ -50,7 +50,7 @@
                             <td class="px-6 py-4">{{ $item->kendaraan->plat_nomor }}</td>
                             <td class="px-6 py-4">{{ $item->tgl_servis ? \Carbon\Carbon::parse($item->tgl_servis)->format('d-m-Y') : '-' }}</td>
                             <td class="px-6 py-4">Rp{{ number_format($item->harga, 0, ',', '.') }}</td>
-                            <td class="px-6 py-4">{{ $item->user->name }}</td>
+                            {{-- <td class="px-6 py-4">{{ $item->user->name }}</td> --}}
                             <td class="px-6 py-4">
                                 <a href="{{ route('admin.riwayat.detail-servis-insidental', ['id' => $item->id_servis_insidental, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" class="text-blue-600 dark:text-blue-500 hover:underline">
                                     Detail
@@ -59,7 +59,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center px-6 py-4">Tidak ada riwayat servis insidental.</td>
+                            <td colspan="5" class="text-center px-6 py-4">Tidak ada riwayat servis insidental.</td>
                         </tr>
                     @endforelse
                 </tbody>

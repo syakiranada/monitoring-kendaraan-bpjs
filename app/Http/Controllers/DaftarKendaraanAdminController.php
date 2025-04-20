@@ -13,6 +13,7 @@ use App\Models\BBM;
 use App\Models\Peminjaman;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 
@@ -23,49 +24,115 @@ class DaftarKendaraanAdminController extends Controller
         $search = $request->input('search');
         $statusKetersediaanFilter = $request->input('status_ketersediaan');
         $dataKendaraanQuery = Kendaraan::query();
+        $convertedDate = null;
+        $partialDate = null;
 
-        Log::info("Initial search parameters:", [
-            'search' => $search,
-            'statusKetersediaanFilter' => $statusKetersediaanFilter
-        ]);
+        if ($search) {
+            if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $search)) {
+                try {
+                    $convertedDate = \Carbon\Carbon::createFromFormat('d-m-Y', $search)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    $convertedDate = null;
+                }
+            }
+            if (preg_match('/^\d{2}-\d{2}$/', $search)) {
+                $partialDate = '%' . $search . '%';  
+            } elseif (preg_match('/^\d{2}$/', $search)) {
+                $partialDate = $search . '%';  
+            } elseif (preg_match('/^\d{1,2}$/', $search)) {
+                $partialDate = '%' . $search . '-%';  
+            } elseif (preg_match('/^\d{4}$/', $search)) {
+                $partialDate = $search . '%';  
+            }
 
         $searchDate = null;
-        if (!empty($search) && preg_match('/^\d{2}-\d{2}-\d{4}$/', $search)) {
-            try {
-                $searchDate = Carbon::createFromFormat('d-m-Y', $search);
-            } catch (\Exception $e) {
-                Log::error("Error parsing search date:", ['search' => $search, 'error' => $e->getMessage()]);
+        $searchDay = null;
+        $searchMonth = null;
+        $searchYear = null;
+        
+        if (!empty($search)) {
+            if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $search)) {
+                try {
+                    $searchDate = Carbon::createFromFormat('d-m-Y', $search);
+                    $searchDay = $searchDate->day;
+                    $searchMonth = $searchDate->month;
+                    $searchYear = $searchDate->year;
+                } catch (\Exception $e) {
+                    Log::error("Error parsing full date:", ['search' => $search, 'error' => $e->getMessage()]);
+                }
+            }
+            elseif (preg_match('/^\d{2}-\d{2}$/', $search)) {
+                try {
+                    $temp = Carbon::createFromFormat('d-m', $search);
+                    $searchDay = $temp->day;
+                    $searchMonth = $temp->month;
+                } catch (\Exception $e) {
+                    Log::error("Error parsing day-month:", ['search' => $search, 'error' => $e->getMessage()]);
+                }
+            }
+            elseif (preg_match('/^\d{2}-\d{4}$/', $search)) {
+                try {
+                    $temp = Carbon::createFromFormat('m-Y', $search);
+                    $searchMonth = $temp->month;
+                    $searchYear = $temp->year;
+                } catch (\Exception $e) {
+                    Log::error("Error parsing month-year:", ['search' => $search, 'error' => $e->getMessage()]);
+                }
+            }
+            elseif (preg_match('/^\d{2}$/', $search) && intval($search) >= 1 && intval($search) <= 31) {
+                $searchDay = intval($search);
+            }
+            elseif (preg_match('/^\d{2}$/', $search) && intval($search) >= 1 && intval($search) <= 12) {
+                $searchMonth = intval($search);
+            }
+            elseif (preg_match('/^\d{4}$/', $search)) {
+                $searchYear = intval($search);
             }
         }
-
-        if ($searchDate) {
+        
+        if ($searchDay !== null || $searchMonth !== null || $searchYear !== null) {
             $matchingKendaraanIds = [];
             $kendaraanIds = Kendaraan::pluck('id_kendaraan');
-
+            
             foreach ($kendaraanIds as $id_kendaraan) {
                 $latestDates = [
+                    Kendaraan::where('id_kendaraan', $id_kendaraan)->value('tgl_pembelian'),
                     CekFisik::where('id_kendaraan', $id_kendaraan)->latest('tgl_cek_fisik')->value('tgl_cek_fisik'),
                     Pajak::where('id_kendaraan', $id_kendaraan)->latest('tgl_bayar')->value('tgl_bayar'),
                     Asuransi::where('id_kendaraan', $id_kendaraan)->latest('tgl_bayar')->value('tgl_bayar'),
                     BBM::where('id_kendaraan', $id_kendaraan)->latest('tgl_isi')->value('tgl_isi'),
                     ServisRutin::where('id_kendaraan', $id_kendaraan)->latest('tgl_servis_real')->value('tgl_servis_real')
                 ];
-
+                
                 $latestDates = array_filter($latestDates);
-
+                
                 foreach ($latestDates as $date) {
-                    if (Carbon::parse($date)->isSameDay($searchDate)) {
+                    $carbonDate = Carbon::parse($date);
+                    $matches = true;
+                    
+                    if ($searchDay !== null && $carbonDate->day != $searchDay) {
+                        $matches = false;
+                    }
+                    if ($searchMonth !== null && $carbonDate->month != $searchMonth) {
+                        $matches = false;
+                    }
+                    if ($searchYear !== null && $carbonDate->year != $searchYear) {
+                        $matches = false;
+                    }
+                    
+                    if ($matches) {
                         $matchingKendaraanIds[] = $id_kendaraan;
                         break;
                     }
                 }
             }
-
+            
             if (!empty($matchingKendaraanIds)) {
                 $dataKendaraanQuery->whereIn('id_kendaraan', $matchingKendaraanIds);
             } else {
                 $dataKendaraanQuery->whereNull('id_kendaraan');
             }
+        }
         } else {
             $originalSearch = $search; 
 
@@ -154,42 +221,41 @@ class DaftarKendaraanAdminController extends Controller
                 });
             }
         }
-        Log::info("Final SQL Query:", ['sql' => $dataKendaraanQuery->toSql(), 'bindings' => $dataKendaraanQuery->getBindings()]);
+        
+        $allKendaraan = $dataKendaraanQuery->get();
+        $alerts = []; 
+        foreach ($allKendaraan as $k) {
+            $incomplete = [];
+            $pajak = $k->pajak()->latest()->first();
+            if (!$pajak || !$pajak->nominal) {
+                $incomplete[] = "Pajak";
+            }
 
-    $allKendaraan = $dataKendaraanQuery->get();
-    $alerts = []; 
-    foreach ($allKendaraan as $k) {
-        $incomplete = [];
-        $pajak = $k->pajak()->latest()->first();
-        if (!$pajak || !$pajak->nominal) {
-            $incomplete[] = "Pajak";
+            $asuransi = $k->asuransi()->latest()->first();
+            if (!$asuransi || !$asuransi->nominal) {
+                $incomplete[] = "Asuransi";
+            }
+
+            $cekFisik = $k->cekFisik()->latest()->first();
+            if (!$cekFisik || !$cekFisik->accu) {
+                $incomplete[] = "Cek Fisik";
+            }
+
+            $servisRutin = $k->servisRutin()->latest()->first();
+            if (!$servisRutin || !$servisRutin->tgl_servis_real) {
+                $incomplete[] = "Servis Rutin";
+            }
+
+            if (!empty($incomplete)) {
+                $alerts[] = [
+                    'vehicle' => "{$k->merk} {$k->tipe} (Plat: {$k->plat_nomor})",
+                    'incomplete' => $incomplete
+                ];
+            }
         }
 
-        $asuransi = $k->asuransi()->latest()->first();
-        if (!$asuransi || !$asuransi->nominal) {
-            $incomplete[] = "Asuransi";
-        }
-
-        $cekFisik = $k->cekFisik()->latest()->first();
-        if (!$cekFisik || !$cekFisik->accu) {
-            $incomplete[] = "Cek Fisik";
-        }
-
-        $servisRutin = $k->servisRutin()->latest()->first();
-        if (!$servisRutin || !$servisRutin->tgl_servis_real) {
-            $incomplete[] = "Servis Rutin";
-        }
-
-        if (!empty($incomplete)) {
-            $alerts[] = [
-                'vehicle' => "{$k->merk} {$k->tipe} (Plat: {$k->plat_nomor})",
-                'incomplete' => $incomplete
-            ];
-        }
-    }
-
-    $dataKendaraan = $dataKendaraanQuery->paginate(10)->appends(['search' => $search]);
-    
+        $dataKendaraan = $dataKendaraanQuery->paginate(10)->appends(['search' => $search]);
+        
         return view('admin.kendaraan.daftar_kendaraan', compact('dataKendaraan', 'search', 'statusKetersediaanFilter', 'alerts'));
     }
 
@@ -200,11 +266,21 @@ class DaftarKendaraanAdminController extends Controller
         return view('admin.kendaraan.tambah', compact('user_id'));
     }
 
-    public function checkPlatNomor(Request $request)
-{
-    $exists = Kendaraan::where('plat_nomor', $request->plat_nomor)->exists();
-    return response()->json(['exists' => $exists]);
-}
+   
+    public function checkPlat(Request $request)
+    {
+        $platNomor = $request->input('plat_nomor');
+        $excludeId = $request->input('exclude_id');
+        
+        $exists = DB::table('kendaraan')
+                    ->where('plat_nomor', $platNomor)
+                    ->where('id_kendaraan', '!=', $excludeId)
+                    ->exists();
+        
+        Log::info("Checking plate: {$platNomor}, exclude ID: {$excludeId}, exists: " . ($exists ? 'true' : 'false'));
+        
+        return response()->json(['exists' => $exists]);
+    }
 
     public function store(Request $request)
     {
@@ -226,14 +302,13 @@ class DaftarKendaraanAdminController extends Controller
                 'nomor_mesin' => 'required|string|max:100',
                 'nomor_rangka' => 'required|string|max:100',
                 'tanggal_bayar_pajak' => 'required|date',
-                'tanggal_jatuh_tempo_pajak' => 'required|date|after:tanggal_bayar_pajak',
+                'tanggal_jatuh_tempo_pajak' => 'required|date',
                 'tanggal_cek_fisik' => 'required|date',
                 'frekuensi' => 'required|integer|min:1',
                 'status_pinjam' => 'required|string',
                 'current_page' => 'required|integer|min:1',
             ];
     
-            // Add conditional validation for insurance fields
             if ($request->filled('tanggal_asuransi') || $request->filled('tanggal_perlindungan_awal') || $request->filled('tanggal_perlindungan_akhir')) {
                 $validationRules['tanggal_asuransi'] = 'required|date';
                 $validationRules['tanggal_perlindungan_awal'] = 'required|date';
@@ -274,7 +349,6 @@ class DaftarKendaraanAdminController extends Controller
                 'tahun' => date('Y', strtotime($request->tanggal_bayar_pajak)),
             ]);
     
-            // Only create insurance record if insurance fields are filled
             if ($request->filled('tanggal_asuransi') && 
                 $request->filled('tanggal_perlindungan_awal') && 
                 $request->filled('tanggal_perlindungan_akhir')) {
@@ -297,20 +371,17 @@ class DaftarKendaraanAdminController extends Controller
     
             $search = $request->query('search', request()->input('search', ''));
 
-            // Hitung total kendaraan berdasarkan apakah ada search atau tidak
             $totalKendaraan = Kendaraan::when($search, function ($query, $search) {
                 return $query->where('merk', 'LIKE', "%{$search}%");
             })->count();
             
             $perPage = 10; 
-            $lastPage = max(1, ceil($totalKendaraan / $perPage)); // Pastikan min. halaman 1
-            
-            // Redirect dengan mempertahankan search jika ada
+            $lastPage = max(1, ceil($totalKendaraan / $perPage)); 
+
             return redirect()->route('kendaraan.daftar_kendaraan', [
                 'page' => $lastPage,
                 'search' => $search ?: null
             ])->with('success', 'Data kendaraan dan semua terkait berhasil diperbarui!');
-            
         } catch (\Exception $e) {
             Log::error('DEBUG: Exception occurred', ['error' => $e->getMessage()]);
             return redirect()->back()
@@ -330,121 +401,118 @@ class DaftarKendaraanAdminController extends Controller
     }
 
     public function update(Request $request, $id)
-{
-    try {
-        Log::info('DEBUG: Incoming update request', ['request_data' => $request->all()]);
+    {
+        try {
+            Log::info('DEBUG: Incoming update request', ['request_data' => $request->all()]);
 
-        $validationRules = [
-            'merk' => 'required|string|max:255',
-            'tipe' => 'required|string|max:255',
-            'plat_nomor' => 'required|string|max:20',
-            'warna' => 'required|string|max:50',
-            'jenis_kendaraan' => 'required|string',
-            'aset_guna' => 'required|string',
-            'kapasitas' => 'required|integer|min:1',
-            'tanggal_beli' => 'required|date',
-            'nilai_perolehan' => 'required|numeric',
-            'nilai_buku' => 'required|numeric',
-            'bahan_bakar' => 'required|string',
-            'nomor_mesin' => 'required|string|max:100',
-            'nomor_rangka' => 'required|string|max:100',
-            'tanggal_bayar_pajak' => 'required|date',
-            'tanggal_jatuh_tempo_pajak' => 'required|date|after:tanggal_bayar_pajak',
-            'tanggal_cek_fisik' => 'required|date',
-            'frekuensi' => 'required|integer|min:1',
-            'status_pinjam' => 'required|string',
-            'current_page' => 'required|integer|min:1',
-        ];
+            $validationRules = [
+                'merk' => 'required|string|max:255',
+                'tipe' => 'required|string|max:255',
+                'plat_nomor' => 'required|string|max:20',
+                'warna' => 'required|string|max:50',
+                'jenis_kendaraan' => 'required|string',
+                'aset_guna' => 'required|string',
+                'kapasitas' => 'required|integer|min:1',
+                'tanggal_beli' => 'required|date',
+                'nilai_perolehan' => 'required|numeric',
+                'nilai_buku' => 'required|numeric',
+                'bahan_bakar' => 'required|string',
+                'nomor_mesin' => 'required|string|max:100',
+                'nomor_rangka' => 'required|string|max:100',
+                'tanggal_bayar_pajak' => 'required|date',
+                'tanggal_jatuh_tempo_pajak' => 'required|date',
+                'tanggal_cek_fisik' => 'required|date',
+                'frekuensi' => 'required|integer|min:1',
+                'status_pinjam' => 'required|string',
+                'current_page' => 'required|integer|min:1',
+            ];
 
-        // Tambahkan validasi opsional untuk asuransi jika ada input
-        if ($request->filled('tanggal_asuransi') || $request->filled('tanggal_perlindungan_awal') || $request->filled('tanggal_perlindungan_akhir')) {
-            $validationRules['tanggal_asuransi'] = 'required|date';
-            $validationRules['tanggal_perlindungan_awal'] = 'required|date';
-            $validationRules['tanggal_perlindungan_akhir'] = 'required|date|after:tanggal_perlindungan_awal';
-        }
+            if ($request->filled('tanggal_asuransi') || $request->filled('tanggal_perlindungan_awal') || $request->filled('tanggal_perlindungan_akhir')) {
+                $validationRules['tanggal_asuransi'] = 'required|date';
+                $validationRules['tanggal_perlindungan_awal'] = 'required|date';
+                $validationRules['tanggal_perlindungan_akhir'] = 'required|date|after:tanggal_perlindungan_awal';
+            }
 
-        $request->validate($validationRules);
+            $request->validate($validationRules);
 
-        Log::info('DEBUG: Validation passed');
+            Log::info('DEBUG: Validation passed');
 
-        $kendaraan = Kendaraan::findOrFail($id);
-        $statusKetersediaan = ($request->aset_guna === 'Guna') 
-        ? ($request->status_pinjam ?? 'TERSEDIA') 
-        : 'TIDAK TERSEDIA';
+            $kendaraan = Kendaraan::findOrFail($id);
+            $statusKetersediaan = ($request->aset_guna === 'Guna') 
+            ? ($request->status_pinjam ?? 'TERSEDIA') 
+            : 'TIDAK TERSEDIA';
 
 
-        $kendaraan->update([
-            'merk' => $request->merk,
-            'tipe' => $request->tipe,
-            'plat_nomor' => $request->plat_nomor,
-            'warna' => $request->warna,
-            'jenis' => $request->jenis_kendaraan,
-            'aset' => $request->aset_guna,
-            'kapasitas' => $request->kapasitas,
-            'tgl_pembelian' => $request->tanggal_beli,
-            'nilai_perolehan' => $request->nilai_perolehan,
-            'nilai_buku' => $request->nilai_buku,
-            'bahan_bakar' => $request->bahan_bakar,
-            'no_mesin' => $request->nomor_mesin,
-            'no_rangka' => $request->nomor_rangka,
-            'frekuensi_servis' => $request->frekuensi,
-            'status_ketersediaan' => $statusKetersediaan,
-        ]);
+            $kendaraan->update([
+                'merk' => $request->merk,
+                'tipe' => $request->tipe,
+                'plat_nomor' => $request->plat_nomor,
+                'warna' => $request->warna,
+                'jenis' => $request->jenis_kendaraan,
+                'aset' => $request->aset_guna,
+                'kapasitas' => $request->kapasitas,
+                'tgl_pembelian' => $request->tanggal_beli,
+                'nilai_perolehan' => $request->nilai_perolehan,
+                'nilai_buku' => $request->nilai_buku,
+                'bahan_bakar' => $request->bahan_bakar,
+                'no_mesin' => $request->nomor_mesin,
+                'no_rangka' => $request->nomor_rangka,
+                'frekuensi_servis' => $request->frekuensi,
+                'status_ketersediaan' => $statusKetersediaan,
+            ]);
 
-        Pajak::updateOrCreate(
-            ['id_kendaraan' => $kendaraan->id_kendaraan],
-            [
-                'user_id' => Auth::id(),
-                'tgl_bayar' => date('Y-m-d', strtotime($request->tanggal_bayar_pajak)),
-                'tgl_jatuh_tempo' => date('Y-m-d', strtotime($request->tanggal_jatuh_tempo_pajak)),
-                'tahun' => date('Y', strtotime($request->tanggal_bayar_pajak)),
-            ]
-        );
-
-        // Hanya perbarui atau buat asuransi jika ada data asuransi yang diinput
-        if ($request->filled('tanggal_asuransi') && 
-            $request->filled('tanggal_perlindungan_awal') && 
-            $request->filled('tanggal_perlindungan_akhir')) {
-            
-            Asuransi::updateOrCreate(
+            Pajak::updateOrCreate(
                 ['id_kendaraan' => $kendaraan->id_kendaraan],
                 [
                     'user_id' => Auth::id(),
-                    'tgl_bayar' => $request->tanggal_asuransi,
-                    'tahun' => date('Y', strtotime($request->tanggal_perlindungan_akhir)),
-                    'tgl_perlindungan_awal' => $request->tanggal_perlindungan_awal,
-                    'tgl_perlindungan_akhir' => $request->tanggal_perlindungan_akhir,
+                    'tgl_bayar' => date('Y-m-d', strtotime($request->tanggal_bayar_pajak)),
+                    'tgl_jatuh_tempo' => date('Y-m-d', strtotime($request->tanggal_jatuh_tempo_pajak)),
+                    'tahun' => date('Y', strtotime($request->tanggal_bayar_pajak)),
                 ]
             );
-        }
 
-        CekFisik::updateOrCreate(
-            ['id_kendaraan' => $kendaraan->id_kendaraan],
-            [
-                'user_id' => Auth::id(),
-                'tgl_cek_fisik' => $request->tanggal_cek_fisik,
-            ]
-        );
-
-        $currentPage = $request->input('current_page', 1);
-
-        Log::info('DEBUG: Data kendaraan dan terkait berhasil diperbarui');
+            if ($request->filled('tanggal_asuransi') && 
+                $request->filled('tanggal_perlindungan_awal') && 
+                $request->filled('tanggal_perlindungan_akhir')) {
                 
-        // Ambil search dan page
-        $search = $request->query('search', request()->input('search', ''));
+                Asuransi::updateOrCreate(
+                    ['id_kendaraan' => $kendaraan->id_kendaraan],
+                    [
+                        'user_id' => Auth::id(),
+                        'tgl_bayar' => $request->tanggal_asuransi,
+                        'tahun' => date('Y', strtotime($request->tanggal_perlindungan_akhir)),
+                        'tgl_perlindungan_awal' => $request->tanggal_perlindungan_awal,
+                        'tgl_perlindungan_akhir' => $request->tanggal_perlindungan_akhir,
+                    ]
+                );
+            }
 
-        return redirect()->route('kendaraan.daftar_kendaraan', [
-            'page' => $currentPage,
-            'search' => $search ?: null // Tetap sertakan search jika ada, kosongkan jika tidak
-        ])->with('success', 'Data kendaraan dan semua terkait berhasil diperbarui!');
-                        
-    } catch (\Exception $e) {
-        Log::error('DEBUG: Exception occurred', ['error' => $e->getMessage()]);
-        return redirect()->back()
-                        ->withInput()
-                        ->withErrors(['error' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()]);
+            CekFisik::updateOrCreate(
+                ['id_kendaraan' => $kendaraan->id_kendaraan],
+                [
+                    'user_id' => Auth::id(),
+                    'tgl_cek_fisik' => $request->tanggal_cek_fisik,
+                ]
+            );
+
+            $currentPage = $request->input('current_page', 1);
+
+            Log::info('DEBUG: Data kendaraan dan terkait berhasil diperbarui');
+                    
+            $search = $request->query('search', request()->input('search', ''));
+
+            return redirect()->route('kendaraan.daftar_kendaraan', [
+                'page' => $currentPage,
+                'search' => $search ?: null 
+            ])->with('success', 'Data kendaraan dan semua terkait berhasil diperbarui!');
+                            
+        } catch (\Exception $e) {
+            Log::error('DEBUG: Exception occurred', ['error' => $e->getMessage()]);
+            return redirect()->back()
+                            ->withInput()
+                            ->withErrors(['error' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()]);
+        }
     }
-}
 
     public function detail($id_kendaraan) {
         $kendaraan = Kendaraan::findOrFail($id_kendaraan);
@@ -458,30 +526,29 @@ class DaftarKendaraanAdminController extends Controller
 
 
     public function hapus($id_kendaraan, Request $request)
-{
-    try {
-        $kendaraan = Kendaraan::findOrFail($id_kendaraan);
-        Pajak::where('id_kendaraan', $id_kendaraan)->delete();
-        Asuransi::where('id_kendaraan', $id_kendaraan)->delete();
-        CekFisik::where('id_kendaraan', $id_kendaraan)->delete();
-        ServisRutin::where('id_kendaraan', $id_kendaraan)->delete();
-        ServisInsidental::where('id_kendaraan', $id_kendaraan)->delete();
-        BBM::where('id_kendaraan', $id_kendaraan)->delete();
-        Peminjaman::where('id_kendaraan', $id_kendaraan)->delete();
-        $kendaraan->delete();
-        Log::info('DEBUG_KENDARAAN_DELETE: Kendaraan dan semua data terkait berhasil dihapus', ['id_kendaraan' => $id_kendaraan]);
+    {
+        try {
+            $kendaraan = Kendaraan::findOrFail($id_kendaraan);
+            Pajak::where('id_kendaraan', $id_kendaraan)->delete();
+            Asuransi::where('id_kendaraan', $id_kendaraan)->delete();
+            CekFisik::where('id_kendaraan', $id_kendaraan)->delete();
+            ServisRutin::where('id_kendaraan', $id_kendaraan)->delete();
+            ServisInsidental::where('id_kendaraan', $id_kendaraan)->delete();
+            BBM::where('id_kendaraan', $id_kendaraan)->delete();
+            Peminjaman::where('id_kendaraan', $id_kendaraan)->delete();
+            $kendaraan->delete();
+            Log::info('DEBUG_KENDARAAN_DELETE: Kendaraan dan semua data terkait berhasil dihapus', ['id_kendaraan' => $id_kendaraan]);
+    
+            $search = $request->query('search', '');
+            $search = preg_replace('/\?page=\d+/', '', $search); 
 
-       // Ambil parameter search dan page dari request
-        $search = $request->query('search', '');
-        $search = preg_replace('/\?page=\d+/', '', $search); // Hapus `?page=...`
-
-        return redirect()->route('kendaraan.daftar_kendaraan', [
-            'page' => $request->query('page', 1),
-            'search' => $search
-        ])->with('success', 'Kendaraan dan semua data terkait berhasil dihapus!');
-    } catch (\Exception $e) {
-        Log::error('DEBUG_KENDARAAN_DELETE: Error saat menghapus kendaraan', ['error' => $e->getMessage()]);
-        return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat menghapus kendaraan!']);
+            return redirect()->route('kendaraan.daftar_kendaraan', [
+                'page' => $request->query('page', 1),
+                'search' => $search
+            ])->with('success', 'Kendaraan dan semua data terkait berhasil dihapus!');
+        } catch (\Exception $e) {
+            Log::error('DEBUG_KENDARAAN_DELETE: Error saat menghapus kendaraan', ['error' => $e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat menghapus kendaraan!']);
+        }
     }
-}
 }

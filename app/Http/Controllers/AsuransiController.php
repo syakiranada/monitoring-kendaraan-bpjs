@@ -16,6 +16,27 @@ class AsuransiController extends Controller
     {
         $search = $request->input('search');
         $statusFilter = $request->input('status');
+        $convertedDate = null;
+        $partialDate = null;
+
+        if ($search) {
+            if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $search)) {
+                try {
+                    $convertedDate = \Carbon\Carbon::createFromFormat('d-m-Y', $search)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    $convertedDate = null;
+                }
+            }
+            if (preg_match('/^\d{2}-\d{2}$/', $search)) {
+                $partialDate = '%' . $search . '%'; 
+            } elseif (preg_match('/^\d{2}$/', $search)) {
+                $partialDate = $search . '%';
+            } elseif (preg_match('/^\d{1,2}$/', $search)) {
+                $partialDate = '%' . $search . '-%';  
+            } elseif (preg_match('/^\d{4}$/', $search)) {
+                $partialDate = $search . '%';  
+            }
+        }
 
         $dataKendaraanQuery = Kendaraan::select(
             'kendaraan.*',
@@ -41,7 +62,7 @@ class AsuransiController extends Controller
                 ->on('asuransi.tgl_bayar', '=', 'latest_asuransi.max_bayar')
                 ->on('asuransi.tgl_perlindungan_akhir', '=', 'latest_asuransi.max_perlindungan_akhir');
         })
-        ->where('kendaraan.aset', '!=', 'lelang') // Hanya kendaraan yang asetnya bukan 'lelang'
+        ->where('kendaraan.aset', '!=', 'lelang')
         ->groupBy(
             'kendaraan.id_kendaraan', 
             'asuransi.id_asuransi', 
@@ -72,8 +93,58 @@ class AsuransiController extends Controller
                 $item->status = 'SUDAH DIBAYAR';
             }
         }
+        
+        if ($partialDate) {
+            $dataKendaraan = $dataKendaraan->filter(function ($item) use ($partialDate) {
+                $latest_asuransi = Asuransi::where('id_kendaraan', $item->id_kendaraan)
+                    ->latest('tgl_bayar')
+                    ->first(['tgl_bayar', 'tgl_perlindungan_awal', 'tgl_perlindungan_akhir']);
+        
+                $tgl_bayar = $latest_asuransi->tgl_bayar ? \Carbon\Carbon::parse($latest_asuransi->tgl_bayar)->format('d-m-Y') : null;
+                $tgl_perlindungan_awal = $latest_asuransi->tgl_perlindungan_awal ? \Carbon\Carbon::parse($latest_asuransi->tgl_perlindungan_awal)->format('d-m-Y') : null;
+                $tgl_perlindungan_akhir = $latest_asuransi->tgl_perlindungan_akhir ? \Carbon\Carbon::parse($latest_asuransi->tgl_perlindungan_akhir)->format('d-m-Y') : null;
+        
+                $partialSearch = str_replace(['%'], '', $partialDate); 
+
+                if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $partialSearch)) {
+                    $partialRegex = '/(^|\D)' . preg_quote($partialSearch, '/') . '(\D|$)/';
+                }
+                elseif (preg_match('/^\d{2}$/', $partialSearch)) {
+                    $partialRegex = '/(^|\D)' . preg_quote($partialSearch, '/') . '(\D|$)/';
+                }
+                elseif (preg_match('/^\d{2}$/', $partialSearch)) {
+                    $partialRegex = '/(^|\D)' . preg_quote($partialSearch, '/') . '(\D|$)/';
+                }
+                elseif (preg_match('/^\d{4}$/', $partialSearch)) {
+                    $partialRegex = '/(^|\D)' . preg_quote($partialSearch, '/') . '(\D|$)/';
+                } else {
+                    $partialRegex = '/(^|\D)' . preg_quote($partialSearch, '/') . '(\D|$)/';
+                }
+                
+                dump([
+                    'id_kendaraan' => $item->id_kendaraan,
+                    'partialDate' => $partialDate,
+                    'regex' => $partialRegex,
+                    'tgl_bayar' => $tgl_bayar,
+                    'tgl_perlindungan_awal' => $tgl_perlindungan_awal,
+                    'tgl_perlindungan_akhir' => $tgl_perlindungan_akhir,
+                    'match' => (
+                        ($tgl_bayar && preg_match($partialRegex, $tgl_bayar)) ||
+                        ($tgl_perlindungan_awal && preg_match($partialRegex, $tgl_perlindungan_awal)) ||
+                        ($tgl_perlindungan_akhir && preg_match($partialRegex, $tgl_perlindungan_akhir))
+                    )
+                ]);
+        
+                return (
+                    ($tgl_bayar && preg_match($partialRegex, $tgl_bayar)) ||
+                    ($tgl_perlindungan_awal && preg_match($partialRegex, $tgl_perlindungan_awal)) ||
+                    ($tgl_perlindungan_akhir && preg_match($partialRegex, $tgl_perlindungan_akhir))
+                );
+            });
+        }
     
         if (!empty($search)) {
+            
             $dataKendaraan = $dataKendaraan->filter(function ($item) use ($search) {
                 $search = strtolower($search);
                 $formatTanggal = function ($tanggal) {
@@ -150,7 +221,7 @@ class AsuransiController extends Controller
 
     public function detail($id_asuransi) 
     {
-        $asuransi = Asuransi::with('kendaraan')
+        $asuransi = Asuransi::with(['kendaraan', 'user']) 
             ->where('id_asuransi', $id_asuransi)
             ->firstOrFail();
         
@@ -164,10 +235,10 @@ class AsuransiController extends Controller
         } else {
             $asuransi->tgl_jatuh_tempo = null;
         }
-    
+
         return view('admin.asuransi.detail', compact('asuransi'));
     }
-    
+
     public function store(Request $request)
     {
         try {
@@ -211,7 +282,6 @@ class AsuransiController extends Controller
         }
     }
 
-
     public function edit($id_asuransi)
     {
         $asuransi = Asuransi::with('kendaraan')->where('id_asuransi', $id_asuransi)->firstOrFail();
@@ -246,7 +316,7 @@ class AsuransiController extends Controller
                 }
                 $asuransi->bukti_bayar_asuransi = null;
             }
-
+ 
             if ($request->hasFile('foto_polis')) {
                 if ($asuransi->polis && Storage::disk('public')->exists($asuransi->polis)) {
                     Storage::disk('public')->delete($asuransi->polis);
@@ -277,7 +347,7 @@ class AsuransiController extends Controller
             return redirect()
                 ->route('asuransi.daftar_kendaraan_asuransi', [
                     'page' => $page,
-                    'search' => $search ?: null // Tetap sertakan search jika ada, kosongkan jika tidak
+                    'search' => $search ?: null 
                 ])
                 ->with('success', 'Data asuransi berhasil diperbarui!');            
         } catch (\Exception $e) {
@@ -293,20 +363,29 @@ class AsuransiController extends Controller
         try {
             $asuransi = Asuransi::findOrFail($request->id);
             $fileType = $request->file_type;
-
+            $fileDeleted = false;
+    
             if ($fileType === 'polis' && $asuransi->polis) {
-                Storage::disk('public')->delete($asuransi->polis);
+                if (Storage::disk('public')->exists($asuransi->polis)) {
+                    Storage::disk('public')->delete($asuransi->polis);
+                }
                 $asuransi->polis = null;
+                $fileDeleted = true;
             } elseif ($fileType === 'bukti_bayar_asuransi' && $asuransi->bukti_bayar_asuransi) {
-                Storage::disk('public')->delete($asuransi->bukti_bayar_asuransi);
+                if (Storage::disk('public')->exists($asuransi->bukti_bayar_asuransi)) {
+                    Storage::disk('public')->delete($asuransi->bukti_bayar_asuransi);
+                }
                 $asuransi->bukti_bayar_asuransi = null;
-            } else {
-                return response()->json(['error' => 'File tidak ditemukan'], 404);
+                $fileDeleted = true;
             }
-
-            $asuransi->save();
-
-            return response()->json(['success' => 'File berhasil dihapus']);
+    
+            if ($fileDeleted) {
+                $asuransi->save();
+                return response()->json(['success' => 'File berhasil dihapus']);
+            }
+    
+            return response()->json(['success' => 'File sudah kosong, tidak perlu dihapus lagi']);
+    
         } catch (\Exception $e) {
             return response()->json(['error' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
         }
@@ -326,14 +405,12 @@ class AsuransiController extends Controller
             }
 
             $asuransi->delete();
-            $page = $request->input('current_page', 1);
-            // Ambil search dan page
             $search = $request->query('search', request()->input('search', ''));
-            $search = preg_replace('/\?page=\d+/', '', $search); // Hapus `?page=...`
+            $search = preg_replace('/\?page=\d+/', '', $search); 
 
             return redirect()->route('asuransi.daftar_kendaraan_asuransi', [
-                'page' => $page,
-                'search' => $search ?: null // Tetap sertakan search jika ada, kosongkan jika tidak
+                'page' => $request->query('page', 1),
+                'search' => $search ?: null
             ])->with('success', 'Data asuransi berhasil dihapus!');
         } catch (\Exception $e) {
             Log::error('Terjadi kesalahan saat menghapus asuransi: ' . $e->getMessage());
@@ -341,4 +418,3 @@ class AsuransiController extends Controller
         }
     }
 }
-

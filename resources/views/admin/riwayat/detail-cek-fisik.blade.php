@@ -1,47 +1,62 @@
 <x-app-layout>
-    <h1 class="text-2xl font-bold mb-6">Detail Cek Fisik Kendaraan</h1>
-    <div class="block max-w-md p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 
-                dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-        {{-- @php 
-            $currentPage = request()->query('page');
-        @endphp 
-        <input type="hidden" name="current_page" value="{{ $currentPage }}">   --}}
-        <input type="hidden" name="page" value="{{ request()->query('page', 1) }}">
-        <input type="hidden" name="search" value="{{ request()->query('search') }}">
+    <style>
+        @media (max-width: 640px) {
+            .detail-container {
+                padding: 1rem;
+            }
+            .detail-item {
+                margin-bottom: 0.75rem;
+            }
+            .detail-label {
+                margin-bottom: 0.25rem;
+                font-weight: 500;
+            }
+        }
+    </style>
 
-        <div class="space-y-3">
-            <div class="flex justify-between items-center">
-                <h5 class="text-xl font-bold text-gray-900 dark:text-white">
+    <div class="container px-4 py-6 w-fit">
+        <h1 class="text-2xl font-bold mb-6">Detail Cek Fisik Kendaraan</h1>
+        <div class="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl p-4 sm:p-6 bg-white border border-gray-200 rounded-lg shadow-sm mx-auto detail-container">
+            <input type="hidden" name="page" value="{{ request()->query('page', 1) }}">
+            <input type="hidden" name="search" value="{{ request()->query('search') }}">
+
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
                     {{ $cekFisik->kendaraan->merk }} {{ $cekFisik->kendaraan->tipe }} - {{ $cekFisik->kendaraan->plat_nomor }}
-                </h5>
+                </h2>
             </div>
 
-            <div class="space-y-2">
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Tanggal Cek Fisik</span>
-                    <span class="text-gray-900">{{ $cekFisik->tgl_cek_fisik }}</span>
-                </div>
+            <div class="space-y-3">
+                @php
+                    $fields = [
+                        'Admin Input' => $cekFisik->user->name ?? '-',
+                        'Tanggal Cek Fisik' => $cekFisik->tgl_cek_fisik ? \Carbon\Carbon::parse($cekFisik->tgl_cek_fisik)->format('d-m-Y') : '-',
+                        'Mesin' => $cekFisik->mesin,
+                        'Accu' => $cekFisik->accu,
+                        'Air Radiator' => $cekFisik->air_radiator,
+                        'Air Wiper' => $cekFisik->air_wiper,
+                        'Body' => $cekFisik->body,
+                        'Ban' => $cekFisik->ban,
+                        'Pengharum' => $cekFisik->pengharum,
+                        'Kondisi Keseluruhan' => $cekFisik->kondisi_keseluruhan,
+                        'Catatan' => $cekFisik->catatan
+                    ];
+                @endphp
 
-                @foreach(['mesin', 'accu', 'air_radiator', 'air_wiper', 'body', 'ban', 'pengharum', 'kondisi_keseluruhan'] as $field)
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-600 dark:text-gray-400">{{ ucfirst(str_replace('_', ' ', $field)) }}</span>
-                        <span class="text-gray-900 dark:text-white">{{ $cekFisik->$field }}</span>
+                @foreach ($fields as $label => $value)
+                    <div class="flex flex-col sm:flex-row items-start text-sm detail-item w-full">
+                        <span class="text-gray-600 sm:w-56 detail-label">{{ $label }}</span>
+                        <span class="text-gray-900 break-words sm:max-w-[calc(100%-14rem)]">{{ $value }}</span>
                     </div>
                 @endforeach
 
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600 dark:text-gray-400">Catatan</span>
-                    <span class="text-gray-900 dark:text-white">{{ $cekFisik->catatan }}</span>
+                <div class="mt-6 pt-2">
+                    <button type="button" onclick="window.location.href='{{ route('admin.riwayat.cek-fisik', ['page' => request('page'), 'search' => request('search')]) }}'" 
+                        class="bg-purple-600 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition sm:self-start w-fit sm:w-auto">
+                        Kembali
+                    </button>
                 </div>
             </div>
-
-            {{-- <button type="button" onclick="window.location.href='{{ route('admin.cek-fisik.index', ['page' => request('page'), 'search' => request('search')]) }}'" 
-                    class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
-                Kembali
-            </button> --}} 
-            <button type="button" onclick="window.location.href='{{ route('admin.riwayat.cek-fisik', ['page' => request('page'), 'search' => request('search')]) }}'" class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
-                Kembali
-            </button>  
         </div>
     </div>
 </x-app-layout>

@@ -37,10 +37,26 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4 mb-4">
+                            @php
+                            $tglMulai = optional($peminjaman)->tgl_mulai;
+                            $tglSelesai = optional($peminjaman)->tgl_selesai;
+                        @endphp
+
                             <div>
                                 <label class="block text-gray-700">Tanggal Servis</label>
-                                <input type="date" name="tgl_servis" class="w-full p-2 border border-gray-300 rounded" required>
+                                <input 
+                                type="date" 
+                                name="tgl_servis" 
+                                class="w-full p-2 border border-gray-300 rounded" 
+                                required
+                                @if($tglMulai) min="{{ \Carbon\Carbon::parse($tglMulai)->format('Y-m-d') }}" @endif
+                                @if($tglSelesai) max="{{ \Carbon\Carbon::parse($tglSelesai)->format('Y-m-d') }}" @endif
+                            >
+                            <small class="text-gray-500 text-sm">
+                                Pilih tanggal antara {{ \Carbon\Carbon::parse($tglMulai)->format('d M Y') }} dan {{ \Carbon\Carbon::parse($tglSelesai)->format('d M Y') }}.
+                            </small>
                             </div>
+
                             <div>
                                 <label class="block text-gray-700">Jumlah Pembayaran</label>
                                 <input type="text" id="hargaInput" name="harga" class="w-full p-2 border border-gray-300 rounded" required>
@@ -118,7 +134,25 @@
         </div>
     
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const dateInput = document.querySelector('input[name="tgl_servis"]');
+        
+                const minDate = new Date(dateInput.min);
+                const maxDate = new Date(dateInput.max);
+        
+                dateInput.addEventListener('change', function () {
+                    const selectedDate = new Date(this.value);
+        
+                    if (selectedDate < minDate || selectedDate > maxDate) {
+                        alert('Tanggal servis harus di antara tanggal peminjaman.');
+                        this.value = '';
+                    }
+                });
+            });
+        </script>
+        
+        <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('serviceForm');
             if (form) {
