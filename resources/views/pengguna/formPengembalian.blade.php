@@ -61,15 +61,28 @@
                 </div>
             
                 <!-- Tanggal & Jam Pengembalian -->
-                <div class="grid grid-cols-2 gap-4 mb-4">
+                <!-- <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
                         <label for="tgl" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pengembalian</label>
-                        <input type="date" id="tgl" name="tgl" class="w-full p-2.5 border rounded-lg bg-white-100" required>
+                        <input type="date" id="tgl" name="tgl" class="w-full p-2.5 border rounded-lg bg-white-100 disabled">
                         <p id="warning-tgl" class="text-red-500 text-sm mt-1 hidden">Tanggal pengembalian harus setelah tanggal mulai!</p>
                     </div>
                     <div>
                         <label for="jam" class="block text-sm font-medium text-gray-700 mb-1">Jam Pengembalian</label>
-                        <input type="time" id="jam" name="jam" class="w-full p-2.5 border rounded-lg bg-white-100" required>
+                        <input type="time" id="jam" name="jam" class="w-full p-2.5 border rounded-lg bg-white-100 disabled">
+                        <p id="warning-jam" class="text-red-500 text-sm mt-1 hidden">Jam pengembalian harus setelah tanggal mulai!</p>
+                    </div>
+                </div> -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="tgl" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pengembalian</label>
+                        <input type="date" id="tgl" name="tgl" class="w-full p-2.5 border rounded-lg bg-gray-100" readonly >
+                        
+                        <p id="warning-tgl" class="text-red-500 text-sm mt-1 hidden">Tanggal pengembalian harus setelah tanggal mulai!</p>
+                    </div>
+                    <div>
+                        <label for="jam" class="block text-sm font-medium text-gray-700 mb-1">Jam Pengembalian</label>
+                        <input type="time" id="jam" name="jam" class="w-full p-2.5 border rounded-lg bg-gray-100" readonly>
                         <p id="warning-jam" class="text-red-500 text-sm mt-1 hidden">Jam pengembalian harus setelah tanggal mulai!</p>
                     </div>
                 </div>
@@ -102,6 +115,28 @@
 </body>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Ambil elemen input tanggal dan waktu
+        let inputTanggal = document.getElementById("tgl");
+        let inputJam = document.getElementById("jam");
+
+        // Ambil waktu sekarang
+        let now = new Date();
+
+        // Format tanggal (YYYY-MM-DD)
+        let todayDate = now.toISOString().split("T")[0];
+
+        // Format jam (HH:MM)
+        let hours = String(now.getHours()).padStart(2, '0');
+        let minutes = String(now.getMinutes()).padStart(2, '0');
+        let currentTime = `${hours}:${minutes}`;
+
+        // Set nilai default untuk input
+        inputTanggal.value = todayDate;
+        inputJam.value = currentTime;
+    });
+</script>
     <script>
         
 $(document).ready(function () {
@@ -288,6 +323,8 @@ $(document).ready(function () {
 });
 
     </script>
+    
+
 </body>
 </html>
 </x-app-layout>
