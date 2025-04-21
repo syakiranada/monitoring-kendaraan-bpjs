@@ -937,7 +937,7 @@ private function applyServisFilters($query, $search)
                 (SELECT MAX(tgl_servis_selanjutnya) 
                  FROM servis_rutin 
                  WHERE servis_rutin.id_kendaraan = kendaraan.id_kendaraan
-                 WHERE kendaraan.aset=guna)
+                 )
             ");
         });
     }
