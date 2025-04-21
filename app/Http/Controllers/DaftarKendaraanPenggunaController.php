@@ -923,13 +923,13 @@ private function applyAsuransiFilters($query, $word)
 }
 
 
-private function applyServisFilters($query, $search)
+private function applyServisFilters($query, $word)
 {
     // Pastikan filter kendaraan dengan aset 'guna' diterapkan di awal
-    $query->where('kendaraan.aset', 'guna'); // Pastikan filter aset diterapkan pertama
+    $query->where('kendaraan.aset', 'guna');  // Pastikan filter aset diterapkan pertama
 
     // Jatuh tempo servis
-    if (str_contains(strtolower($search), 'jatuh tempo servis')) {
+    if (str_contains(strtolower($word), 'jatuh tempo servis')) {
         $query->orWhereHas('servisRutin', function ($q) {
             // Ambil data servis terbaru berdasarkan tgl_servis_selanjutnya
             $q->whereRaw("
@@ -937,37 +937,37 @@ private function applyServisFilters($query, $search)
                 (SELECT MAX(tgl_servis_selanjutnya) 
                  FROM servis_rutin 
                  WHERE servis_rutin.id_kendaraan = kendaraan.id_kendaraan
-                 )
+                 AND kendaraan.aset = 'guna')  
             ");
         });
     }
 
     // Mendekati jatuh tempo servis (1 bulan sebelum tgl_servis_selanjutnya)
-    if (str_contains(strtolower($search), 'mendekati jatuh tempo servis')) {
+    if (str_contains(strtolower($word), 'mendekati jatuh tempo servis')) {
         $query->orWhereHas('servisRutin', function ($q) {
             $q->whereRaw("
                 CURDATE() BETWEEN 
                 DATE_SUB(
                     (SELECT MAX(tgl_servis_selanjutnya) 
                      FROM servis_rutin 
-                     WHERE servis_rutin.id_kendaraan = kendaraan.id_kendaraan),
+                     WHERE servis_rutin.id_kendaraan = kendaraan.id_kendaraan AND kendaraan.aset = 'guna'),
                     INTERVAL 1 MONTH
                 )
                 AND (SELECT MAX(tgl_servis_selanjutnya) 
                      FROM servis_rutin 
-                     WHERE servis_rutin.id_kendaraan = kendaraan.id_kendaraan)
+                     WHERE servis_rutin.id_kendaraan = kendaraan.id_kendaraan AND kendaraan.aset = 'guna')
             ");
         });
     }
 
     // Sudah servis (kurang dari 1 bulan dari tgl_servis_selanjutnya)
-    if (str_contains(strtolower($search), 'sudah servis')) {
+    if (str_contains(strtolower($word), 'sudah servis')) {
         $query->orWhereHas('servisRutin', function ($q) {
             $q->whereRaw("
                 CURDATE() < DATE_SUB(
                     (SELECT MAX(tgl_servis_selanjutnya) 
                      FROM servis_rutin 
-                     WHERE servis_rutin.id_kendaraan = kendaraan.id_kendaraan),
+                     WHERE servis_rutin.id_kendaraan = kendaraan.id_kendaraan AND kendaraan.aset = 'guna'),
                     INTERVAL 1 MONTH
                 )
             ");
@@ -975,10 +975,12 @@ private function applyServisFilters($query, $search)
     }
 
     // Belum ada data servis
-    if (str_contains(strtolower($search), 'belum ada data servis')) {
+    if (str_contains(strtolower($word), 'belum ada data servis')) {
         $query->orWhereDoesntHave('servisRutin');
     }
 }
+
+
 
 
 // private function applyPajakFilters($query, $word)
