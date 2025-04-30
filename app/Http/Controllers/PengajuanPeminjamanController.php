@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Peminjaman;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -134,25 +135,32 @@ class PengajuanPeminjamanController extends Controller
     {
         $peminjaman = Peminjaman::findOrFail($id);
 
-        // Cek apakah ada peminjaman lain dengan kendaraan yang sama dan waktu yang beririsan
-        $bentrok = Peminjaman::where('id_kendaraan', $peminjaman->id_kendaraan)
-        ->where('status_pinjam', 'Disetujui')
-        ->where(function ($query) use ($peminjaman) {
-            $query->whereBetween('tgl_mulai', [$peminjaman->tgl_mulai, $peminjaman->tgl_selesai])
-                ->orWhereBetween('tgl_selesai', [$peminjaman->tgl_mulai, $peminjaman->tgl_selesai])
-                ->orWhere(function ($q) use ($peminjaman) {
-                    $q->where('tgl_mulai', '<', $peminjaman->tgl_mulai)
-                        ->where('tgl_selesai', '>', $peminjaman->tgl_selesai);
-                });
-        })
-        ->exists();
+        // Gabungkan tanggal dan jam jadi satu datetime
+        $mulaiBaru = Carbon::parse($peminjaman->tgl_mulai . ' ' . $peminjaman->jam_mulai);
+        $selesaiBaru = Carbon::parse($peminjaman->tgl_selesai . ' ' . $peminjaman->jam_selesai);
 
-        if ($bentrok) {
-            return redirect()->route('admin.pengajuan-peminjaman.index')
-                ->with('error', 'Peminjaman tidak dapat disetujui karena kendaraan sudah dipakai pada waktu yang sama atau beririsan.');
+        // Ambil semua peminjaman disetujui untuk kendaraan yang sama
+        $bentrok = Peminjaman::where('id_kendaraan', $peminjaman->id_kendaraan)
+            ->where('status_pinjam', 'Disetujui')
+            ->get();
+
+        foreach ($bentrok as $b) {
+            $mulaiExisting = Carbon::parse($b->tgl_mulai . ' ' . $b->jam_mulai);
+            $selesaiExisting = Carbon::parse($b->tgl_selesai . ' ' . $b->jam_selesai);
+
+            // Cek apakah ada overlap
+            if (
+                ($mulaiBaru->between($mulaiExisting, $selesaiExisting)) || 
+                ($selesaiBaru->between($mulaiExisting, $selesaiExisting)) ||
+                ($mulaiExisting->between($mulaiBaru, $selesaiBaru)) || 
+                ($selesaiExisting->between($mulaiBaru, $selesaiBaru))
+            ) {
+                return redirect()->route('admin.pengajuan-peminjaman.index')
+                    ->with('error', 'Peminjaman tidak dapat disetujui karena kendaraan sudah dipakai pada waktu yang sama atau beririsan.');
+            }
         }
 
-        // Jika tidak bentrok, setujui peminjaman
+        // Jika tidak ada bentrok, setujui peminjaman
         $peminjaman->status_pinjam = 'Disetujui';
         $peminjaman->save();
 

@@ -25,13 +25,20 @@
     </style>
 
 <div class="container px-4 py-6 w-fit">
+        @php 
+            $currentPage = request()->query('page');
+        @endphp 
+        <!-- Button Back -->
+        <a href="{{ route('admin.riwayat.asuransi', ['page' => $currentPage, 'search' => request()->query('search', '')]) }}" class="flex items-center text-blue-600 font-semibold hover:underline mb-5">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Kembali
+        </a>
 
         <h1 class="text-2xl font-bold mb-6">Detail Asuransi</h1>
         
         <div class="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl p-4 sm:p-6 bg-white border border-gray-200 rounded-lg shadow-sm mx-auto detail-container">
-            @php 
-                $currentPage = request()->query('page');
-            @endphp 
             <input type="hidden" name="current_page" value="{{ $currentPage }}">  
 
             <div class="flex justify-between items-center mb-4">
@@ -43,7 +50,7 @@
             <div class="space-y-3">
                 @php
                     $fields = [
-                        'Admin Input' => $asuransi->user->name,
+                        'Diinput Oleh' => $asuransi->user->name,
                         'Plat Nomor' => $asuransi->kendaraan->plat_nomor,
                         'Masa Perlindungan Awal' => \Carbon\Carbon::parse($asuransi->tgl_perlindungan_awal)->format('d-m-Y'),
                         'Masa Perlindungan Akhir' => \Carbon\Carbon::parse($asuransi->tgl_perlindungan_akhir)->format('d-m-Y'),
@@ -90,12 +97,12 @@
                     @endif
                 </div>
 
-                <div class="mt-6 pt-2">
+                {{-- <div class="mt-6 pt-2">
                     <button type="button" onclick="window.location.href='{{ route('admin.riwayat.asuransi', ['page' => $currentPage, 'search' => request()->query('search', '')]) }}'" 
                         class="bg-purple-600 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition sm:self-start w-fitt sm:w-auto">
                         Kembali
                     </button>
-                </div>
+                </div> --}}
             </div>
         </div>
     </div>

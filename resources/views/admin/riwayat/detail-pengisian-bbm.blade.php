@@ -8,7 +8,7 @@
             <h2 class="text-lg font-semibold mb-4">{{ $bbm->kendaraan->merk }} {{ $bbm->kendaraan->tipe }}</h2>
             <div class="space-y-4">
                 <div class="flex justify-between">
-                    <span class="font-medium text-gray-600">User Input</span>
+                    <span class="font-medium text-gray-600">Diinput Oleh</span>
                     <span>{{ $bbm->user->name }}</span>
                 </div>
                 <div class="flex justify-between">

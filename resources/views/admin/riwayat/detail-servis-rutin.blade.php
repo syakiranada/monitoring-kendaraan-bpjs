@@ -7,7 +7,7 @@
             <h2 class="text-lg font-semibold mb-4">{{ $servis->kendaraan->merk }} {{ $servis->kendaraan->tipe }}</h2>
             <div class="space-y-2">
                 <div class="flex justify-between">
-                    <span>Admin Input</span>
+                    <span>Diinput Oleh</span>
                     <span>{{ $servis->user->name }}</span>
                 </div>
                 <div class="flex justify-between">

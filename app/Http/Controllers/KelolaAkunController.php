@@ -15,11 +15,28 @@ class KelolaAkunController extends Controller
     {
         $search = $request->input('search');
 
-        $users = User::when($search, function ($query) use ($search) {
-            $query->where('name', 'like', "%$search%")
-                  ->orWhere('email', 'like', "%$search%")
-                  ->orWhere('peran', 'like', "%$search%");
-        })->paginate(10);
+        // $users = User::when($search, function ($query) use ($search) {
+        //     $query->where('name', 'like', "%$search%")
+        //           ->orWhere('email', 'like', "%$search%")
+        //           ->orWhere('peran', 'like', "%$search%");
+        // })->paginate(10);
+        $users = User::query();
+
+        if (!empty($search)) {
+            $searchWords = explode(' ', $search);
+
+            $users->where(function ($query) use ($searchWords) {
+                foreach ($searchWords as $word) {
+                    $query->where(function ($q) use ($word) {
+                        $q->where('name', 'like', "%$word%")
+                        ->orWhere('email', 'like', "%$word%")
+                        ->orWhere('peran', 'like', "%$word%");
+                    });
+                }
+            });
+        }
+
+        $users = $users->paginate(10);
 
         return view('admin.kelola-akun.index', compact('users', 'search'));
     }

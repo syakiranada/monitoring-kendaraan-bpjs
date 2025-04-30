@@ -75,9 +75,9 @@
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Ya, Simpan',
-                    cancelButtonText: 'Batal'
+                    confirmButtonText: 'Ya',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
                 }).then((result) => {
                     if (result.isConfirmed) {
                         document.getElementById('edit-form').submit();
@@ -92,10 +92,10 @@
                     text: 'Apakah Anda yakin ingin mereset password ke default?',
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
+                    confirmButtonColor: '#d33',
                     confirmButtonText: 'Ya, Reset',
-                    cancelButtonText: 'Batal'
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
                 }).then((result) => {
                     if (result.isConfirmed) {
                         document.getElementById('reset-form').submit();
