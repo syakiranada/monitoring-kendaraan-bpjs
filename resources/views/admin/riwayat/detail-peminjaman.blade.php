@@ -1,7 +1,3 @@
-{{-- @extends('layouts.sidebar')
-
-@section('content') --}}
-
 <x-app-layout>
     <div class="p-6">
         {{-- @php 
@@ -28,11 +24,13 @@
         </a> 
         <h2 class="text-2xl font-bold mb-4">Detail Peminjaman Kendaraan</h2>  
 
-        <div class="grid grid-cols-2 gap-6">
+        {{-- <div class="grid grid-cols-2 gap-6"> --}}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Informasi Peminjaman -->
             <div class="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
                 <h3 class="mb-2 text-xl font-bold tracking-tight text-gray-900">Informasi Peminjaman</h3>
-                <div class="grid grid-cols-2 gap-y-2 text-gray-700">
+                {{-- <div class="grid grid-cols-2 gap-y-2 text-gray-700"> --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-gray-700">
                     <p class="font-semibold">Nama Peminjam</p>
                     <p class="ml-4">{{ $peminjaman->user->name }}</p>
                     
@@ -64,7 +62,8 @@
             <!-- Informasi Kendaraan -->
             <div class="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
                 <h3 class="mb-2 text-xl font-bold tracking-tight text-gray-900">Informasi Kendaraan</h3>
-                <div class="grid grid-cols-2 gap-y-2 text-gray-700">
+                {{-- <div class="grid grid-cols-2 gap-y-2 text-gray-700"> --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-gray-700">
                     <p class="font-semibold">Merek & Tipe</p>
                     <p class="ml-4">{{ $peminjaman->kendaraan->merk }} {{ $peminjaman->kendaraan->tipe }}</p>
                     
@@ -77,12 +76,12 @@
             </div>
         </div>
 
-        {{-- @if ($peminjaman->tgl_kembali_real) --}}
         @if ($peminjaman->status_pinjam == 'Telah Dikembalikan')
             <!-- Card Pengembalian Kendaraan -->
             <div class="block p-6 mt-6 bg-white border border-gray-200 rounded-lg shadow-sm">
                 <h3 class="mb-2 text-xl font-bold tracking-tight text-gray-900">Pengembalian Kendaraan</h3>
-                <div class="grid grid-cols-2 gap-y-2 text-gray-700">
+                {{-- <div class="grid grid-cols-2 gap-y-2 text-gray-700"> --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-gray-700">
                     <p class="font-semibold">Tanggal Kembali Real</p>
                     <p class="ml-4">{{ $peminjaman->tgl_kembali_real ?? '-' }}</p>
 
@@ -99,4 +98,3 @@
         @endif
     </div>
 </x-app-layout>
-{{-- @endsection --}}

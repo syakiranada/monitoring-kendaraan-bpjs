@@ -75,7 +75,7 @@
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
-                    confirmButtonText: 'Ya',
+                    confirmButtonText: 'Ya, simpan',
                     cancelButtonText: 'Batal',
                     reverseButtons: true
                 }).then((result) => {

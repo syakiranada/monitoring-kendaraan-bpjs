@@ -112,7 +112,7 @@
     <script>
         function confirmAction(action, id) {
             const actionText = action === 'setujui' ? 'menyetujui' : 'menolak';
-            const buttonText = action === 'setujui' ? 'Ya' : 'Ya';
+            const buttonText = action === 'setujui' ? 'Ya, setujui' : 'Ya, tolak';
             const confirmButtonColor = action === 'setujui' ? '#3085d6' : '#d33'; // Biru untuk setujui, Merah untuk tolak
 
             Swal.fire({

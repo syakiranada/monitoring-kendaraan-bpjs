@@ -41,7 +41,7 @@ Jane Doe,jane@example.com,password123,pengguna
                 </div>
                 
                 <div class="flex items-center space-x-4">
-                    <button type="submit" class="text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center">
+                    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
                         Impor Akun
                     </button>
                     {{-- <a href="{{ route('admin.kelola-akun.template') }}" class="text-gray-900 bg-white border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-full text-sm px-5 py-2.5 text-center">
@@ -139,6 +139,7 @@ Jane Doe,jane@example.com,password123,pengguna
                     title: "Berhasil!",
                     text: "{{ session('success') }}",
                     icon: "success",
+                    confirmButtonColor: '#3085d6',
                     confirmButtonText: "OK"
                 });
                 // }).then(() => {
@@ -151,6 +152,7 @@ Jane Doe,jane@example.com,password123,pengguna
                     title: "Gagal!",
                     text: "{{ session('error') }}",
                     icon: "error",
+                    confirmButtonColor: '#3085d6',
                     confirmButtonText: "OK"
                 });
             @endif
