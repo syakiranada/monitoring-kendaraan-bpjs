@@ -14,10 +14,14 @@
             <div>
                 <div class="flex justify-between items-center mb-6">
                     <h1 class="text-3xl font-bold">Daftar Kendaraan Dipinjam</h1>
-                    <div class="relative">
-                        <input type="text" class="border rounded-lg py-2 px-4 pl-10 w-64" placeholder="Search">
+                    <form action="{{ route('pengisianBBM') }}" method="GET" class="relative">
+                        <input type="text" name="search_daftar" class="border rounded-lg py-2 px-4 pl-10 w-64" placeholder="Search" value="{{ request('search_daftar') }}">
                         <i class="fas fa-search absolute left-3 top-3 text-gray-500"></i>
-                    </div>
+                        @if(request('search_riwayat'))
+                            <input type="hidden" name="search_riwayat" value="{{ request('search_riwayat') }}">
+                        @endif
+                    </form>
+                    
                 </div>
                 <div class="bg-white shadow-md rounded-lg overflow-hidden">
                     <table class="min-w-full bg-white">
@@ -75,10 +79,14 @@
             <div>
                 <div class="flex justify-between items-center mb-6">
                     <h1 class="text-3xl font-bold">Riwayat Pengisian BBM</h1>
-                    <div class="relative">
-                        <input type="text" class="border rounded-lg py-2 px-4 pl-10 w-64" placeholder="Search">
+                    <form action="{{ route('pengisianBBM') }}" method="GET" class="relative">
+                        <input type="text" name="search_riwayat" class="border rounded-lg py-2 px-4 pl-10 w-64" placeholder="Search" value="{{ request('search_riwayat') }}">
                         <i class="fas fa-search absolute left-3 top-3 text-gray-500"></i>
-                    </div>
+
+                        @if(request('search_daftar'))
+                            <input type="hidden" name="search_daftar" value="{{ request('search_daftar') }}">
+                        @endif
+                    </form>
                 </div>
                 <div class="bg-white shadow-md rounded-lg overflow-hidden">
                     <table class="min-w-full bg-white">
@@ -150,12 +158,12 @@
                         </tbody>
                     </table>
                 </div>
-                {{--  <!-- Pagination -->
+                <!-- Pagination -->
                 <div class="flex justify-center items-center py-4">
                     <div class="bg-white rounded-lg shadow-md p-2">
-                        {{ $pengisianBBMs->appends(request()->query())->links('pagination::tailwind') }}
+                        {{ $pengisianBBMs->appends(['search_daftar' => request('search_daftar'), 'search_riwayat' => request('search_riwayat')])->links() }}
                     </div>
-                </div>  --}}
+                </div>
             </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

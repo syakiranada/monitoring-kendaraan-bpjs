@@ -43,7 +43,7 @@
                     </div>
                 </div> -->
 
-                <form action="{{ route('kendaraan') }}" method="GET" class="flex justify-end pb-4">
+                <form action="{{ route('kendaraan') }}" method="GET" class="flex p-2 pl-10 text-sm">
                     <div class="relative">
                         <input 
                             type="text" 

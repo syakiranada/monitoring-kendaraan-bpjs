@@ -67,10 +67,10 @@
         <!-- Tabel Daftar Servis Insidental (All Vehicles) -->
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-3xl font-bold">Daftar Servis Insidental Kendaraan</h1>
-                <div class="relative">
-                    <input type="text" class="border rounded-lg py-2 px-4 pl-10 w-64" placeholder="Search">
+                <form action="{{ route('admin.servisInsidental') }}" method="GET" class="relative">
+                    <input type="text" name="search" class="border rounded-lg py-2 px-4 pl-10 w-64" placeholder="Search" value="{{ request('search') }}">
                     <i class="fas fa-search absolute left-3 top-3 text-gray-500"></i>
-                </div>
+                </form>
             </div>
             <div class="bg-white shadow-md rounded-lg overflow-hidden">
                 <table class="min-w-full bg-white">

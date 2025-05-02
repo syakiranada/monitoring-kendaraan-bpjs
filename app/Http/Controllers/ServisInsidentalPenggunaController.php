@@ -18,43 +18,165 @@ class ServisInsidentalPenggunaController extends Controller
     public function index(Request $request)
     {
         $userId = Auth::id();
+        $searchDaftar = $request->input('search_daftar');
+        $searchRiwayat = $request->input('search_riwayat');
     
-        // Get peminjaman data filtered by user_id
-        $peminjamans = Peminjaman::where('user_id', $userId)
-                                ->with('kendaraan')
-                                ->orderBy('created_at', 'desc')
-                                ->get();
+        // Query for peminjamans (Daftar Kendaraan Dipinjam)
+        $peminjamansQuery = Peminjaman::where('user_id', $userId)
+            ->with('kendaraan');
         
-        // Build query for servis insidental with search functionality
-        $query = ServisInsidental::where('user_id', $userId)
-                                ->with(['kendaraan', 'peminjaman']);
-
-        // Apply search if provided
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->whereHas('kendaraan', function($q) use ($search) {
-                $q->where('merk', 'like', "%{$search}%")
-                  ->orWhere('tipe', 'like', "%{$search}%")
-                  ->orWhere('plat_nomor', 'like', "%{$search}%");
+        // Apply search for peminjamans if search_daftar is provided
+        if (!empty($searchDaftar)) {
+            $searchDaftar = strtolower($searchDaftar);
+            $searchTerms = explode(' ', $searchDaftar);
+            
+            $peminjamansQuery->where(function ($query) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $query->where(function ($innerQuery) use ($term) {
+                        // Search in kendaraan table
+                        $innerQuery->whereHas('kendaraan', function ($kendaraanQuery) use ($term) {
+                            $kendaraanQuery->whereRaw("LOWER(merk) LIKE ?", ["%$term%"])
+                                ->orWhereRaw("LOWER(tipe) LIKE ?", ["%$term%"])
+                                ->orWhereRaw("LOWER(plat_nomor) LIKE ?", ["%$term%"]);
+                        });
+                        
+                        // Search in status_pinjam
+                        $innerQuery->orWhereRaw("LOWER(status_pinjam) LIKE ?", ["%$term%"]);
+                    });
+                }
             });
         }
-
-        // Get paginated results
-        $servisInsidentals = $query->orderBy('tgl_servis', 'desc')
-                            ->paginate(10);
-
-        return view('pengguna.servisInsidental', compact('peminjamans', 'servisInsidentals'));
+        
+        $peminjamans = $peminjamansQuery->orderBy('created_at', 'desc')->get();
+    
+        $servisQuery = ServisInsidental::where('user_id', $userId)
+            ->with(['kendaraan', 'peminjaman']);
+        
+        if (!empty($searchRiwayat)) {
+            $searchRiwayat = strtolower($searchRiwayat);
+            $searchTerms = explode(' ', $searchRiwayat);
+    
+            $textTerms = [];
+            $dateTerms = [];
+            $statusTerm = null;
+    
+            // Status list - add both lowercase and uppercase versions for matching
+            $statusList = [
+                'telah dikembalikan', 'dibatalkan', 'ditolak', 'diperpanjang', 'disetujui',
+                'tidak terkait peminjaman'
+            ];
+    
+            foreach ($searchTerms as $key => $term) {
+                // Check if this term is a status
+                $isStatus = false;
+                foreach ($statusList as $status) {
+                    if (stripos($status, $term) !== false) {
+                        $statusTerm = $term;
+                        $isStatus = true;
+                        break;
+                    }
+                }
+    
+                // If it's a status, we'll handle it separately
+                if ($isStatus) {
+                    unset($searchTerms[$key]);
+                    continue;
+                }
+    
+                // Check if it's a date format
+                if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $term) || preg_match('/^\d{4}-\d{2}$/', $term) || 
+                    preg_match('/^\d{4}$/', $term) || preg_match('/^\d{1,2}$/', $term)) {
+                    $dateTerms[] = $term;
+                } else {
+                    $textTerms[] = $term;
+                }
+            }
+    
+            $servisQuery->where(function ($query) use ($textTerms, $dateTerms) {
+                // Text search for brand, type, and license plate
+                if (!empty($textTerms)) {
+                    $query->where(function ($textQuery) use ($textTerms) {
+                        foreach ($textTerms as $term) {
+                            $textQuery->whereHas('kendaraan', function ($kendaraanQuery) use ($term) {
+                                $kendaraanQuery->whereRaw("LOWER(merk) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(tipe) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(plat_nomor) LIKE ?", ["%$term%"]);
+                            });
+                        }
+                    });
+                }
+    
+                // Date search
+                if (!empty($dateTerms)) {
+                    $query->where(function ($dateQuery) use ($dateTerms) {
+                        foreach ($dateTerms as $term) {
+                            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $term)) {
+                                try {
+                                    $date = Carbon::parse($term);
+                                    $dateQuery->orWhereDate('tgl_servis', $date);
+                                } catch (\Exception $e) {
+                                    // Handle date parsing error
+                                }
+                            } elseif (preg_match('/^\d{4}-\d{2}$/', $term)) {
+                                try {
+                                    $date = Carbon::parse($term . '-01'); // Add first day of month
+                                    $dateQuery->orWhere(function($q) use ($date) {
+                                        $q->whereYear('tgl_servis', $date->year)
+                                          ->whereMonth('tgl_servis', $date->month);
+                                    });
+                                } catch (\Exception $e) {
+                                    // Handle date parsing error
+                                }
+                            } elseif (preg_match('/^\d{4}$/', $term)) {
+                                $dateQuery->orWhereYear('tgl_servis', $term);
+                            } elseif (preg_match('/^\d{1,2}$/', $term)) {
+                                $dateQuery->orWhere(function ($dayMonthQuery) use ($term) {
+                                    $dayMonthQuery->whereDay('tgl_servis', $term)
+                                        ->orWhereMonth('tgl_servis', $term);
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+    
+            // Status search
+            if ($statusTerm) {
+                if (stripos('tidak terkait peminjaman', $statusTerm) !== false) {
+                    $servisQuery->whereNull('id_peminjaman');
+                } else {
+                    $servisQuery->whereHas('peminjaman', function ($q) use ($statusTerm) {
+                        $q->whereRaw("LOWER(status_pinjam) LIKE ?", ["%$statusTerm%"]);
+                    });
+                }
+            }
+        }
+        
+        $servisInsidentals = $servisQuery->orderBy('tgl_servis', 'desc')->paginate(10);
+    
+        return view('pengguna.servisInsidental', compact('peminjamans', 'servisInsidentals', 'searchDaftar', 'searchRiwayat'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        $kendaraan = Kendaraan::all(); // Ambil semua data kendaraan
-        return view('pengguna.servisInsidental-form', compact('kendaraan'));
+        // Ambil id_peminjaman dari request (misalnya dari query string atau URL)
+        $id_peminjaman = $request->input('id_peminjaman');
+        
+        // Cek apakah id_peminjaman ada, dan jika tidak, tampilkan error atau redirect
+        if (!$id_peminjaman) {
+            // Misalnya, redirect kembali dengan pesan error
+            return redirect()->back()->with('error', 'ID Peminjaman tidak ditemukan.');
+        }
+
+        // Ambil data peminjaman berdasarkan id_peminjaman
+        $peminjaman = Peminjaman::findOrFail($id_peminjaman);
+
+        // Ambil semua data kendaraan
+        $kendaraan = Kendaraan::all();
+
+        return view('pengguna.servisInsidental-form', compact('kendaraan', 'peminjaman'));
     }
 
-    /**
-     * Menyimpan data servis insidental ke database.
-     */
     public function store(Request $request)
     {
         $request->merge([
@@ -128,10 +250,13 @@ class ServisInsidentalPenggunaController extends Controller
 
     public function edit($id)
     {
-        $servis = ServisInsidental::findOrFail($id);
+        $servis = ServisInsidental::with(['kendaraan', 'peminjaman'])->findOrFail($id); // include relasi peminjaman
         $kendaraan = Kendaraan::all();
     
-        return view('pengguna.servisInsidental-edit', compact('servis', 'kendaraan'));
+        return view('pengguna.servisInsidental-edit', [
+            'servis' => $servis,
+            'kendaraan' => $kendaraan
+        ]);
     }
 
     public function update(Request $request, $id)

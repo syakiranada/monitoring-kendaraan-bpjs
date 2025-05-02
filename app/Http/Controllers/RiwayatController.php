@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Closure;
 use App\Models\BBM;
 use App\Models\Pajak;
 use App\Models\Asuransi;
@@ -21,58 +22,127 @@ class RiwayatController extends Controller
         return view('admin.riwayat.index');
     }
 
+    private function buildDateSearch($query, $columns, $search)
+    {
+        foreach ($columns as $column) {
+            // Check if search might be a date in various formats
+
+            // Format: d (day only - 1 to 31)
+            if (preg_match('/^(0?[1-9]|[12][0-9]|3[01])$/', $search)) {
+                $day = (int) $search;
+                $query->orWhereRaw("DAY($column) = ?", [$day]);
+            }
+
+            // Format: m (month only - 1 to 12)
+            if (preg_match('/^(0?[1-9]|1[0-2])$/', $search)) {
+                $month = (int) $search;
+                $query->orWhereRaw("MONTH($column) = ?", [$month]);
+            }
+
+            // Format: Y (year only - 4 digits)
+            if (preg_match('/^(20\d{2})$/', $search)) {
+                $year = (int) $search;
+                $query->orWhereRaw("YEAR($column) = ?", [$year]);
+            }
+
+            // Format: d-m (day-month)
+            if (preg_match('/^(0?[1-9]|[12][0-9]|3[01])[\-\/](0?[1-9]|1[0-2])$/', $search)) {
+                $parts = preg_split('/[\-\/]/', $search);
+                $day = (int) $parts[0];
+                $month = (int) $parts[1];
+                $query->orWhereRaw("DAY($column) = ? AND MONTH($column) = ?", [$day, $month]);
+            }
+
+            // Format: m-Y (month-year)
+            if (preg_match('/^(0?[1-9]|1[0-2])[\-\/](20\d{2})$/', $search)) {
+                $parts = preg_split('/[\-\/]/', $search);
+                $month = (int) $parts[0];
+                $year = (int) $parts[1];
+                $query->orWhereRaw("MONTH($column) = ? AND YEAR($column) = ?", [$month, $year]);
+            }
+
+            // Format: d-m-Y (day-month-year)
+            if (preg_match('/^(0?[1-9]|[12][0-9]|3[01])[\-\/](0?[1-9]|1[0-2])[\-\/](20\d{2})$/', $search)) {
+                $parts = preg_split('/[\-\/]/', $search);
+                $day = (int) $parts[0];
+                $month = (int) $parts[1];
+                $year = (int) $parts[2];
+                $query->orWhereRaw("DAY($column) = ? AND MONTH($column) = ? AND YEAR($column) = ?", [$day, $month, $year]);
+            }
+
+            // Default LIKE search
+            $query->orWhere($column, 'like', "%$search%");
+        }
+    }
+
+    private function applySplitSearch($query, $search, Closure $searchCallback)
+    {
+        $searchWords = preg_split('/\s+/', trim($search));
+
+        $query->where(function ($q) use ($searchWords, $searchCallback) {
+            foreach ($searchWords as $word) {
+                $q->where(function ($q2) use ($word, $searchCallback) {
+                    $searchCallback($q2, $word);
+                });
+            }
+        });
+
+        return $query;
+    }
+
     /**
      * Helper function to build date search conditions
+     * SEARCH UNTUK 1 KOLOM
      */
-    private function buildDateSearch($query, $column, $search)
-    {
-        // Check if search might be a date in various formats
-        // Format: d (day only - 1 to 31)
-        if (preg_match('/^(0?[1-9]|[12][0-9]|3[01])$/', $search)) {
-            $day = (int) $search;
-            $query->orWhereRaw("DAY($column) = ?", [$day]);
-        }
+    // private function buildDateSearch($query, $column, $search)
+    // {
+    //     // Check if search might be a date in various formats
+    //     // Format: d (day only - 1 to 31)
+    //     if (preg_match('/^(0?[1-9]|[12][0-9]|3[01])$/', $search)) {
+    //         $day = (int) $search;
+    //         $query->orWhereRaw("DAY($column) = ?", [$day]);
+    //     }
         
-        // Format: m (month only - 1 to 12)
-        if (preg_match('/^(0?[1-9]|1[0-2])$/', $search)) {
-            $month = (int) $search;
-            $query->orWhereRaw("MONTH($column) = ?", [$month]);
-        }
+    //     // Format: m (month only - 1 to 12)
+    //     if (preg_match('/^(0?[1-9]|1[0-2])$/', $search)) {
+    //         $month = (int) $search;
+    //         $query->orWhereRaw("MONTH($column) = ?", [$month]);
+    //     }
         
-        // Format: Y (year only - 4 digits)
-        if (preg_match('/^(20\d{2})$/', $search)) {
-            $year = (int) $search;
-            $query->orWhereRaw("YEAR($column) = ?", [$year]);
-        }
+    //     // Format: Y (year only - 4 digits)
+    //     if (preg_match('/^(20\d{2})$/', $search)) {
+    //         $year = (int) $search;
+    //         $query->orWhereRaw("YEAR($column) = ?", [$year]);
+    //     }
         
-        // Format: d-m (day-month)
-        if (preg_match('/^(0?[1-9]|[12][0-9]|3[01])[\-\/](0?[1-9]|1[0-2])$/', $search)) {
-            $parts = preg_split('/[\-\/]/', $search);
-            $day = (int) $parts[0];
-            $month = (int) $parts[1];
-            $query->orWhereRaw("DAY($column) = ? AND MONTH($column) = ?", [$day, $month]);
-        }
+    //     // Format: d-m (day-month)
+    //     if (preg_match('/^(0?[1-9]|[12][0-9]|3[01])[\-\/](0?[1-9]|1[0-2])$/', $search)) {
+    //         $parts = preg_split('/[\-\/]/', $search);
+    //         $day = (int) $parts[0];
+    //         $month = (int) $parts[1];
+    //         $query->orWhereRaw("DAY($column) = ? AND MONTH($column) = ?", [$day, $month]);
+    //     }
         
-        // Format: m-Y (month-year)
-        if (preg_match('/^(0?[1-9]|1[0-2])[\-\/](20\d{2})$/', $search)) {
-            $parts = preg_split('/[\-\/]/', $search);
-            $month = (int) $parts[0];
-            $year = (int) $parts[1];
-            $query->orWhereRaw("MONTH($column) = ? AND YEAR($column) = ?", [$month, $year]);
-        }
+    //     // Format: m-Y (month-year)
+    //     if (preg_match('/^(0?[1-9]|1[0-2])[\-\/](20\d{2})$/', $search)) {
+    //         $parts = preg_split('/[\-\/]/', $search);
+    //         $month = (int) $parts[0];
+    //         $year = (int) $parts[1];
+    //         $query->orWhereRaw("MONTH($column) = ? AND YEAR($column) = ?", [$month, $year]);
+    //     }
         
-        // Format: d-m-Y (day-month-year)
-        if (preg_match('/^(0?[1-9]|[12][0-9]|3[01])[\-\/](0?[1-9]|1[0-2])[\-\/](20\d{2})$/', $search)) {
-            $parts = preg_split('/[\-\/]/', $search);
-            $day = (int) $parts[0];
-            $month = (int) $parts[1];
-            $year = (int) $parts[2];
-            $query->orWhereRaw("DAY($column) = ? AND MONTH($column) = ? AND YEAR($column) = ?", [$day, $month, $year]);
-        }
+    //     // Format: d-m-Y (day-month-year)
+    //     if (preg_match('/^(0?[1-9]|[12][0-9]|3[01])[\-\/](0?[1-9]|1[0-2])[\-\/](20\d{2})$/', $search)) {
+    //         $parts = preg_split('/[\-\/]/', $search);
+    //         $day = (int) $parts[0];
+    //         $month = (int) $parts[1];
+    //         $year = (int) $parts[2];
+    //         $query->orWhereRaw("DAY($column) = ? AND MONTH($column) = ? AND YEAR($column) = ?", [$day, $month, $year]);
+    //     }
         
-        // Also try the default LIKE search for backward compatibility
-        $query->orWhere($column, 'like', "%$search%");
-    }
+    //     // Also try the default LIKE search for backward compatibility
+    //     $query->orWhere($column, 'like', "%$search%");
+    // }
 
     public function peminjaman(Request $request)
     {
@@ -80,29 +150,54 @@ class RiwayatController extends Controller
         $query = Peminjaman::with(['user', 'kendaraan'])->orderBy('tgl_mulai', 'desc');
 
         // Search functionality
+        // // search dari 1 kolom
+        // if ($request->filled('search')) {
+        //     $search = $request->search;
+        //     $query->where(function ($q) use ($search) {
+        //         $q->whereHas('user', function ($qUser) use ($search) {
+        //             $qUser->where('name', 'like', "%$search%");
+        //         })
+        //         ->orWhereHas('kendaraan', function ($qKendaraan) use ($search) {
+        //             $qKendaraan->where('merk', 'like', "%$search%")
+        //                     ->orWhere('tipe', 'like', "%$search%")
+        //                     ->orWhere('plat_nomor', 'like', "%$search%");
+        //         })
+        //         ->orWhere('tujuan', 'like', "%$search%")
+        //         // ->orWhere('tgl_mulai', 'like', "%$search%")
+        //         // ->orWhere('tgl_selesai', 'like', "%$search%")
+        //         ->orWhere(function ($q) use ($search) {
+        //             $this->buildDateSearch($q, 'tgl_mulai', $search);
+        //         })
+        //         ->orWhere(function ($q) use ($search) {
+        //             $this->buildDateSearch($q, 'tgl_selesai', $search);
+        //         })
+        //         ->orWhere('status_pinjam', 'like', "%$search%");
+        //     });
+        // }
+
         if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('user', function ($qUser) use ($search) {
-                    $qUser->where('name', 'like', "%$search%");
-                })
-                ->orWhereHas('kendaraan', function ($qKendaraan) use ($search) {
-                    $qKendaraan->where('merk', 'like', "%$search%")
-                            ->orWhere('tipe', 'like', "%$search%")
-                            ->orWhere('plat_nomor', 'like', "%$search%");
-                })
-                ->orWhere('tujuan', 'like', "%$search%")
-                // ->orWhere('tgl_mulai', 'like', "%$search%")
-                // ->orWhere('tgl_selesai', 'like', "%$search%")
-                ->orWhere(function ($q) use ($search) {
-                    $this->buildDateSearch($q, 'tgl_mulai', $search);
-                })
-                ->orWhere(function ($q) use ($search) {
-                    $this->buildDateSearch($q, 'tgl_selesai', $search);
-                })
-                ->orWhere('status_pinjam', 'like', "%$search%");
+            $searchWords = explode(' ', $request->search);
+        
+            $query->where(function ($q) use ($searchWords) {
+                foreach ($searchWords as $word) {
+                    $q->where(function ($q2) use ($word) {
+                        $q2->whereHas('user', function ($qUser) use ($word) {
+                                $qUser->where('name', 'like', "%$word%");
+                            })
+                            ->orWhereHas('kendaraan', function ($qKendaraan) use ($word) {
+                                $qKendaraan->where('merk', 'like', "%$word%")
+                                    ->orWhere('tipe', 'like', "%$word%")
+                                    ->orWhere('plat_nomor', 'like', "%$word%");
+                            })
+                            ->orWhere('tujuan', 'like', "%$word%")
+                            ->orWhere('status_pinjam', 'like', "%$word%")
+                            ->orWhere(function ($q3) use ($word) {
+                                $this->buildDateSearch($q3, ['tgl_mulai', 'tgl_selesai'], $word);
+                            });
+                    });
+                }
             });
-        }
+        }        
 
         // Paginate results
         $riwayatPeminjaman = $query->paginate(10);
@@ -127,25 +222,48 @@ class RiwayatController extends Controller
             ->orderBy('tgl_jatuh_tempo', 'desc');
 
         // Jika ada pencarian berdasarkan plat, merek kendaraan, tipe, atau nama admin
+        // // search 1 kolom
+        // if ($request->filled('search')) {
+        //     $search = $request->search;
+        //     $query->where(function ($q) use ($search) {
+        //         $q->whereHas('kendaraan', function ($qKendaraan) use ($search) {
+        //             $qKendaraan->where('plat_nomor', 'like', "%$search%")
+        //                     ->orWhere('merk', 'like', "%$search%")
+        //                     ->orWhere('tipe', 'like', "%$search%");
+        //         })
+        //         ->orWhereHas('user', function ($qUser) use ($search) {
+        //             $qUser->where('name', 'like', "%$search%");
+        //         })
+        //         // ->orWhere('tgl_bayar', 'like', "%$search%")
+        //         // ->orWhere('tgl_jatuh_tempo', 'like', "%$search%");
+        //         ->orWhere(function ($q) use ($search) {
+        //             $this->buildDateSearch($q, 'tgl_bayar', $search);
+        //         })
+        //         ->orWhere(function ($q) use ($search) {
+        //             $this->buildDateSearch($q, 'tgl_jatuh_tempo', $search);
+        //         });
+        //     });
+        // }
+
         if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('kendaraan', function ($qKendaraan) use ($search) {
-                    $qKendaraan->where('plat_nomor', 'like', "%$search%")
-                            ->orWhere('merk', 'like', "%$search%")
-                            ->orWhere('tipe', 'like', "%$search%");
-                })
-                ->orWhereHas('user', function ($qUser) use ($search) {
-                    $qUser->where('name', 'like', "%$search%");
-                })
-                // ->orWhere('tgl_bayar', 'like', "%$search%")
-                // ->orWhere('tgl_jatuh_tempo', 'like', "%$search%");
-                ->orWhere(function ($q) use ($search) {
-                    $this->buildDateSearch($q, 'tgl_bayar', $search);
-                })
-                ->orWhere(function ($q) use ($search) {
-                    $this->buildDateSearch($q, 'tgl_jatuh_tempo', $search);
-                });
+            $searchWords = explode(' ', $search);
+    
+            $query->where(function ($q) use ($searchWords) {
+                foreach ($searchWords as $word) {
+                    $q->where(function ($q2) use ($word) {
+                        $q2->whereHas('kendaraan', function ($qKendaraan) use ($word) {
+                                $qKendaraan->where('plat_nomor', 'like', "%$word%")
+                                    ->orWhere('merk', 'like', "%$word%")
+                                    ->orWhere('tipe', 'like', "%$word%");
+                            })
+                            ->orWhereHas('user', function ($qUser) use ($word) {
+                                $qUser->where('name', 'like', "%$word%");
+                            })
+                            ->orWhere(function ($q3) use ($word) {
+                                $this->buildDateSearch($q3, ['tgl_bayar', 'tgl_jatuh_tempo'], $word);
+                            });
+                    });
+                }
             });
         }
 
@@ -157,14 +275,13 @@ class RiwayatController extends Controller
 
     public function detailPajak($id)
     {
-        // $pajak = Pajak::with('kendaraan')->findOrFail($id);
-
-        // return view('admin.riwayat.detail-pajak', compact('pajak'));
-
-        $pajak = Pajak::with('kendaraan')->where('id_pajak', $id)->firstOrFail();
+        $pajak = Pajak::with(['kendaraan', 'user']) 
+            ->where('id_pajak', $id)
+            ->firstOrFail();
+    
         $tglJatuhTempoTahunDepan = \Carbon\Carbon::parse($pajak->tgl_jatuh_tempo)->addYear();
         $pajak->tgl_jatuh_tempo_tahun_depan = $tglJatuhTempoTahunDepan;
-
+    
         return view('admin.riwayat.detail-pajak', compact('pajak'));
     }
 
@@ -174,33 +291,60 @@ class RiwayatController extends Controller
         $query = Asuransi::with(['kendaraan', 'user'])
             ->orderBy('tgl_bayar', 'desc');
 
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('kendaraan', function ($q) use ($search) {
-                    $q->where('merk', 'like', "%$search%")
-                    ->orWhere('tipe', 'like', "%$search%")
-                    ->orWhere('plat_nomor', 'like', "%$search%");
-                })
-                ->orWhereHas('user', function ($q) use ($search) {
-                    $q->where('name', 'like', "%$search%");
-                })
-                ->orWhere('tahun', 'like', "%$search%")
-                // ->orWhere('tgl_bayar', 'like', "%$search%")
-                ->orWhere(function ($q) use ($search) {
-                    $this->buildDateSearch($q, 'tgl_bayar', $search);
-                })
-                ->orWhere('polis', 'like', "%$search%")
-                // ->orWhere('tgl_perlindungan_awal', 'like', "%$search%")
-                // ->orWhere('tgl_perlindungan_akhir', 'like', "%$search%")
-                ->orWhere(function ($q) use ($search) {
-                    $this->buildDateSearch($q, 'tgl_perlindungan_awal', $search);
-                })
-                ->orWhere(function ($q) use ($search) {
-                    $this->buildDateSearch($q, 'tgl_perlindungan_akhir', $search);
-                })
-                ->orWhere('nominal', 'like', "%$search%")
-                ->orWhere('biaya_asuransi_lain', 'like', "%$search%");
+        // // search 1 kolom
+        // if ($request->has('search')) {
+        //     $search = $request->search;
+        //     $query->where(function ($q) use ($search) {
+        //         $q->whereHas('kendaraan', function ($q) use ($search) {
+        //             $q->where('merk', 'like', "%$search%")
+        //             ->orWhere('tipe', 'like', "%$search%")
+        //             ->orWhere('plat_nomor', 'like', "%$search%");
+        //         })
+        //         ->orWhereHas('user', function ($q) use ($search) {
+        //             $q->where('name', 'like', "%$search%");
+        //         })
+        //         ->orWhere('tahun', 'like', "%$search%")
+        //         // ->orWhere('tgl_bayar', 'like', "%$search%")
+        //         ->orWhere(function ($q) use ($search) {
+        //             $this->buildDateSearch($q, 'tgl_bayar', $search);
+        //         })
+        //         ->orWhere('polis', 'like', "%$search%")
+        //         // ->orWhere('tgl_perlindungan_awal', 'like', "%$search%")
+        //         // ->orWhere('tgl_perlindungan_akhir', 'like', "%$search%")
+        //         ->orWhere(function ($q) use ($search) {
+        //             $this->buildDateSearch($q, 'tgl_perlindungan_awal', $search);
+        //         })
+        //         ->orWhere(function ($q) use ($search) {
+        //             $this->buildDateSearch($q, 'tgl_perlindungan_akhir', $search);
+        //         })
+        //         ->orWhere('nominal', 'like', "%$search%")
+        //         ->orWhere('biaya_asuransi_lain', 'like', "%$search%");
+        //     });
+        // }
+
+        if ($request->filled('search')) {
+            $searchWords = preg_split('/\s+/', trim($search));
+    
+            $query->where(function ($q) use ($searchWords) {
+                foreach ($searchWords as $word) {
+                    $q->where(function ($q2) use ($word) {
+                        $q2->whereHas('kendaraan', function ($qKendaraan) use ($word) {
+                                $qKendaraan->where('merk', 'like', "%$word%")
+                                    ->orWhere('tipe', 'like', "%$word%")
+                                    ->orWhere('plat_nomor', 'like', "%$word%");
+                            })
+                            ->orWhereHas('user', function ($qUser) use ($word) {
+                                $qUser->where('name', 'like', "%$word%");
+                            })
+                            ->orWhere('tahun', 'like', "%$word%")
+                            ->orWhere(function ($q3) use ($word) {
+                                $this->buildDateSearch($q3, ['tgl_bayar', 'tgl_perlindungan_awal', 'tgl_perlindungan_akhir'], $word);
+                            })
+                            ->orWhere('polis', 'like', "%$word%")
+                            ->orWhere('nominal', 'like', "%$word%")
+                            ->orWhere('biaya_asuransi_lain', 'like', "%$word%");
+                    });
+                }
             });
         }
 
@@ -209,24 +353,23 @@ class RiwayatController extends Controller
         return view('admin.riwayat.asuransi', compact('riwayatAsuransi', 'search'));
     }
 
-    public function detailAsuransi($id)
+    public function detailAsuransi($id) 
     {
-        $asuransi = Asuransi::with('kendaraan')
+        $asuransi = Asuransi::with(['kendaraan', 'user']) 
             ->where('id_asuransi', $id)
             ->firstOrFail();
         
-        // Ambil record asuransi sebelumnya berdasarkan id_asuransi yang lebih kecil
         $previousAsuransi = Asuransi::where('id_kendaraan', $asuransi->id_kendaraan)
-            ->where('id_asuransi', '<', $id)  // Menjaga agar mengambil yang sebelumnya
-            ->orderBy('id_asuransi', 'desc')  // Urutkan berdasarkan id_asuransi secara menurun
+            ->where('id_asuransi', '<', $id) 
+            ->orderBy('id_asuransi', 'desc') 
             ->first();
         
         if ($previousAsuransi) {
             $asuransi->tgl_jatuh_tempo = $previousAsuransi->tgl_perlindungan_akhir;
         } else {
-            $asuransi->tgl_jatuh_tempo = null;  // Bisa disesuaikan jika tidak ada record sebelumnya
+            $asuransi->tgl_jatuh_tempo = null;
         }
-    
+
         return view('admin.riwayat.detail-asuransi', compact('asuransi'));
     }
 
@@ -236,28 +379,54 @@ class RiwayatController extends Controller
         $query = ServisRutin::with(['kendaraan', 'user'])
             ->orderBy('tgl_servis_real', 'desc');
 
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('kendaraan', function ($q) use ($search) {
-                    $q->where('merk', 'like', "%$search%")
-                        ->orWhere('tipe', 'like', "%$search%")
-                        ->orWhere('plat_nomor', 'like', "%$search%");
-                })
-                ->orWhereHas('user', function ($q) use ($search) {
-                    $q->where('name', 'like', "%$search%");
-                })
-                ->orWhere('lokasi', 'like', "%$search%")
-                ->orWhere('harga', 'like', "%$search%")
-                ->orWhere('kilometer', 'like', "%$search%")
-                // ->orWhere('tgl_servis_real', 'like', "%$search%")
-                // ->orWhere('tgl_servis_selanjutnya', 'like', "%$search%");
-                ->orWhere(function ($q) use ($search) {
-                    $this->buildDateSearch($q, 'tgl_servis_real', $search);
-                });
-                // ->orWhere(function ($q) use ($search) {
-                //     $this->buildDateSearch($q, 'tgl_servis_selanjutnya', $search);
-                // });
+        // // search 1 kolom
+        // if ($request->has('search')) {
+        //     $search = $request->search;
+        //     $query->where(function ($q) use ($search) {
+        //         $q->whereHas('kendaraan', function ($q) use ($search) {
+        //             $q->where('merk', 'like', "%$search%")
+        //                 ->orWhere('tipe', 'like', "%$search%")
+        //                 ->orWhere('plat_nomor', 'like', "%$search%");
+        //         })
+        //         ->orWhereHas('user', function ($q) use ($search) {
+        //             $q->where('name', 'like', "%$search%");
+        //         })
+        //         ->orWhere('lokasi', 'like', "%$search%")
+        //         ->orWhere('harga', 'like', "%$search%")
+        //         ->orWhere('kilometer', 'like', "%$search%")
+        //         // ->orWhere('tgl_servis_real', 'like', "%$search%")
+        //         // ->orWhere('tgl_servis_selanjutnya', 'like', "%$search%");
+        //         ->orWhere(function ($q) use ($search) {
+        //             $this->buildDateSearch($q, 'tgl_servis_real', $search);
+        //         });
+        //         // ->orWhere(function ($q) use ($search) {
+        //         //     $this->buildDateSearch($q, 'tgl_servis_selanjutnya', $search);
+        //         // });
+        //     });
+        // }
+
+        if ($request->filled('search')) {
+            $searchWords = preg_split('/\s+/', trim($search));
+    
+            $query->where(function ($q) use ($searchWords) {
+                foreach ($searchWords as $word) {
+                    $q->where(function ($q2) use ($word) {
+                        $q2->whereHas('kendaraan', function ($qKendaraan) use ($word) {
+                                $qKendaraan->where('merk', 'like', "%$word%")
+                                    ->orWhere('tipe', 'like', "%$word%")
+                                    ->orWhere('plat_nomor', 'like', "%$word%");
+                            })
+                            ->orWhereHas('user', function ($qUser) use ($word) {
+                                $qUser->where('name', 'like', "%$word%");
+                            })
+                            ->orWhere('lokasi', 'like', "%$word%")
+                            ->orWhere('harga', 'like', "%$word%")
+                            ->orWhere('kilometer', 'like', "%$word%")
+                            ->orWhere(function ($q3) use ($word) {
+                                $this->buildDateSearch($q3, ['tgl_servis_real'], $word);
+                            });
+                    });
+                }
             });
         }
 
@@ -280,23 +449,48 @@ class RiwayatController extends Controller
         $query = ServisInsidental::with(['kendaraan', 'user'])
             ->orderBy('tgl_servis', 'desc');
 
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('kendaraan', function ($q) use ($search) {
-                    $q->where('merk', 'like', "%$search%")
-                        ->orWhere('tipe', 'like', "%$search%")
-                        ->orWhere('plat_nomor', 'like', "%$search%");
-                })
-                ->orWhereHas('user', function ($q) use ($search) {
-                    $q->where('name', 'like', "%$search%");
-                })
-                ->orWhere('lokasi', 'like', "%$search%")
-                ->orWhere('harga', 'like', "%$search%")
-                // ->orWhere('tgl_servis', 'like', "%$search%");
-                ->orWhere(function ($q) use ($search) {
-                    $this->buildDateSearch($q, 'tgl_servis', $search);
-                });
+        // // search 1 kolom
+        // if ($request->has('search')) {
+        //     $search = $request->search;
+        //     $query->where(function ($q) use ($search) {
+        //         $q->whereHas('kendaraan', function ($q) use ($search) {
+        //             $q->where('merk', 'like', "%$search%")
+        //                 ->orWhere('tipe', 'like', "%$search%")
+        //                 ->orWhere('plat_nomor', 'like', "%$search%");
+        //         })
+        //         ->orWhereHas('user', function ($q) use ($search) {
+        //             $q->where('name', 'like', "%$search%");
+        //         })
+        //         ->orWhere('lokasi', 'like', "%$search%")
+        //         ->orWhere('harga', 'like', "%$search%")
+        //         // ->orWhere('tgl_servis', 'like', "%$search%");
+        //         ->orWhere(function ($q) use ($search) {
+        //             $this->buildDateSearch($q, 'tgl_servis', $search);
+        //         });
+        //     });
+        // }
+
+        if ($request->filled('search')) {
+            $searchWords = preg_split('/\s+/', trim($search));
+    
+            $query->where(function ($q) use ($searchWords) {
+                foreach ($searchWords as $word) {
+                    $q->where(function ($q2) use ($word) {
+                        $q2->whereHas('kendaraan', function ($qKendaraan) use ($word) {
+                                $qKendaraan->where('merk', 'like', "%$word%")
+                                    ->orWhere('tipe', 'like', "%$word%")
+                                    ->orWhere('plat_nomor', 'like', "%$word%");
+                            })
+                            ->orWhereHas('user', function ($qUser) use ($word) {
+                                $qUser->where('name', 'like', "%$word%");
+                            })
+                            ->orWhere('lokasi', 'like', "%$word%")
+                            ->orWhere('harga', 'like', "%$word%")
+                            ->orWhere(function ($q3) use ($word) {
+                                $this->buildDateSearch($q3, ['tgl_servis'], $word);
+                            });
+                    });
+                }
             });
         }
 
@@ -389,23 +583,46 @@ class RiwayatController extends Controller
     {
         $search = $request->search;
         $query = CekFisik::with(['kendaraan', 'user'])
-            ->orderBy('tgl_cek_fisik', 'desc');
+            ->orderBy('tgl_cek_fisik', 'desc')
+            ->orderBy('id_cek_fisik', 'desc');
 
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('kendaraan', function ($q) use ($search) {
-                    $q->where('merk', 'like', "%$search%")
-                        ->orWhere('tipe', 'like', "%$search%")
-                        ->orWhere('plat_nomor', 'like', "%$search%");
-                })
-                ->orWhereHas('user', function ($q) use ($search) {
-                    $q->where('name', 'like', "%$search%");
-                })
-                // ->orWhere('tgl_cek_fisik', 'like', "%$search%");
-                ->orWhere(function ($q) use ($search) {
-                    $this->buildDateSearch($q, 'tgl_cek_fisik', $search);
-                });
+        // // search 1 kolom aja
+        // if ($request->has('search')) {
+        //     $search = $request->search;
+        //     $query->where(function ($q) use ($search) {
+        //         $q->whereHas('kendaraan', function ($q) use ($search) {
+        //             $q->where('merk', 'like', "%$search%")
+        //                 ->orWhere('tipe', 'like', "%$search%")
+        //                 ->orWhere('plat_nomor', 'like', "%$search%");
+        //         })
+        //         ->orWhereHas('user', function ($q) use ($search) {
+        //             $q->where('name', 'like', "%$search%");
+        //         })
+        //         // ->orWhere('tgl_cek_fisik', 'like', "%$search%");
+        //         ->orWhere(function ($q) use ($search) {
+        //             $this->buildDateSearch($q, 'tgl_cek_fisik', $search);
+        //         });
+        //     });
+        // }
+
+        if ($request->filled('search')) {
+            $searchWords = preg_split('/\s+/', trim($search));
+    
+            $query->where(function ($q) use ($searchWords) {
+                foreach ($searchWords as $word) {
+                    $q->where(function ($q2) use ($word) {
+                        $q2->whereHas('kendaraan', function ($qKendaraan) use ($word) {
+                            $qKendaraan->where('merk', 'like', "%$word%")
+                                ->orWhere('tipe', 'like', "%$word%")
+                                ->orWhere('plat_nomor', 'like', "%$word%");
+                        })
+                        ->orWhereHas('user', function ($qUser) use ($word) {
+                            $qUser->where('name', 'like', "%$word%");
+                        })
+                        ->orWhere('kondisi_keseluruhan', 'like', "%$word%")
+                        ->orWhere('tgl_cek_fisik', 'like', "%$word%");
+                    });
+                }
             });
         }
 

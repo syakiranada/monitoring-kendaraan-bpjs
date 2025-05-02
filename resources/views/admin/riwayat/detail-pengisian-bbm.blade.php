@@ -8,6 +8,10 @@
             <h2 class="text-lg font-semibold mb-4">{{ $bbm->kendaraan->merk }} {{ $bbm->kendaraan->tipe }}</h2>
             <div class="space-y-4">
                 <div class="flex justify-between">
+                    <span class="font-medium text-gray-600">Diinput Oleh</span>
+                    <span>{{ $bbm->user->name }}</span>
+                </div>
+                <div class="flex justify-between">
                     <span>Plat Nomor</span>
                     <span>{{ $bbm->kendaraan->plat_nomor }}</span>
                 </div>
@@ -24,20 +28,15 @@
                     <span>Rp {{ number_format($bbm->nominal, 0, ',', '.') }}</span>
                 </div>
             </div>
-            <div class="mt-6">
-                {{-- <a href="{{ url()->previous() }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-md" style="background-color: #3b82f6;">
-                    Kembali
-                </a> --}}
-                <a href="{{ route('admin.riwayat.pengisian-bbm', [
-                    'kendaraan' => $filterParams['kendaraan'],
-                    'pengguna' => $filterParams['pengguna'],
-                    'tgl_awal' => $filterParams['tgl_awal'],
-                    'tgl_akhir' => $filterParams['tgl_akhir'],
-                    'page' => $filterParams['page']
-                ]) }}" class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
+            
+            {{-- <div class="mt-6 flex justify-between">
+                <a href="{{ url()->previous() }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-md" style="background-color: #3b82f6;">
                     Kembali
                 </a>
-            </div>        
+            </div>     --}}
+            <button type="button" onclick="window.location.href='{{ route('admin.riwayat.pengisian-bbm', ['page' => request('page'), 'search' => request('search')]) }}'" class="bg-purple-600 text-white px-6 py-2.5 mt-6 rounded-lg font-semibold hover:bg-purple-700 transition">
+                Kembali
+            </button>       
         </div>
     </div>
 </x-app-layout>

@@ -14,13 +14,24 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="flex items-center justify-center min-h-screen bg-gray-100">
-    <div class="flex flex-col-reverse sm:flex-row items-center justify-center">
-        <!-- Left section (Login Form) -->
+<style>
+    .bg-custom {
+        background-color: #3575B8;
+    }
+</style>
+<body class="flex items-center justify-center min-h-screen bg-custom">
+    <div class="flex flex-col items-center justify-center">
+
+        <!-- Form Login -->
         <div class="bg-white p-8 rounded-lg shadow-md w-96">
-            <h2 class="text-2xl font-semibold mb-6">Selamat Datang! </h2>
+            <!-- Logo di atas -->
+            <div class="mb-6 w-80">
+                <img src="{{ asset('car_simonas_hitam.png') }}" alt="Monitoring Kendaraan Dinas Logo" class="w-full mx-auto">
+            </div>
+            <h2 class="text-2xl font-semibold mb-6 text-center">Selamat Datang!</h2>
             <form method="POST" action="{{ route('login') }}">
                 @csrf
+
                 <div class="mb-4">
                     <label for="email" class="block text-sm font-medium">Email</label>
                     <input type="email" id="email" name="email" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="Masukkan email" value="{{ old('email') }}" required autofocus autocomplete="username">
@@ -33,27 +44,26 @@
                         <input type="password" id="password" name="password" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="Masukkan Password" required autocomplete="current-password">
                         <span class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer" onclick="togglePasswordVisibility()">
                             <svg id="eyeIcon" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" />
                             </svg>
                         </span>
                     </div>
                     <x-input-error :messages="$errors->get('password')" class="mt-2" />
                 </div>
 
-                {{-- <button type="submit" class="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg">{{ __('Log in') }}</button> --}}
                 <div class="flex items-center justify-end mt-4">
                     <x-primary-button class="ms-3">
                         {{ __('Masuk') }}
                     </x-primary-button>
                 </div>
-            </form>
-        </div>
 
-        <!-- Right section (Logo) -->
-        <div class="flex items-center justify-center w-96">
-            <div>
-                <img src="{{ asset('car_simonas_hitam.png') }}" alt="Monitoring Kendaraan Dinas Logo" class="w-80 mx-auto mb-4">
-            </div>
+                @if($errors->has('status'))
+                    <div class="text-red-600 text-sm mt-2">
+                        {{ $errors->first('status') }}
+                    </div>
+                @endif
+            </form>
         </div>
     </div>
 

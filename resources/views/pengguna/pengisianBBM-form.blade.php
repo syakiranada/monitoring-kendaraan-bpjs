@@ -35,9 +35,31 @@
                             <option value="Pertamina Dex">Pertamina Dex</option>
                         </select>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700">Tanggal Pengisian BBM</label>
-                        <input type="date" name="tgl_isi" class="w-full p-2 border border-gray-300 rounded" required>
+                    <div class="grid gap-4 mb-4">
+                    @php
+                        $tglMulai = optional($peminjaman)->tgl_mulai;
+                        $tglSelesai = optional($peminjaman)->tgl_selesai;
+                    @endphp
+
+                        <div>
+                            <label class="block text-gray-700">Tanggal Pengisian BBM</label>
+                            <input 
+                            type="date" 
+                            name="tgl_isi" 
+                            class="w-full p-2 border border-gray-300 rounded" 
+                            required
+                            @if($tglMulai) min="{{ \Carbon\Carbon::parse($tglMulai)->format('Y-m-d') }}" @endif
+                            @if($tglSelesai) max="{{ \Carbon\Carbon::parse($tglSelesai)->format('Y-m-d') }}" @endif
+                        >
+                        <small class="text-gray-500 text-sm">
+                            Pilih tanggal antara {{ \Carbon\Carbon::parse($tglMulai)->format('d M Y') }} dan {{ \Carbon\Carbon::parse($tglSelesai)->format('d M Y') }}.
+                        </small>
+                        </div>
+{{--  
+                        <div>
+                            <label class="block text-gray-700">Jumlah Pembayaran</label>
+                            <input type="text" id="hargaInput" name="harga" class="w-full p-2 border border-gray-300 rounded" required>
+                        </div>  --}}
                     </div>
                     <div class="mb-4">
                         <label class="block text-gray-700">Nominal (Rp)</label>
@@ -187,6 +209,11 @@
                 let value = e.target.value.replace(/\D/g, '');
                 e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
             });
+
+            {{--  document.getElementById('hargaInput').addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+                e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            });  --}}
         </script>
     </body>
     </html>

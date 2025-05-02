@@ -145,9 +145,9 @@
                         <p class="font-normal text-right sm:mt-0 sm:-ml-5
                             @if($statusServisRutin == 'SUDAH SERVIS')
                                 bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-green-400 border border-green-400
-                            @elseif($statusServisRutin == 'WAKTUNYA SERVIS')
+                            @elseif($statusServisRutin == 'JATUH TEMPO')
                                 bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-red-400 border border-red-400
-                            @elseif($statusServisRutin == 'MENDEKATI JADWAL SERVIS')
+                            @elseif($statusServisRutin == 'MENDEKATI JATUH TEMPO')
                                 bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-yellow-300 border border-yellow-300
                             @else
                                 bg-gray-100 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-gray-400 border border-gray-500

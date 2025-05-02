@@ -49,9 +49,11 @@
             <a href="{{ url()->previous() }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-md" style="background-color: #3b82f6;">
                 Kembali
             </a>
-            <a href="{{ route('servisInsidental.edit', ['id' => $servis->id_servis_insidental]) }}" class="text-white px-4 py-2 rounded hover:bg-yellow-600 shadow-md" style="background-color: #f59e0b;">
-                Edit
-            </a> 
+            @if($servis->peminjaman->status_pinjam == 'Disetujui')
+                <a href="{{ route('servisInsidental.edit', ['id' => $servis->id_servis_insidental]) }}" class="text-white px-4 py-2 rounded hover:bg-yellow-600 shadow-md" style="background-color: #f59e0b;">
+                    Edit
+                </a> 
+            @endif
         </div>   
             
     </div>

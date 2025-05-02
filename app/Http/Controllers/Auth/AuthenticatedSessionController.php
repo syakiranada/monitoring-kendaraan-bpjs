@@ -28,9 +28,17 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        if ($request->user()->peran === 'admin')
-        {
-            return redirect('admin/beranda');
+        // if ($request->user()->peran === 'admin')
+        // {
+        //     return redirect('admin/beranda');
+        // }
+
+        // Cek apakah status user aktif atau tidak
+        if (!$request->user()->status) {
+            Auth::guard('web')->logout();
+            return redirect()->route('login')->withErrors([
+                'status' => 'Akun Anda nonaktif, silakan hubungi admin.',
+            ]);
         }
 
         // return redirect()->intended(route('dashboard', absolute: false));
