@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id'); // Foreign Key untuk pengguna
             $table->unsignedBigInteger('id_kendaraan'); // Foreign Key untuk kendaraan
             $table->unsignedBigInteger('id_peminjaman')->nullable(); // Tambahkan kolom untuk relasi ke peminjaman
-            $table->integer('nominal')->nullable(); // Jumlah nominal pengisian BBM
+            $table->unsignedBigInteger('nominal')->nullable(); // Jumlah nominal pengisian BBM
             $table->string('jenis_bbm', 25)->nullable();// Jenis BBM (varchar 25)
             $table->date('tgl_isi')->nullable(); // Tanggal pengisian BBM
             $table->timestamps(); // Created_at & Updated_at

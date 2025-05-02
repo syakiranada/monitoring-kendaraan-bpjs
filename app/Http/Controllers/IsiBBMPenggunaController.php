@@ -153,7 +153,8 @@ class IsiBBMPenggunaController extends Controller{
         }
     }
     
-    $pengisianBBMs = $bbmQuery->orderBy('tgl_isi', 'desc')->paginate(10);
+    $peminjamans = Peminjaman::where('status_pinjam', 'Disetujui')->paginate(5, ['*'], 'peminjamans_page');
+    $pengisianBBMs = $bbmQuery->orderBy('tgl_isi', 'desc')->paginate(5, ['*'], 'pengisian_page');    
 
     return view('pengguna.pengisianBBM', compact('peminjamans', 'pengisianBBMs', 'searchDaftar', 'searchRiwayat'));
 }
@@ -195,7 +196,7 @@ class IsiBBMPenggunaController extends Controller{
             'id_peminjaman' => 'nullable|exists:peminjaman,id_peminjaman',
             'tgl_isi' => 'required|date',
             'nominal' => 'required|numeric|min:0',
-            'jenis_bbm' => 'required|string|in:Pertalite,Pertamax,Pertamax Turbo,Dexlite,Pertamina Dex',
+            'jenis_bbm' => 'required|string|in:Pertalite,Pertamax,Pertamax Turbo,Dexlite,Pertamina Dex,Solar,Bio Solar',
         ]);        
     
         $userId = Auth::id();
@@ -255,7 +256,7 @@ class IsiBBMPenggunaController extends Controller{
         $validated = $request->validate([
             'tgl_isi' => 'required|date',
             'nominal' => 'required|numeric|min:0',
-            'jenis_bbm' => 'required|string|in:Pertalite,Pertamax,Pertamax Turbo,Dexlite,Pertamina Dex',
+            'jenis_bbm' => 'required|string|in:Pertalite,Pertamax,Pertamax Turbo,Dexlite,Pertamina Dex,Solar,Bio Solar',
         ]);
     
         $bbm = BBM::findOrFail($id);

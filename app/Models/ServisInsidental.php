@@ -15,13 +15,12 @@ class ServisInsidental extends Model
         'id_kendaraan',
         'user_id',
         'id_peminjaman',
-        // 'tipe',
+        'tgl_servis',
         'harga',
         'lokasi',
         'deskripsi',
         'bukti_bayar',
         'bukti_fisik',
-        'tgl_servis',
     ];
 
     // Relasi ke tabel Kendaraan

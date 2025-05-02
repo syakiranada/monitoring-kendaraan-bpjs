@@ -1,16 +1,5 @@
 <x-app-layout>
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Pengisian BBM</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    </head>
-    <body class="bg-gray-100 font-sans">
-        <div class="p-6 space-y-12">
+        <div class="p-6">
             {{--  <!-- Tabel Daftar Kendaraan (Only Available Vehicles) -->
             <div>
                 <div class="flex justify-between items-center mb-6">
@@ -69,15 +58,15 @@
             <!-- Tabel Daftar Riwayat BBM (Semua)-->
             <div>
                 <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-3xl font-bold">Daftar Pengisian BBM</h1>
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Daftar Pengisian BBM</h2>
                     <form action="{{ route('admin.pengisianBBM') }}" method="GET" class="relative">
-                        <input type="text" name="search" class="border rounded-lg py-2 px-4 pl-10 w-64" placeholder="Search" value="{{ request('search') }}">
+                        <input type="text" name="search" class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-60 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" placeholder="Cari" value="{{ request('search') }}">
                         <i class="fas fa-search absolute left-3 top-3 text-gray-500"></i>
                     </form>
                 </div>
                 <div class="bg-white shadow-md rounded-lg overflow-hidden">
-                    <table class="min-w-full bg-white">
-                        <thead class="bg-gray-100 text-gray-600">
+                    <table class="w-full text-sm text-left rtl:text-right text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
                                 <th class="py-3 px-4 text-left">MERK DAN TIPE</th>
                                 <th class="py-3 px-4 text-left">PLAT</th>
@@ -106,16 +95,16 @@
                                                         'merk'           => $bbm->merk ?? 'Tidak Diketahui',
                                                         'tipe'           => $bbm->tipe ?? '',
                                                         'plat'           => $bbm->plat_nomor ?? '-'
-                                                    ]) }}" class="text-blue-500 hover:underline">
+                                                    ]) }}" class="font-medium text-blue-500 hover:underline">
                                                         Input
                                             </a>
                                             @if ($bbm->id_bbm)
-                                            <a href="{{ route('admin.pengisianBBM.detail', $bbm->id_bbm) }}" class="text-blue-500 hover:underline">Detail</a>
-                                            <a href="{{ route('admin.pengisianBBM.edit', ['id' => $bbm->id_bbm]) }}" class="text-green-500 hover:underline">Edit</a>
+                                            <a href="{{ route('admin.pengisianBBM.detail', $bbm->id_bbm) }}" class="font-medium text-gray-500 hover:underline">Detail</a>
+                                            <a href="{{ route('admin.pengisianBBM.edit', ['id' => $bbm->id_bbm]) }}" class="font-medium text-yellow-500 hover:underline">Edit</a>
                                             <form action="{{ route('admin.pengisianBBM.destroy', $bbm->id_bbm) }}" method="POST" class="inline form-delete">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" class="text-red-500 hover:underline delete-button" 
+                                                <button type="button" class="font-medium text-red-600 hover:underline delete-button" 
                                                         data-url="{{ route('admin.pengisianBBM.destroy', $bbm->id_bbm) }}">
                                                     Hapus
                                                 </button>
@@ -137,11 +126,11 @@
                     </table>
                 </div>
                 <!-- Pagination -->
-                <div class="flex justify-center items-center py-4">
-                    <div class="bg-white rounded-lg shadow-md p-2">
-                        {{ $pengisianBBMs->appends(request()->query())->links('pagination::tailwind') }}
-                    </div>
+                <div class="mt-4">
+                    {{ $pengisianBBMs->appends(request()->query())->links() }}
                 </div>
+
+
             </div>
         </div>
 
@@ -254,6 +243,4 @@
                 });
             });
         </script>
-    </body>
-    </html>
     </x-app-layout>

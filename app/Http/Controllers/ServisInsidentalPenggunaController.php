@@ -152,7 +152,8 @@ class ServisInsidentalPenggunaController extends Controller
             }
         }
         
-        $servisInsidentals = $servisQuery->orderBy('tgl_servis', 'desc')->paginate(10);
+        $servisInsidentals = $servisQuery->orderBy('tgl_servis', 'desc')->paginate(5, ['*'], 'servisInsidentals_page');
+        $peminjamans = Peminjaman::where('status_pinjam', 'Disetujui')->paginate(5, ['*'], 'peminjamans_page');
     
         return view('pengguna.servisInsidental', compact('peminjamans', 'servisInsidentals', 'searchDaftar', 'searchRiwayat'));
     }

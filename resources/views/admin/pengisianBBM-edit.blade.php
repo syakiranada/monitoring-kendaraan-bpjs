@@ -1,17 +1,13 @@
 <x-app-layout>
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <title>Edit Pengisian BBM Kendaraan</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.7.12/sweetalert2.min.css">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.7.12/sweetalert2.all.min.js"></script>
-    </head>
-    <body class="bg-gray-100">
-        <div class="flex justify-center p-8">
+    <a href="{{  url()->previous()  }}" class="flex items-center text-blue-600 font-semibold hover:underline mb-5">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Kembali
+    </a>
+        <div class="flex justify-center">
             <div class="w-full max-w-lg bg-white p-8 rounded shadow-md">
-                <h1 class="text-3xl font-bold mb-6">Edit Pengisian BBM Kendaraan</h1>
+                <h1 class="text-3xl font-bold mb-6 text-center">Edit Pengisian BBM Kendaraan</h1>
                 <form id="bbmForm" action="{{ route('admin.pengisianBBM.update', $bbm->id_bbm) }}" method="POST">
                     @csrf
                     @method('PUT')
@@ -31,18 +27,29 @@
                             <option value="Pertamax Turbo" {{ $bbm->jenis_bbm == 'Pertamax Turbo' ? 'selected' : '' }}>Pertamax Turbo</option>
                             <option value="Dexlite" {{ $bbm->jenis_bbm == 'Dexlite' ? 'selected' : '' }}>Dexlite</option>
                             <option value="Pertamina Dex" {{ $bbm->jenis_bbm == 'Pertamina Dex' ? 'selected' : '' }}>Pertamina Dex</option>
+                            <option value="Solar" {{ $bbm->jenis_bbm == 'Solar' ? 'selected' : '' }}>Solar</option>
+                            <option value="Bio Solar" {{ $bbm->jenis_bbm == 'Bio Solar' ? 'selected' : '' }}>Bio Solar</option>
                         </select>
                     </div>
                     <div class="mb-4">
                         <label class="block text-gray-700">Tanggal Pengisian BBM</label>
-                        <input type="date" name="tgl_isi" class="w-full p-2 border border-gray-300 rounded" value="{{ $bbm->tgl_isi }}" required>
+                        <input type="date" id="tglIsiBBM" name="tgl_isi" class="w-full p-2 border border-gray-300 rounded" value="{{ $bbm->tgl_isi }}" max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" required>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700">Nominal (Rp)</label>
-                        <input type="text" id="nominalInput" name="nominal" class="w-full p-2 border border-gray-300 rounded" value="{{ number_format($bbm->nominal, 0, '', '.') }}" required>
-                    </div>
-                    <div class="flex justify-between">
-                        <a href="{{ route('admin.pengisianBBM') }}" class="bg-gray-500 text-white px-4 py-2 rounded">Kembali</a>
+                        <label class="block text-gray-700">Nominal</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">Rp</span>
+                            <input type="text" 
+                                   id="nominalInput" 
+                                   name="nominal" 
+                                   class="w-full pl-10 p-2 border border-gray-300 rounded"
+                                   value="{{ number_format($bbm->nominal, 0, '', '.') }}" 
+                                   required>
+                        </div>
+                        <div id="nominalAlert" class="text-red-500 text-sm mt-1"></div>
+                    </div>    
+                    <div class="flex justify-end">
+                        {{--  <a href="{{ route('admin.pengisianBBM') }}" class="bg-gray-500 text-white px-4 py-2 rounded">Kembali</a>  --}}
                         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Simpan Perubahan</button>
                     </div>
                 </form>
@@ -52,6 +59,38 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                const todayStr = year + '-' + month + '-' + day;
+
+                // Set atribut max pada input tanggal
+                const tglIsiBBM = document.getElementById('tglIsiBBM');
+                if (tglIsiBBM) {
+                tglIsiBBM.setAttribute('max', todayStr);
+               }
+
+                const nominalInput = document.getElementById('nominalInput');
+                const nominalAlert = document.getElementById('nominalAlert');
+                const maxHarga = 1000000000000;
+                
+                nominalInput.addEventListener('input', function (e) {
+                    let rawValue = e.target.value.replace(/\D/g, '');
+                    let numericValue = parseInt(rawValue) || 0;
+                
+                    // Cek dan tampilkan alert
+                    if (numericValue > maxHarga) {
+                        nominalAlert.textContent = 'Nonimal melebihi batas maksimum Rp 1.000.000.000.000.';
+                        numericValue = maxHarga;
+                    } else {
+                        nominalAlert.textContent = '';
+                    }
+                
+                    // Format angka ribuan
+                    e.target.value = numericValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                });
+
                 const form = document.getElementById('bbmForm');
                 if (form) {
                     form.addEventListener('submit', function(event) {
@@ -183,6 +222,4 @@
                 e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
             });
         </script>
-    </body>
-    </html>
 </x-app-layout>

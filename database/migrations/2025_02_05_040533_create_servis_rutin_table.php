@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_kendaraan');
             $table->unsignedBigInteger('user_id');
             // $table->string('tipe', 10);
-            $table->integer('harga')->nullable();
+            $table->unsignedBigInteger('harga');
             $table->integer('kilometer')->nullable();
             $table->string('lokasi', 100)->nullable();
             // $table->binary('bukti_bayar')->nullable();
