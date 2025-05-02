@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('jenis', 10); // Jenis kendaraan (varchar 10)
             $table->string('warna', 20); // Warna kendaraan (varchar 20)
             $table->string('plat_nomor', 20)->unique(); // Plat nomor kendaraan (varchar 20)
-            $table->integer('nilai_perolehan'); // Nilai perolehan kendaraan (int)
-            $table->integer('nilai_buku'); // Nilai buku kendaraan (int)
+            $table->bigInteger('nilai_perolehan'); // Ubah ke bigInteger
+            $table->bigInteger('nilai_buku');
             $table->date('tgl_pembelian'); // Tanggal pembelian kendaraan (date)
             $table->string('aset', 10); // Aset (varchar 10)
             $table->string('status_ketersediaan', 20); // Status ketersediaan (varchar 20)

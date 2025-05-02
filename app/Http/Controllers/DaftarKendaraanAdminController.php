@@ -22,207 +22,116 @@ class DaftarKendaraanAdminController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $statusKetersediaanFilter = $request->input('status_ketersediaan');
-        $dataKendaraanQuery = Kendaraan::query();
-        $convertedDate = null;
-        $partialDate = null;
+
+        // Tambahkan semua join di awal
+        $query = Kendaraan::leftJoin('pajak', function($join) {
+            $join->on('kendaraan.id_kendaraan', '=', 'pajak.id_kendaraan')
+                ->whereRaw('pajak.id_pajak = (SELECT MAX(p2.id_pajak) FROM pajak p2 WHERE p2.id_kendaraan = kendaraan.id_kendaraan)');
+        })
+        ->leftJoin('asuransi', function($join) {
+            $join->on('kendaraan.id_kendaraan', '=', 'asuransi.id_kendaraan')
+                ->whereRaw('asuransi.id_asuransi = (SELECT MAX(a2.id_asuransi) FROM asuransi a2 WHERE a2.id_kendaraan = kendaraan.id_kendaraan)');
+        })
+        ->leftJoin('servis_rutin', function($join) {
+            $join->on('kendaraan.id_kendaraan', '=', 'servis_rutin.id_kendaraan')
+                ->whereRaw('servis_rutin.id_servis_rutin = (SELECT MAX(s2.id_servis_rutin) FROM servis_rutin s2 WHERE s2.id_kendaraan = kendaraan.id_kendaraan)');
+        })
+        ->leftJoin('cek_fisik', function($join) {
+            $join->on('kendaraan.id_kendaraan', '=', 'cek_fisik.id_kendaraan')
+                ->whereRaw('cek_fisik.id_cek_fisik = (SELECT MAX(c2.id_cek_fisik) FROM cek_fisik c2 WHERE c2.id_kendaraan = kendaraan.id_kendaraan)');
+        })
+        ->select('kendaraan.*');
 
         if ($search) {
-            if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $search)) {
-                try {
-                    $convertedDate = \Carbon\Carbon::createFromFormat('d-m-Y', $search)->format('Y-m-d');
-                } catch (\Exception $e) {
-                    $convertedDate = null;
-                }
-            }
-            if (preg_match('/^\d{2}-\d{2}$/', $search)) {
-                $partialDate = '%' . $search . '%';  
-            } elseif (preg_match('/^\d{2}$/', $search)) {
-                $partialDate = $search . '%';  
-            } elseif (preg_match('/^\d{1,2}$/', $search)) {
-                $partialDate = '%' . $search . '-%';  
-            } elseif (preg_match('/^\d{4}$/', $search)) {
-                $partialDate = $search . '%';  
+            // Filter eksplisit dulu
+            if (stripos($search, 'tidak tersedia') !== false) {
+                $query->where('kendaraan.status_ketersediaan', '=', 'tidak tersedia');
+                $search = trim(str_ireplace('tidak tersedia', '', $search));
+            } elseif (stripos($search, 'tersedia') !== false) {
+                $query->where('kendaraan.status_ketersediaan', '=', 'tersedia');
+                $search = trim(str_ireplace('tersedia', '', $search));
             }
 
-        $searchDate = null;
-        $searchDay = null;
-        $searchMonth = null;
-        $searchYear = null;
-        
-        if (!empty($search)) {
-            if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $search)) {
-                try {
-                    $searchDate = Carbon::createFromFormat('d-m-Y', $search);
-                    $searchDay = $searchDate->day;
-                    $searchMonth = $searchDate->month;
-                    $searchYear = $searchDate->year;
-                } catch (\Exception $e) {
-                    Log::error("Error parsing full date:", ['search' => $search, 'error' => $e->getMessage()]);
-                }
+            if (stripos($search, 'tidak guna') !== false) {
+                $query->where('kendaraan.aset', '=', 'tidak guna');
+                $search = trim(str_ireplace('tidak guna', '', $search));
+            } elseif (stripos($search, 'guna') !== false) {
+                $query->where('kendaraan.aset', '=', 'guna');
+                $search = trim(str_ireplace('guna', '', $search));
+            } elseif (stripos($search, 'lelang') !== false) {
+                $query->where('kendaraan.aset', '=', 'lelang');
+                $search = trim(str_ireplace('lelang', '', $search));
+            } elseif (stripos($search, 'jual') !== false) {
+                $query->where('kendaraan.aset', '=', 'jual');
+                $search = trim(str_ireplace('jual', '', $search));
             }
-            elseif (preg_match('/^\d{2}-\d{2}$/', $search)) {
-                try {
-                    $temp = Carbon::createFromFormat('d-m', $search);
-                    $searchDay = $temp->day;
-                    $searchMonth = $temp->month;
-                } catch (\Exception $e) {
-                    Log::error("Error parsing day-month:", ['search' => $search, 'error' => $e->getMessage()]);
-                }
-            }
-            elseif (preg_match('/^\d{2}-\d{4}$/', $search)) {
-                try {
-                    $temp = Carbon::createFromFormat('m-Y', $search);
-                    $searchMonth = $temp->month;
-                    $searchYear = $temp->year;
-                } catch (\Exception $e) {
-                    Log::error("Error parsing month-year:", ['search' => $search, 'error' => $e->getMessage()]);
-                }
-            }
-            elseif (preg_match('/^\d{2}$/', $search) && intval($search) >= 1 && intval($search) <= 31) {
-                $searchDay = intval($search);
-            }
-            elseif (preg_match('/^\d{2}$/', $search) && intval($search) >= 1 && intval($search) <= 12) {
-                $searchMonth = intval($search);
-            }
-            elseif (preg_match('/^\d{4}$/', $search)) {
-                $searchYear = intval($search);
-            }
-        }
-        
-        if ($searchDay !== null || $searchMonth !== null || $searchYear !== null) {
-            $matchingKendaraanIds = [];
-            $kendaraanIds = Kendaraan::pluck('id_kendaraan');
+            $keywords = preg_split('/\s+/', $search); // Pecah pencarian berdasarkan spasi
             
-            foreach ($kendaraanIds as $id_kendaraan) {
-                $latestDates = [
-                    Kendaraan::where('id_kendaraan', $id_kendaraan)->value('tgl_pembelian'),
-                    CekFisik::where('id_kendaraan', $id_kendaraan)->latest('tgl_cek_fisik')->value('tgl_cek_fisik'),
-                    Pajak::where('id_kendaraan', $id_kendaraan)->latest('tgl_bayar')->value('tgl_bayar'),
-                    Asuransi::where('id_kendaraan', $id_kendaraan)->latest('tgl_bayar')->value('tgl_bayar'),
-                    BBM::where('id_kendaraan', $id_kendaraan)->latest('tgl_isi')->value('tgl_isi'),
-                    ServisRutin::where('id_kendaraan', $id_kendaraan)->latest('tgl_servis_real')->value('tgl_servis_real')
-                ];
-                
-                $latestDates = array_filter($latestDates);
-                
-                foreach ($latestDates as $date) {
-                    $carbonDate = Carbon::parse($date);
-                    $matches = true;
-                    
-                    if ($searchDay !== null && $carbonDate->day != $searchDay) {
-                        $matches = false;
-                    }
-                    if ($searchMonth !== null && $carbonDate->month != $searchMonth) {
-                        $matches = false;
-                    }
-                    if ($searchYear !== null && $carbonDate->year != $searchYear) {
-                        $matches = false;
-                    }
-                    
-                    if ($matches) {
-                        $matchingKendaraanIds[] = $id_kendaraan;
-                        break;
-                    }
+            $query->where(function($q) use ($keywords) {
+                foreach ($keywords as $word) {
+                    $q->where(function($q2) use ($word) {
+                        // Pencarian dasar
+                        $q2->where('kendaraan.plat_nomor', 'like', "%{$word}%")
+                        ->orWhere('kendaraan.merk', 'like', "%{$word}%")
+                        ->orWhere('kendaraan.tipe', 'like', "%{$word}%")
+                        ->orWhere('kendaraan.warna', 'like', "%{$word}%")
+                        ->orWhere('kendaraan.jenis', 'like', "%{$word}%")
+                        ->orWhere('kendaraan.aset', 'like', "%{$word}%")
+                        ->orWhere('kendaraan.bahan_bakar', 'like', "%{$word}%")
+                        ->orWhere('kendaraan.no_mesin', 'like', "%{$word}%")
+                        ->orWhere('kendaraan.no_rangka', 'like', "%{$word}%")
+                        ->orWhere('kendaraan.frekuensi_servis', 'like', "%{$word}%")
+                        ->orWhere('kendaraan.status_ketersediaan', 'like', "%{$word}%");
+                        
+                        // Pencarian angka (kapasitas dan nilai keuangan)
+                        $q2->orWhere('kendaraan.kapasitas', 'like', "%{$word}%")
+                        ->orWhereRaw("REPLACE(REPLACE(CAST(kendaraan.nilai_perolehan AS CHAR), '.', ''), ',', '') LIKE ?", ["%{$word}%"])
+                        ->orWhereRaw("REPLACE(REPLACE(CAST(kendaraan.nilai_buku AS CHAR), '.', ''), ',', '') LIKE ?", ["%{$word}%"]);
+                        
+                        // Pencarian tanggal di kendaraan
+                        $q2->orWhereRaw('DATE_FORMAT(kendaraan.tgl_pembelian, "%d-%m-%Y") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(kendaraan.tgl_pembelian, "%d/%m/%Y") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(kendaraan.tgl_pembelian, "%Y") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(kendaraan.tgl_pembelian, "%m") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(kendaraan.tgl_pembelian, "%d") like ?', ["%{$word}%"]);
+                        
+                        // Pencarian tanggal di pajak
+                        $q2->orWhereRaw('DATE_FORMAT(pajak.tgl_bayar, "%d-%m-%Y") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(pajak.tgl_bayar, "%d/%m/%Y") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(pajak.tgl_bayar, "%Y") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(pajak.tgl_bayar, "%m") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(pajak.tgl_bayar, "%d") like ?', ["%{$word}%"]);
+                        
+                        // Pencarian tanggal di asuransi
+                        $q2->orWhereRaw('DATE_FORMAT(asuransi.tgl_bayar, "%d-%m-%Y") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(asuransi.tgl_bayar, "%d/%m/%Y") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(asuransi.tgl_bayar, "%Y") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(asuransi.tgl_bayar, "%m") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(asuransi.tgl_bayar, "%d") like ?', ["%{$word}%"]);
+                        
+                        // Pencarian tanggal di servis_rutin
+                        $q2->orWhereRaw('DATE_FORMAT(servis_rutin.tgl_servis_real, "%d-%m-%Y") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(servis_rutin.tgl_servis_real, "%d/%m/%Y") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(servis_rutin.tgl_servis_real, "%Y") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(servis_rutin.tgl_servis_real, "%m") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(servis_rutin.tgl_servis_real, "%d") like ?', ["%{$word}%"]);
+                        
+                        // Pencarian tanggal di cek_fisik
+                        $q2->orWhereRaw('DATE_FORMAT(cek_fisik.tgl_cek_fisik, "%d-%m-%Y") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(cek_fisik.tgl_cek_fisik, "%d/%m/%Y") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(cek_fisik.tgl_cek_fisik, "%Y") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(cek_fisik.tgl_cek_fisik, "%m") like ?', ["%{$word}%"])
+                        ->orWhereRaw('DATE_FORMAT(cek_fisik.tgl_cek_fisik, "%d") like ?', ["%{$word}%"]);
+                    });
                 }
-            }
-            
-            if (!empty($matchingKendaraanIds)) {
-                $dataKendaraanQuery->whereIn('id_kendaraan', $matchingKendaraanIds);
-            } else {
-                $dataKendaraanQuery->whereNull('id_kendaraan');
-            }
+            });
         }
-        } else {
-            $originalSearch = $search; 
 
-            if (!empty($search)) {
-                if (stripos($search, 'tidak tersedia') !== false) {
-                    $dataKendaraanQuery->where('status_ketersediaan', '=', 'tidak tersedia');
-                    $search = trim(str_ireplace('tidak tersedia', '', $search));
-                } elseif (stripos($search, 'tersedia') !== false) {
-                    $dataKendaraanQuery->where('status_ketersediaan', '=', 'tersedia');
-                    $search = trim(str_ireplace('tersedia', '', $search));
-                }
-            }
+       // Simpan query pencarian untuk hasil tampilan utama
+        $searchResults = $query->get();
 
-            if (!empty($statusKetersediaanFilter)) {
-                $dataKendaraanQuery->where('status_ketersediaan', '=', strtolower($statusKetersediaanFilter));
-            }
-
-            if (!empty($search)) {
-                $dataKendaraanQuery->where(function ($query) use ($search) {
-                    $query->orWhereRaw("LOWER(CONCAT(kendaraan.merk, ' ', kendaraan.tipe)) LIKE ?", ["%".strtolower($search)."%"])
-                        ->orWhereRaw("LOWER(CONCAT(kendaraan.tipe, ' ', kendaraan.merk)) LIKE ?", ["%".strtolower($search)."%"])
-                        ->orWhereRaw("LOWER(CONCAT(kendaraan.merk, ' ', kendaraan.tipe, ' ', kendaraan.warna)) LIKE ?", ["%".strtolower($search)."%"])
-                        ->orWhereRaw("LOWER(CONCAT(kendaraan.merk, ' ', kendaraan.tipe, ' ', kendaraan.plat_nomor)) LIKE ?", ["%".strtolower($search)."%"])
-                        ->orWhereRaw("LOWER(CONCAT(kendaraan.merk, ' ', kendaraan.tipe, ' ', kendaraan.aset)) LIKE ?", ["%".strtolower($search)."%"])
-                        ->orWhereRaw("LOWER(CONCAT(kendaraan.tipe, ' ', kendaraan.warna)) LIKE ?", ["%".strtolower($search)."%"])
-                        ->orWhereRaw("LOWER(CONCAT(kendaraan.tipe, ' ', kendaraan.aset)) LIKE ?", ["%".strtolower($search)."%"]);
-                    
-                    $query->orWhereRaw("LOWER(CONCAT(kendaraan.tipe, ' ', CAST(kendaraan.kapasitas AS CHAR))) LIKE ?", ["%".strtolower($search)."%"])
-                        ->orWhereRaw("LOWER(CONCAT(kendaraan.merk, ' ', kendaraan.tipe, ' ', CAST(kendaraan.kapasitas AS CHAR))) LIKE ?", ["%".strtolower($search)."%"])
-                        ->orWhereRaw("LOWER(CONCAT(kendaraan.merk, ' ', kendaraan.tipe, ' ', kendaraan.jenis)) LIKE ?", ["%".strtolower($search)."%"])
-                        ->orWhereRaw("LOWER(CONCAT(kendaraan.tipe, ' ', kendaraan.jenis)) LIKE ?", ["%".strtolower($search)."%"]);
-                    
-                
-                    $query->orWhereRaw("LOWER(CONCAT(kendaraan.tipe, ' ', kendaraan.frekuensi_servis)) LIKE ?", ["%".strtolower($search)."%"])
-                            ->orWhereRaw("LOWER(CONCAT(kendaraan.merk, ' ', kendaraan.tipe, ' ', kendaraan.frekuensi_servis)) LIKE ?", ["%".strtolower($search)."%"]);
-                
-                    $query->orWhereRaw("LOWER(CONCAT(kendaraan.merk, ' ', kendaraan.tipe, ' ', kendaraan.no_mesin)) LIKE ?", ["%".strtolower($search)."%"])
-                        ->orWhereRaw("LOWER(CONCAT(kendaraan.merk, ' ', kendaraan.tipe, ' ', kendaraan.no_rangka)) LIKE ?", ["%".strtolower($search)."%"])
-                        ->orWhereRaw("LOWER(CONCAT(kendaraan.tipe, ' ', kendaraan.no_rangka)) LIKE ?", ["%".strtolower($search)."%"])
-                        ->orWhereRaw("LOWER(CONCAT(kendaraan.tipe, ' ', kendaraan.no_mesin)) LIKE ?", ["%".strtolower($search)."%"]);
-
-                    $query->orWhereRaw("LOWER(CONCAT(kendaraan.tipe, ' ', kendaraan.bahan_bakar)) LIKE ?", ["%".strtolower($search)."%"])
-                        ->orWhereRaw("LOWER(CONCAT(kendaraan.merk, ' ', kendaraan.tipe, ' ', kendaraan.bahan_bakar)) LIKE ?", ["%".strtolower($search)."%"]);
-
-                    if (preg_match('/(\d{4})/', $search, $yearMatches)) {
-                        $year = $yearMatches[1];
-                        $query->orWhereRaw("LOWER(CONCAT(kendaraan.merk, ' ', kendaraan.tipe, ' ', YEAR(kendaraan.tgl_pembelian))) LIKE ?", 
-                            ["%".strtolower(str_replace($year, '', $search)).$year."%"])
-                        ->orWhereRaw("LOWER(CONCAT(kendaraan.tipe, ' ', YEAR(kendaraan.tgl_pembelian))) LIKE ?", 
-                            ["%".strtolower(str_replace($year, '', $search)).$year."%"]);
-                    }
-                 
-                    if (preg_match('/(\d+)/', $search, $numMatches)) {
-                        $num = $numMatches[1];
-                        $query->orWhereRaw("LOWER(CONCAT(kendaraan.merk, ' ', kendaraan.tipe, ' ', CAST(kendaraan.kapasitas AS CHAR))) LIKE ?", 
-                            ["%".strtolower(str_replace($num, '', $search)).$num."%"]);
-                    }
-                    
-                    $searchTerms = explode(' ', strtolower($search));
-                    $searchTerms = array_filter($searchTerms);
-                    
-                    if (!empty($searchTerms)) {
-                        $query->orWhere(function ($andQuery) use ($searchTerms) {
-                            foreach ($searchTerms as $term) {
-                                $andQuery->where(function ($termQuery) use ($term) {
-                                    $termQuery->whereRaw("LOWER(kendaraan.plat_nomor) LIKE ?", ["%$term%"])
-                                        ->orWhereRaw("LOWER(kendaraan.merk) LIKE ?", ["%$term%"])
-                                        ->orWhereRaw("LOWER(kendaraan.tipe) LIKE ?", ["%$term%"])
-                                        ->orWhereRaw("LOWER(kendaraan.warna) LIKE ?", ["%$term%"])
-                                        ->orWhereRaw("LOWER(kendaraan.jenis) LIKE ?", ["%$term%"])
-                                        ->orWhereRaw("LOWER(kendaraan.aset) LIKE ?", ["%$term%"])
-                                        ->orWhereRaw("LOWER(kendaraan.bahan_bakar) LIKE ?", ["%$term%"])
-                                        ->orWhereRaw("LOWER(kendaraan.no_mesin) LIKE ?", ["%$term%"])
-                                        ->orWhereRaw("LOWER(kendaraan.no_rangka) LIKE ?", ["%$term%"])
-                                        ->orWhereRaw("CAST(kendaraan.kapasitas AS CHAR) LIKE ?", ["%$term%"])
-                                        ->orWhereRaw("CAST(YEAR(kendaraan.tgl_pembelian) AS CHAR) LIKE ?", ["%$term%"])
-                                        ->orWhereRaw("LOWER(kendaraan.frekuensi_servis) LIKE ?", ["%$term%"]);
-                                
-                                    $cleanTerm = str_replace([',', '.'], '', $term);
-                                    $termQuery->orWhereRaw("REPLACE(REPLACE(CAST(kendaraan.nilai_perolehan AS CHAR), '.', ''), ',', '') LIKE ?", ["%$cleanTerm%"])
-                                        ->orWhereRaw("REPLACE(REPLACE(CAST(kendaraan.nilai_buku AS CHAR), '.', ''), ',', '') LIKE ?", ["%$cleanTerm%"]);
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-        }
-        
-        $allKendaraan = $dataKendaraanQuery->get();
+        // Buat query baru yang mengambil semua kendaraan (tanpa filter pencarian)
+        $allKendaraan = Kendaraan::all(); // Atau gunakan model yang sesuai
         $alerts = []; 
         foreach ($allKendaraan as $k) {
             $incomplete = [];
@@ -254,11 +163,14 @@ class DaftarKendaraanAdminController extends Controller
             }
         }
 
-        $dataKendaraan = $dataKendaraanQuery->paginate(10)->appends(['search' => $search]);
-        
-        return view('admin.kendaraan.daftar_kendaraan', compact('dataKendaraan', 'search', 'statusKetersediaanFilter', 'alerts'));
-    }
+        // Kemudian gunakan $searchResults untuk hasil pencarian yang ditampilkan
+        // dan $alerts untuk peringatan
 
+        // Pastikan tidak ada duplikasi dengan groupBy
+        $dataKendaraan = $query->groupBy('kendaraan.id_kendaraan')->paginate(10)->appends(['search' => $search]);
+        
+        return view('admin.kendaraan.daftar_kendaraan', compact('dataKendaraan', 'search', 'alerts'));
+    }
 
     public function tambah()
     {
@@ -288,23 +200,23 @@ class DaftarKendaraanAdminController extends Controller
             Log::info('DEBUG: Incoming request', ['request_data' => $request->all()]);
     
             $validationRules = [
-                'merk' => 'required|string|max:255',
-                'tipe' => 'required|string|max:255',
-                'plat_nomor' => 'required|string|max:20',
-                'warna' => 'required|string|max:50',
+                'Merk' => 'required|string|max:255',
+                'Tipe' => 'required|string|max:255',
+                'Plat_Nomor' => 'required|string|max:20',
+                'Warna' => 'required|string|max:50',
                 'jenis_kendaraan' => 'required|string',
                 'aset_guna' => 'required|string',
-                'kapasitas' => 'required|integer|min:1',
-                'tanggal_beli' => 'required|date',
-                'nilai_perolehan' => 'required|numeric',
-                'nilai_buku' => 'required|numeric',
+                'Kapasitas' => 'required|integer|min:1',
+                'Tanggal_Beli' => 'required|date',
+                'Nilai_Perolehan' => 'required|numeric',
+                'Nilai_Buku' => 'required|numeric',
                 'bahan_bakar' => 'required|string',
-                'nomor_mesin' => 'required|string|max:100',
-                'nomor_rangka' => 'required|string|max:100',
-                'tanggal_bayar_pajak' => 'required|date',
-                'tanggal_jatuh_tempo_pajak' => 'required|date',
-                'tanggal_cek_fisik' => 'required|date',
-                'frekuensi' => 'required|integer|min:1',
+                'Nomor_Mesin' => 'required|string|max:100',
+                'Nomor_Rangka' => 'required|string|max:100',
+                'Tanggal_Bayar_Pajak' => 'required|date',
+                'Tanggal_Jatuh_Tempo_Pajak' => 'required|date',
+                'Tanggal_Cek_Fisik' => 'required|date',
+                'Frekuensi' => 'required|integer|min:1',
                 'status_pinjam' => 'required|string',
                 'current_page' => 'required|integer|min:1',
             ];
@@ -324,29 +236,29 @@ class DaftarKendaraanAdminController extends Controller
             : 'TIDAK TERSEDIA';        
     
             $kendaraan = Kendaraan::create([
-                'merk' => $request->merk,
-                'tipe' => $request->tipe,
-                'plat_nomor' => $request->plat_nomor,
-                'warna' => $request->warna,
+                'merk' => $request->{'Merk'},
+                'tipe' => $request->{'Tipe'},
+                'plat_nomor' => $request->{'Plat_Nomor'},
+                'warna' => $request->{'Warna'},
                 'jenis' => $request->jenis_kendaraan,
                 'aset' => $request->aset_guna,
-                'kapasitas' => $request->kapasitas,
-                'tgl_pembelian' => $request->tanggal_beli,
-                'nilai_perolehan' => $request->nilai_perolehan,
-                'nilai_buku' => $request->nilai_buku,
+                'kapasitas' => $request->{'Kapasitas'},
+                'tgl_pembelian' => $request->{'Tanggal_Beli'},
+                'nilai_perolehan' => $request->{'Nilai_Perolehan'},
+                'nilai_buku' => $request->{'Nilai_Buku'},
                 'bahan_bakar' => $request->bahan_bakar,
-                'no_mesin' => $request->nomor_mesin,
-                'no_rangka' => $request->nomor_rangka,
-                'frekuensi_servis' => $request->frekuensi,
+                'no_mesin' => $request->{'Nomor_Mesin'},
+                'no_rangka' => $request->{'Nomor_Rangka'},
+                'frekuensi_servis' => $request->{'Frekuensi'},
                 'status_ketersediaan' => $statusKetersediaan, 
             ]);
     
             Pajak::create([
                 'user_id' => Auth::id(),
                 'id_kendaraan' => $kendaraan->id_kendaraan, 
-                'tgl_bayar' => date('Y-m-d', strtotime($request->tanggal_bayar_pajak)),
-                'tgl_jatuh_tempo' => date('Y-m-d', strtotime($request->tanggal_jatuh_tempo_pajak)),
-                'tahun' => date('Y', strtotime($request->tanggal_bayar_pajak)),
+                'tgl_bayar' => date('Y-m-d', strtotime($request->{'Tanggal_Bayar_Pajak'})),
+                'tgl_jatuh_tempo' => date('Y-m-d', strtotime($request->{'Tanggal_Jatuh_Tempo_Pajak'})),
+                'tahun' => date('Y', strtotime($request->{'Tanggal_Bayar_Pajak'})),
             ]);
     
             if ($request->filled('tanggal_asuransi') && 
@@ -366,7 +278,7 @@ class DaftarKendaraanAdminController extends Controller
             CekFisik::create([
                 'user_id' => Auth::id(),
                 'id_kendaraan' => $kendaraan->id_kendaraan,
-                'tgl_cek_fisik' => $request->tanggal_cek_fisik,
+                'tgl_cek_fisik' => $request->{'Tanggal_Cek_Fisik'},
             ]);
     
             $search = $request->query('search', request()->input('search', ''));
@@ -406,23 +318,23 @@ class DaftarKendaraanAdminController extends Controller
             Log::info('DEBUG: Incoming update request', ['request_data' => $request->all()]);
 
             $validationRules = [
-                'merk' => 'required|string|max:255',
-                'tipe' => 'required|string|max:255',
-                'plat_nomor' => 'required|string|max:20',
-                'warna' => 'required|string|max:50',
+                'Merk' => 'required|string|max:255',
+                'Tipe' => 'required|string|max:255',
+                'Plat_Nomor' => 'required|string|max:20',
+                'Warna' => 'required|string|max:50',
                 'jenis_kendaraan' => 'required|string',
                 'aset_guna' => 'required|string',
-                'kapasitas' => 'required|integer|min:1',
-                'tanggal_beli' => 'required|date',
-                'nilai_perolehan' => 'required|numeric',
-                'nilai_buku' => 'required|numeric',
+                'Kapasitas' => 'required|integer|min:1',
+                'Tanggal_Beli' => 'required|date',
+                'Nilai_Perolehan' => 'required|numeric',
+                'Nilai_Buku' => 'required|numeric',
                 'bahan_bakar' => 'required|string',
-                'nomor_mesin' => 'required|string|max:100',
-                'nomor_rangka' => 'required|string|max:100',
-                'tanggal_bayar_pajak' => 'required|date',
-                'tanggal_jatuh_tempo_pajak' => 'required|date',
-                'tanggal_cek_fisik' => 'required|date',
-                'frekuensi' => 'required|integer|min:1',
+                'Nomor_Mesin' => 'required|string|max:100',
+                'Nomor_Rangka' => 'required|string|max:100',
+                'Tanggal_Bayar_Pajak' => 'required|date',
+                'Tanggal_Jatuh_Tempo_Pajak' => 'required|date',
+                'Tanggal_Cek_Fisik' => 'required|date',
+                'Frekuensi' => 'required|integer|min:1',
                 'status_pinjam' => 'required|string',
                 'current_page' => 'required|integer|min:1',
             ];
@@ -444,20 +356,20 @@ class DaftarKendaraanAdminController extends Controller
 
 
             $kendaraan->update([
-                'merk' => $request->merk,
-                'tipe' => $request->tipe,
-                'plat_nomor' => $request->plat_nomor,
-                'warna' => $request->warna,
+                'merk' => $request->{'Merk'},
+                'tipe' => $request->{'Tipe'},
+                'plat_nomor' => $request->{'Plat_Nomor'},
+                'warna' => $request->{'Warna'},
                 'jenis' => $request->jenis_kendaraan,
                 'aset' => $request->aset_guna,
-                'kapasitas' => $request->kapasitas,
-                'tgl_pembelian' => $request->tanggal_beli,
-                'nilai_perolehan' => $request->nilai_perolehan,
-                'nilai_buku' => $request->nilai_buku,
+                'kapasitas' => $request->{'Kapasitas'},
+                'tgl_pembelian' => $request->{'Tanggal_Beli'},
+                'nilai_perolehan' => $request->{'Nilai_Perolehan'},
+                'nilai_buku' => $request->{'Nilai_Buku'},
                 'bahan_bakar' => $request->bahan_bakar,
-                'no_mesin' => $request->nomor_mesin,
-                'no_rangka' => $request->nomor_rangka,
-                'frekuensi_servis' => $request->frekuensi,
+                'no_mesin' => $request->{'Nomor_Mesin'},
+                'no_rangka' => $request->{'Nomor_Rangka'},
+                'frekuensi_servis' => $request->{'Frekuensi'},
                 'status_ketersediaan' => $statusKetersediaan,
             ]);
 
@@ -465,9 +377,9 @@ class DaftarKendaraanAdminController extends Controller
                 ['id_kendaraan' => $kendaraan->id_kendaraan],
                 [
                     'user_id' => Auth::id(),
-                    'tgl_bayar' => date('Y-m-d', strtotime($request->tanggal_bayar_pajak)),
-                    'tgl_jatuh_tempo' => date('Y-m-d', strtotime($request->tanggal_jatuh_tempo_pajak)),
-                    'tahun' => date('Y', strtotime($request->tanggal_bayar_pajak)),
+                    'tgl_bayar' => date('Y-m-d', strtotime($request->{'Tanggal_Bayar_Pajak'})),
+                    'tgl_jatuh_tempo' => date('Y-m-d', strtotime($request->{'Tanggal_Jatuh_Tempo_Pajak'})),
+                    'tahun' => date('Y', strtotime($request->{'Tanggal_Bayar_Pajak'})),
                 ]
             );
 
@@ -491,7 +403,7 @@ class DaftarKendaraanAdminController extends Controller
                 ['id_kendaraan' => $kendaraan->id_kendaraan],
                 [
                     'user_id' => Auth::id(),
-                    'tgl_cek_fisik' => $request->tanggal_cek_fisik,
+                    'tgl_cek_fisik' => $request->{'Tanggal_Cek_Fisik'},
                 ]
             );
 
@@ -514,15 +426,19 @@ class DaftarKendaraanAdminController extends Controller
         }
     }
 
-    public function detail($id_kendaraan) {
+    public function detail($id_kendaraan, Request $request) {
         $kendaraan = Kendaraan::findOrFail($id_kendaraan);
         $cekFisik = CekFisik::where('id_kendaraan', $id_kendaraan)->latest('tgl_cek_fisik')->first();
         $pajak = Pajak::where('id_kendaraan', $id_kendaraan)->latest('tgl_bayar')->first();
         $asuransi = Asuransi::where('id_kendaraan', $id_kendaraan)->latest('tgl_bayar')->first();
         $bbm = BBM::where('id_kendaraan', $id_kendaraan)->latest('tgl_isi')->first(); 
         $servisRutin = ServisRutin::where('id_kendaraan', $id_kendaraan)->latest('tgl_servis_real')->first();
-        return view('admin.kendaraan.detail', compact('kendaraan', 'cekFisik', 'pajak', 'asuransi', 'bbm', 'servisRutin'));
+    
+        $page = $request->query('page');
+        $search = $request->query('search');
+        return view('admin.kendaraan.detail', compact('kendaraan', 'cekFisik', 'pajak', 'asuransi', 'bbm', 'servisRutin', 'page', 'search'));
     }
+    
 
 
     public function hapus($id_kendaraan, Request $request)

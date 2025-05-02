@@ -20,8 +20,8 @@ return new class extends Migration
             $table->date('tgl_jatuh_tempo'); // Tanggal jatuh tempo
             $table->string('bukti_bayar_pajak')->nullable(); // Bukti pembayaran
             // $table->string('status', 25); // Status (varchar 10)
-            $table->integer('nominal')->nullable(); // Nominal pembayaran
-            $table->integer('biaya_pajak_lain')->nullable(); // Biaya lain-lain
+            $table->bigInteger('nominal')->nullable(); // Nominal pembayaran
+            $table->bigInteger('biaya_pajak_lain')->nullable(); // Biaya lain-lain
             $table->timestamps(); // Created_at & Updated_at
 
             // Foreign Key Constraint

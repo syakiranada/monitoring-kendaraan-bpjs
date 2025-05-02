@@ -16,28 +16,37 @@ class AsuransiController extends Controller
     {
         $search = $request->input('search');
         $statusFilter = $request->input('status');
-        $convertedDate = null;
-        $partialDate = null;
-
-        if ($search) {
-            if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $search)) {
-                try {
-                    $convertedDate = \Carbon\Carbon::createFromFormat('d-m-Y', $search)->format('Y-m-d');
-                } catch (\Exception $e) {
-                    $convertedDate = null;
+        
+        // Cek apakah pencarian mengandung kata kunci status
+        $statusKeywords = [
+            'JATUH TEMPO' => ['jatuh tempo', 'jatuhtempo', 'jatuh', 'tempo'],
+            'MENDEKATI JATUH TEMPO' => ['mendekati jatuh tempo', 'mendekati', 'dekat', 'hampir', 'mendekat'],
+            'BELUM ADA DATA ASURANSI' => ['belum ada data', 'belum', 'data', 'asuransi', 'tidak ada', 'kosong'],
+            'SUDAH DIBAYAR' => ['sudah bayar', 'sudah', 'bayar', 'dibayar', 'lunas', 'terbayar', 'byr']
+        ];
+        
+        // Ekstrak kata kunci status dari pencarian jika ada
+        $searchLower = strtolower($search);
+        $detectedStatus = null;
+        $cleanSearch = $search;
+        
+        // Mencari frasa lengkap terlebih dahulu (seperti "jatuh tempo") 
+        // sebelum mencari kata-kata individual
+        foreach ($statusKeywords as $status => $keywords) {
+            foreach ($keywords as $keyword) {
+                if (stripos($searchLower, $keyword) !== false) {
+                    $detectedStatus = $status;
+                    // Hapus kata kunci status dari pencarian
+                    $cleanSearch = trim(preg_replace('/\b'.preg_quote($keyword, '/').'\b/ui', '', $search));
+                    
+                    // Hapus spasi ganda yang mungkin dihasilkan
+                    $cleanSearch = preg_replace('/\s+/', ' ', $cleanSearch);
+                    break 2;
                 }
             }
-            if (preg_match('/^\d{2}-\d{2}$/', $search)) {
-                $partialDate = '%' . $search . '%'; 
-            } elseif (preg_match('/^\d{2}$/', $search)) {
-                $partialDate = $search . '%';
-            } elseif (preg_match('/^\d{1,2}$/', $search)) {
-                $partialDate = '%' . $search . '-%';  
-            } elseif (preg_match('/^\d{4}$/', $search)) {
-                $partialDate = $search . '%';  
-            }
         }
-
+        
+        // Base query dengan join tabel yang diperlukan di awal
         $dataKendaraanQuery = Kendaraan::select(
             'kendaraan.*',
             'asuransi.id_asuransi', 
@@ -50,20 +59,71 @@ class AsuransiController extends Controller
             'asuransi.bukti_bayar_asuransi', 
             'asuransi.nominal', 
             'asuransi.biaya_asuransi_lain',
-            DB::raw('MAX(asuransi.tgl_perlindungan_akhir) as tgl_jatuh_tempo') 
+            DB::raw('MAX(asuransi.tgl_perlindungan_akhir) as tgl_jatuh_tempo')
         )
-        ->distinct()
-        ->leftJoin(DB::raw('(SELECT id_kendaraan, MAX(tgl_bayar) as max_bayar, MAX(tgl_perlindungan_akhir) as max_perlindungan_akhir 
-                        FROM asuransi GROUP BY id_kendaraan) as latest_asuransi'), function ($join) {
+        ->leftJoin(DB::raw('
+            (SELECT id_kendaraan, MAX(tgl_perlindungan_akhir) as tgl_jatuh_tempo 
+            FROM asuransi 
+            GROUP BY id_kendaraan) as latest_asuransi'), function ($join) {
             $join->on('kendaraan.id_kendaraan', '=', 'latest_asuransi.id_kendaraan');
         })
         ->leftJoin('asuransi', function ($join) {
             $join->on('kendaraan.id_kendaraan', '=', 'asuransi.id_kendaraan')
-                ->on('asuransi.tgl_bayar', '=', 'latest_asuransi.max_bayar')
-                ->on('asuransi.tgl_perlindungan_akhir', '=', 'latest_asuransi.max_perlindungan_akhir');
+                ->on('asuransi.tgl_perlindungan_akhir', '=', 'latest_asuransi.tgl_jatuh_tempo');
         })
-        ->where('kendaraan.aset', '!=', 'lelang')
-        ->groupBy(
+        ->where('kendaraan.aset', '!=', 'lelang');
+        
+        // Pencarian untuk data kendaraan (menggunakan cleanSearch tanpa kata kunci status)
+        if (!empty($cleanSearch)) {
+            $keywords = preg_split('/\s+/', $cleanSearch); // Pecah pencarian berdasarkan spasi
+            
+            $dataKendaraanQuery->where(function($q) use ($keywords) {
+                foreach ($keywords as $word) {
+                    if (!empty($word)) { // Skip kata kosong
+                        $q->where(function($q2) use ($word) {
+                            // Pencarian dasar
+                            $q2->where('kendaraan.merk', 'like', "%{$word}%")
+                            ->orWhere('kendaraan.tipe', 'like', "%{$word}%")
+                            ->orWhere('kendaraan.plat_nomor', 'like', "%{$word}%")
+                            ->orWhere('asuransi.polis', 'like', "%{$word}%");
+                            
+                            // Pencarian numerik
+                            $numericWord = preg_replace('/[.,]/', '', $word);
+                            if (is_numeric($numericWord)) {
+                                $q2->orWhere('asuransi.tahun', 'like', "%{$numericWord}%")
+                                ->orWhere('asuransi.nominal', 'like', "%{$numericWord}%")
+                                ->orWhere('asuransi.biaya_asuransi_lain', 'like', "%{$numericWord}%");
+                            }
+                            
+                            // Pencarian tanggal dengan format yang berbeda
+                            $q2->orWhereRaw('DATE_FORMAT(asuransi.tgl_bayar, "%d-%m-%Y") like ?', ["%{$word}%"])
+                            ->orWhereRaw('DATE_FORMAT(asuransi.tgl_bayar, "%d/%m/%Y") like ?', ["%{$word}%"])
+                            ->orWhereRaw('DATE_FORMAT(asuransi.tgl_bayar, "%Y") like ?', ["%{$word}%"])
+                            ->orWhereRaw('DATE_FORMAT(asuransi.tgl_bayar, "%m") like ?', ["%{$word}%"])
+                            ->orWhereRaw('DATE_FORMAT(asuransi.tgl_bayar, "%d") like ?', ["%{$word}%"]);
+                            
+                            $q2->orWhereRaw('DATE_FORMAT(asuransi.tgl_perlindungan_awal, "%d-%m-%Y") like ?', ["%{$word}%"])
+                            ->orWhereRaw('DATE_FORMAT(asuransi.tgl_perlindungan_awal, "%d/%m/%Y") like ?', ["%{$word}%"])
+                            ->orWhereRaw('DATE_FORMAT(asuransi.tgl_perlindungan_awal, "%Y") like ?', ["%{$word}%"])
+                            ->orWhereRaw('DATE_FORMAT(asuransi.tgl_perlindungan_awal, "%m") like ?', ["%{$word}%"])
+                            ->orWhereRaw('DATE_FORMAT(asuransi.tgl_perlindungan_awal, "%d") like ?', ["%{$word}%"]);
+                            
+                            $q2->orWhereRaw('DATE_FORMAT(asuransi.tgl_perlindungan_akhir, "%d-%m-%Y") like ?', ["%{$word}%"])
+                            ->orWhereRaw('DATE_FORMAT(asuransi.tgl_perlindungan_akhir, "%d/%m/%Y") like ?', ["%{$word}%"])
+                            ->orWhereRaw('DATE_FORMAT(asuransi.tgl_perlindungan_akhir, "%Y") like ?', ["%{$word}%"])
+                            ->orWhereRaw('DATE_FORMAT(asuransi.tgl_perlindungan_akhir, "%m") like ?', ["%{$word}%"])
+                            ->orWhereRaw('DATE_FORMAT(asuransi.tgl_perlindungan_akhir, "%d") like ?', ["%{$word}%"]);
+                        });
+                    }
+                }
+            });
+        } else if (!empty($detectedStatus) && empty($cleanSearch)) {
+            // Jika hanya ada kata kunci status tanpa kata kunci pencarian lainnya,
+            // ambil semua data agar bisa difilter berdasarkan status nanti
+        }
+        
+        // Group by untuk menghindari duplikasi
+        $dataKendaraanQuery->groupBy(
             'kendaraan.id_kendaraan', 
             'asuransi.id_asuransi', 
             'asuransi.user_id', 
@@ -75,14 +135,16 @@ class AsuransiController extends Controller
             'asuransi.bukti_bayar_asuransi', 
             'asuransi.nominal', 
             'asuransi.biaya_asuransi_lain'
-        ); 
-
+        );
+        
+        // Dapatkan data
         $dataKendaraan = $dataKendaraanQuery->get();
-    
+        
+        // Menentukan status kendaraan
+        $today = now();
         foreach ($dataKendaraan as $item) {
-            $today = now(); 
             $dueDate = $item->tgl_jatuh_tempo ? \Carbon\Carbon::parse($item->tgl_jatuh_tempo) : null;
-    
+
             if (!$dueDate) {
                 $item->status = 'BELUM ADA DATA ASURANSI';
             } elseif ($today->diffInDays($dueDate, false) <= 0) { 
@@ -93,123 +155,41 @@ class AsuransiController extends Controller
                 $item->status = 'SUDAH DIBAYAR';
             }
         }
-        
-        if ($partialDate) {
-            $dataKendaraan = $dataKendaraan->filter(function ($item) use ($partialDate) {
-                $latest_asuransi = Asuransi::where('id_kendaraan', $item->id_kendaraan)
-                    ->latest('tgl_bayar')
-                    ->first(['tgl_bayar', 'tgl_perlindungan_awal', 'tgl_perlindungan_akhir']);
-        
-                $tgl_bayar = $latest_asuransi->tgl_bayar ? \Carbon\Carbon::parse($latest_asuransi->tgl_bayar)->format('d-m-Y') : null;
-                $tgl_perlindungan_awal = $latest_asuransi->tgl_perlindungan_awal ? \Carbon\Carbon::parse($latest_asuransi->tgl_perlindungan_awal)->format('d-m-Y') : null;
-                $tgl_perlindungan_akhir = $latest_asuransi->tgl_perlindungan_akhir ? \Carbon\Carbon::parse($latest_asuransi->tgl_perlindungan_akhir)->format('d-m-Y') : null;
-        
-                $partialSearch = str_replace(['%'], '', $partialDate); 
 
-                if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $partialSearch)) {
-                    $partialRegex = '/(^|\D)' . preg_quote($partialSearch, '/') . '(\D|$)/';
-                }
-                elseif (preg_match('/^\d{2}$/', $partialSearch)) {
-                    $partialRegex = '/(^|\D)' . preg_quote($partialSearch, '/') . '(\D|$)/';
-                }
-                elseif (preg_match('/^\d{2}$/', $partialSearch)) {
-                    $partialRegex = '/(^|\D)' . preg_quote($partialSearch, '/') . '(\D|$)/';
-                }
-                elseif (preg_match('/^\d{4}$/', $partialSearch)) {
-                    $partialRegex = '/(^|\D)' . preg_quote($partialSearch, '/') . '(\D|$)/';
-                } else {
-                    $partialRegex = '/(^|\D)' . preg_quote($partialSearch, '/') . '(\D|$)/';
-                }
-                
-                dump([
-                    'id_kendaraan' => $item->id_kendaraan,
-                    'partialDate' => $partialDate,
-                    'regex' => $partialRegex,
-                    'tgl_bayar' => $tgl_bayar,
-                    'tgl_perlindungan_awal' => $tgl_perlindungan_awal,
-                    'tgl_perlindungan_akhir' => $tgl_perlindungan_akhir,
-                    'match' => (
-                        ($tgl_bayar && preg_match($partialRegex, $tgl_bayar)) ||
-                        ($tgl_perlindungan_awal && preg_match($partialRegex, $tgl_perlindungan_awal)) ||
-                        ($tgl_perlindungan_akhir && preg_match($partialRegex, $tgl_perlindungan_akhir))
-                    )
-                ]);
+        // Filter berdasarkan status yang terdeteksi dari pencarian
+        if ($detectedStatus) {
+            $dataKendaraan = $dataKendaraan->filter(function ($item) use ($detectedStatus) {
+                return $item->status == $detectedStatus;
+            });
+        }
         
-                return (
-                    ($tgl_bayar && preg_match($partialRegex, $tgl_bayar)) ||
-                    ($tgl_perlindungan_awal && preg_match($partialRegex, $tgl_perlindungan_awal)) ||
-                    ($tgl_perlindungan_akhir && preg_match($partialRegex, $tgl_perlindungan_akhir))
-                );
-            });
-        }
-    
-        if (!empty($search)) {
-            
-            $dataKendaraan = $dataKendaraan->filter(function ($item) use ($search) {
-                $search = strtolower($search);
-                $formatTanggal = function ($tanggal) {
-                    return $tanggal ? \Carbon\Carbon::parse($tanggal)->format('d-m-Y') : null;
-                };
-    
-                $tgl_bayar = $formatTanggal($item->tgl_bayar);
-                $tgl_perlindungan_awal = $formatTanggal($item->tgl_perlindungan_awal);
-                $tgl_perlindungan_akhir = $formatTanggal($item->tgl_perlindungan_akhir);
-    
-                $normalizeNumber = function ($number) {
-                    return preg_replace('/[.,]/', '', (string) $number);
-                };
-    
-                $nominal = $normalizeNumber($item->nominal);
-                $biayaAsuransiLain = $normalizeNumber($item->biaya_asuransi_lain);
-                $searchNumeric = $normalizeNumber($search);
-    
-                $kombinasiPencarian = [
-                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $item->plat_nomor),
-                    strtolower($item->tipe . ' ' . $item->plat_nomor),
-                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $item->tahun),
-                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $item->status),
-                    strtolower($item->merk . ' ' . $item->plat_nomor),
-                    strtolower($item->tipe . ' ' . $item->tahun),
-                    strtolower($item->plat_nomor . ' ' . $item->tahun),
-                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $tgl_perlindungan_awal),
-                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $tgl_perlindungan_akhir),
-                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $nominal),
-                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $biayaAsuransiLain),
-                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $tgl_bayar),
-                    strtolower($item->merk . ' ' . $item->tipe . ' ' . $item->polis),
-                ];
-    
-                foreach ($kombinasiPencarian as $kombinasi) {
-                    if (stripos($kombinasi, $search) !== false) {
-                        return true;
-                    }
-                }
-    
-                return stripos($item->status, $search) !== false ||
-                    stripos((string) $item->tahun, $search) !== false ||
-                    stripos((string) $tgl_bayar, $search) !== false ||
-                    stripos((string) $tgl_perlindungan_awal, $search) !== false ||
-                    stripos((string) $tgl_perlindungan_akhir, $search) !== false ||
-                    stripos((string) $item->polis, $search) !== false ||
-                    stripos($nominal, $searchNumeric) !== false ||
-                    stripos($biayaAsuransiLain, $searchNumeric) !== false;
-            });
-        }
-    
+        // Filter berdasarkan status dari dropdown jika ada
         if (!empty($statusFilter)) {
             $dataKendaraan = $dataKendaraan->filter(function ($item) use ($statusFilter) {
                 return strtolower($item->status) == strtolower($statusFilter);
             });
         }
-    
+        
+        // Debug: Tambahkan debugging khusus untuk pencarian "toyota avanza b1234xxx jatuh tempo"
+        if (stripos($search, 'toyota') !== false && stripos($search, 'avanza') !== false && 
+            stripos($search, 'jatuh tempo') !== false) {
+            
+            // Cari "toyota avanza" tanpa filter status dulu
+            $debugQuery = Kendaraan::select('kendaraan.*')->where(function($q) {
+                $q->where('kendaraan.merk', 'like', '%toyota%')
+                ->orWhere('kendaraan.tipe', 'like', '%avanza%');
+            })->get();
+        }
+        
+        // Paginasi hasil
         $dataKendaraan = new \Illuminate\Pagination\LengthAwarePaginator(
-            $dataKendaraan->forPage($request->page, 10), 
+            $dataKendaraan->forPage($request->page ?? 1, 10), 
             $dataKendaraan->count(), 
             10, 
-            $request->page, 
+            $request->page ?? 1, 
             ['path' => $request->url(), 'query' => $request->query()] 
         );
-    
+
         return view('admin.asuransi.daftar_kendaraan_asuransi', compact('dataKendaraan', 'search', 'statusFilter'));
     }
     

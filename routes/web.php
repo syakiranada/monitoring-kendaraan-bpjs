@@ -181,7 +181,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/admin/kendaraan/store', [DaftarKendaraanAdminController::class, 'store'])->name('kendaraan.store');
     Route::post('/admin/kendaraan/{id}/hitung-depresiasi', [DaftarKendaraanAdminController::class, 'hitungDepresiasi'])->name('kendaraan.hitungDepresiasi');
     Route::get('/admin/kendaraan/check-plat', [DaftarKendaraanAdminController::class, 'checkPlat']);
-    
 });
 
 Route::middleware('auth')->group(function () {
