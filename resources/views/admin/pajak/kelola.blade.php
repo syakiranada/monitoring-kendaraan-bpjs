@@ -171,7 +171,8 @@
         isValid = false;
     } else {
         const selectedDate = tanggalBayarInput.value;
-        const today = new Date().toISOString().split('T')[0];
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
         
         if (selectedDate > today) {
             warningTanggalBayar.textContent = "Tanggal bayar tidak boleh lebih dari hari ini!";
@@ -280,7 +281,8 @@ document.addEventListener('DOMContentLoaded', function() {
             hideWarning(this, warningElement);
             
             const selectedDate = this.value;
-            const today = new Date().toISOString().split('T')[0];
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
             
             if (selectedDate > today) {
                 warningElement.textContent = "Tanggal bayar tidak boleh lebih dari hari ini!";
@@ -439,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     title: "Gagal",
                     html: `
                         <p>Mohon periksa kembali isian form:</p>
-                        <div style="text-align: center;">
+                        <div style="text-align: left;">
                             <ul style="display: inline-block; text-align: left; margin: 0 auto;">
                                 ${errorContent}
                             </ul>

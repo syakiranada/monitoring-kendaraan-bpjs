@@ -260,6 +260,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     
     var today = new Date();
+    today.setHours(0, 0, 0, 0);
     var year = today.getFullYear();
     var month = String(today.getMonth() + 1).padStart(2, '0');
     var day = String(today.getDate()).padStart(2, '0');
@@ -317,7 +318,8 @@ function setupDateValidation() {
         
         const warningElement = field.warningId ? document.getElementById(field.warningId) : null;
         
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         input.setAttribute('max', today);
        
         function validateDate() {
@@ -434,7 +436,10 @@ function setupDateValidation() {
             
             if (asuransiIsFilled) {
                 const asuransiDate = new Date(tanggalAsuransi.value);
+                asuransiDate.setHours(0, 0, 0, 0);
                 const todayDate = new Date();
+                todayDate.setHours(0, 0, 0, 0);
+               
                 
                 if (isNaN(asuransiDate.getTime())) {
                     showWarning(tanggalAsuransi, warningAsuransi, 'Format Tanggal Asuransi tidak valid.');
@@ -466,6 +471,7 @@ function setupDateValidation() {
             
             if (awalIsFilled) {
                 const awalDate = new Date(tanggalPerlindunganAwal.value);
+                awalDate.setHours(0, 0, 0, 0);
                 
                 if (isNaN(awalDate.getTime())) {
                     showWarning(tanggalPerlindunganAwal, warningPerlindunganAwal, 'Format Tanggal Perlindungan Awal tidak valid.');
@@ -491,7 +497,7 @@ function setupDateValidation() {
             
             if (akhirIsFilled) {
                 const akhirDate = new Date(tanggalPerlindunganAkhir.value);
-                
+                akhirDate.setHours(0, 0, 0, 0);
                 if (isNaN(akhirDate.getTime())) {
                     showWarning(tanggalPerlindunganAkhir, warningPerlindunganAkhir, 'Format Tanggal Perlindungan Akhir tidak valid.');
                     return;
@@ -499,7 +505,8 @@ function setupDateValidation() {
 
                 if (awalIsFilled) {
                     const awalDate = new Date(tanggalPerlindunganAwal.value);
-                    
+                    // awalDate.setHours(0, 0, 0, 0);
+                    // akhirDate.setHours(0, 0, 0, 0);
                     if (!isNaN(awalDate.getTime()) && akhirDate <= awalDate) {
                         showWarning(tanggalPerlindunganAkhir, warningPerlindunganAkhir, 'Tanggal Perlindungan Akhir harus lebih besar dari Tanggal Perlindungan Awal.');
                         return;
@@ -1072,6 +1079,7 @@ window.validateInputs = function() {
             } else {
                
                 const asuransiDate = new Date(asuransiValue);
+                asuransiDate.setHours(0, 0, 0, 0);
                 if (isNaN(asuransiDate.getTime())) {
                     errors.push('Format Tanggal Asuransi tidak valid.');
                     showWarning(tanggalAsuransi, warningAsuransi, 'Format Tanggal Asuransi tidak valid.');
@@ -1108,6 +1116,8 @@ window.validateInputs = function() {
                     isValid = false;
                 } else if (awalIsFilled) {
                     const awalDate = new Date(awalValue);
+                    // awalDate.setHours(0, 0, 0, 0);
+                    // akhirDate.setHours(0, 0, 0, 0);
                     if (!isNaN(awalDate.getTime()) && akhirDate <= awalDate) {
                         errors.push('Tanggal Perlindungan Akhir harus lebih besar dari Tanggal Perlindungan Awal.');
                         showWarning(tanggalPerlindunganAkhir, warningPerlindunganAkhir, 'Tanggal Perlindungan Akhir harus lebih besar dari Tanggal Perlindungan Awal.');
@@ -1352,8 +1362,8 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
                     title: "Gagal",
                     html: `
                         <p>Mohon periksa kembali isian form:</p>
-                        <div style="text-align: center;">
-                            <ul style="display: inline-block; text-align: left; margin: 0 auto;">
+                        <div style="text-align: left;">
+                            <ul style="margin-left: 1.2em;">
                                 ${errorContent}
                             </ul>
                         </div>
@@ -1363,6 +1373,7 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
                     confirmButtonText: "OK",
                     width: isMobile ? '90%' : '32em'
                 });
+
                 
                 return false;
             }

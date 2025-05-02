@@ -304,7 +304,8 @@ function setupDateValidation() {
             return;
         }
         const warningElement = field.warningId ? document.getElementById(field.warningId) : null;
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         input.setAttribute('max', today);
         function validateDate() {
             
@@ -426,6 +427,8 @@ function setupDateValidation() {
             if (asuransiIsFilled) {
                 const asuransiDate = new Date(tanggalAsuransi.value);
                 const todayDate = new Date();
+                todayDate.setHours(0, 0, 0, 0);
+                asuransiDate.setHours(0, 0, 0, 0);
                 if (isNaN(asuransiDate.getTime())) {
                     showWarning(tanggalAsuransi, warningAsuransi, 'Format Tanggal Asuransi tidak valid.');
                     return;
@@ -719,7 +722,7 @@ function setupRealTimeValidation() {
         let plateCheckTimeout;
         const newPlatNomorInput = platNomorInput.cloneNode(true);
         platNomorInput.parentNode.replaceChild(newPlatNomorInput, platNomorInput);
-        newPlatNomorInput.dataset.isTouched = 'false';\
+        newPlatNomorInput.dataset.isTouched = 'false';
         newPlatNomorInput.addEventListener('input', function() {
             const warningElement = document.getElementById('warning-plat-nomor');
             const platNomor = this.value.trim();
@@ -1069,7 +1072,7 @@ window.validateInputs = function() {
             } else {
                 const asuransiDate = new Date(asuransiValue);
                 today.setHours(0, 0, 0, 0); 
-asuransiDate.setHours(0, 0, 0, 0); 
+                asuransiDate.setHours(0, 0, 0, 0); 
                 if (isNaN(asuransiDate.getTime())) {
                     errors.push('Format Tanggal Asuransi tidak valid.');
                     showWarning(tanggalAsuransi, warningAsuransi, 'Format Tanggal Asuransi tidak valid.');
@@ -1341,8 +1344,8 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
                     title: "Gagal",
                     html: `
                         <p>Mohon periksa kembali isian form:</p>
-                        <div style="text-align: center;">
-                            <ul style="display: inline-block; text-align: left; margin: 0 auto;">
+                        <div style="text-align: left;">
+                            <ul style="margin-left: 1.2em;">
                                 ${errorContent}
                             </ul>
                         </div>
@@ -1352,6 +1355,7 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
                     confirmButtonText: "OK",
                     width: isMobile ? '90%' : '32em'
                 });
+
                 
                 return false;
             }

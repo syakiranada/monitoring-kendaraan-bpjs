@@ -177,7 +177,8 @@
         isValid = false;
     } else {
         const selectedDate = tanggalBayarInput.value;
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         
         if (selectedDate > today) {
             warningTanggalBayar.textContent = "Tanggal bayar tidak boleh lebih dari hari ini!";
@@ -286,7 +287,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (this.value) {
             hideWarning(this, warningElement);
             const selectedDate = this.value;
-            const today = new Date().toISOString().split('T')[0];
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
             
             if (selectedDate > today) {
                 warningElement.textContent = "Tanggal bayar tidak boleh lebih dari hari ini!";
@@ -532,20 +534,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 Swal.fire({
-    title: "Gagal",
-    html: `
-        <p>Mohon periksa kembali isian form:</p>
-        <div style="text-align: center;">
-            <ul style="display: inline-block; text-align: left; margin: 0 auto;">
-                ${errorContent}
-            </ul>
-        </div>
-    `,
-    icon: "error",
-    confirmButtonColor: "#3085d6",
-    confirmButtonText: "OK",
-    width: isMobile ? '90%' : '32em'
-});
+                    title: "Gagal",
+                    html: `
+                        <p>Mohon periksa kembali isian form:</p>
+                        <div style="text-align: left;">
+                            <ul style="display: inline-block; text-align: left; margin: 0 auto;">
+                                ${errorContent}
+                            </ul>
+                        </div>
+                    `,
+                    icon: "error",
+                    confirmButtonColor: "#3085d6",
+                    confirmButtonText: "OK",
+                    width: isMobile ? '90%' : '32em'
+                });
 
                 return false;
             }

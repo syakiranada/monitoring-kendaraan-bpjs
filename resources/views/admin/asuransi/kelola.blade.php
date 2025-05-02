@@ -217,9 +217,11 @@
                 errors.push("Tanggal bayar harus diisi!");
                 isValid = false;
             } else {
-               
-                const selectedDate = tanggalBayarInput.value;
-                const today = new Date().toISOString().split('T')[0];
+                const selectedDate = this.value;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const formattedToday = today.toISOString().split('T')[0];
+
                 
                 if (selectedDate > today) {
                     warningTanggalBayar.textContent = "Tanggal bayar tidak boleh lebih dari hari ini!";
@@ -269,6 +271,7 @@
             
             let fotoPolisInput = document.getElementById('fotoInputPolis');
             let warningFotoPolis = document.getElementById('warning-foto-polis');
+            
             
             if (!fotoPolisInput.files[0]) {
                 warningFotoPolis.textContent = "Polis asuransi harus diupload!";
@@ -382,7 +385,10 @@
                 if (this.value) {
                     hideWarning(this, warningElement);
                     const selectedDate = this.value;
-                    const today = new Date().toISOString().split('T')[0];
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const formattedToday = today.toISOString().split('T')[0];
+
                     
                     if (selectedDate > today) {
                         warningElement.textContent = "Tanggal bayar tidak boleh lebih dari hari ini!";
@@ -524,7 +530,7 @@
                         title: "Gagal",
                         html: `
                             <p>Mohon periksa kembali isian form:</p>
-                            <div style="text-align: center;">
+                            <div style="text-align: left;">
                                 <ul style="display: inline-block; text-align: left; margin: 0 auto;">
                                     ${errorContent}
                                 </ul>
@@ -599,33 +605,42 @@
                 event.preventDefault();
                 
                 let fileInput = document.getElementById('fotoInputPolis');
+                let warningFotoPolis = document.getElementById('warning-foto-polis');
                 
                 if (fileInput.files.length > 0) {
-                    fileInput.value = ''; 
-                    document.getElementById('uploadTextPolis').textContent = "Upload File";
-                    document.getElementById('removeFilePolis').classList.add('hidden');
-                    return;
-                }
+        fileInput.value = ''; 
+        document.getElementById('uploadTextPolis').textContent = "Upload File";
+        // this.classList.add('hidden');
+        
+        // Show warning message after removing the file
+        warningFotoPolis.textContent = "Polis asuransi harus diupload!";
+        // warningFotoPolis.classList.remove("hidden");
+        document.getElementById('uploadLabelPolis').classList.add("border-red-500");
+        return;
+    }
             });
 
             document.getElementById('removeFilePembayaran').addEventListener('click', function(event) {
                 event.preventDefault();
-                
-                let fileInput = document.getElementById('fotoInputPembayaran');
+                let warningFotoPembayaran = document.getElementById('warning-foto-pembayaran');
 
-                if (fileInput.files.length > 0) {
-                    fileInput.value = ''; 
-                    document.getElementById('uploadTextPembayaran').textContent = "Upload File";
-                    document.getElementById('removeFilePembayaran').classList.add('hidden');
-                    return;
-                }
+    if (fileInput.files.length > 0) {
+        fileInput.value = ''; 
+        document.getElementById('uploadTextPembayaran').textContent = "Upload File";
+        // this.classList.add('hidden');
+        
+        // Show warning message after removing the file
+        warningFotoPembayaran.textContent = "Bukti pembayaran asuransi harus diupload!";
+        // warningFotoPembayaran.classList.remove("hidden");
+        document.getElementById('uploadLabelPembayaran').classList.add("border-red-500");
+        return;}
             });
 
             document.getElementById('fotoInputPolis').addEventListener('change', function(event) {
                 let fileName = event.target.files[0] ? event.target.files[0].name : "Upload File";
                 let shortFileName = shortenFileName(fileName);
                 document.getElementById('uploadTextPolis').textContent = shortFileName;
-                document.getElementById('removeFilePolis').classList.remove('hidden');
+                // document.getElementById('removeFilePolis').classList.remove('hidden');
                 
                 validateFileInput(this, ['image/jpeg', 'image/png', 'application/pdf'], 'uploadTextPolis', 'removeFilePolis');
             });
@@ -634,7 +649,7 @@
                 let fileName = event.target.files[0] ? event.target.files[0].name : "Upload File";
                 let shortFileName = shortenFileName(fileName);
                 document.getElementById('uploadTextPembayaran').textContent = shortFileName;
-                document.getElementById('removeFilePembayaran').classList.remove('hidden');
+                // document.getElementById('removeFilePembayaran').classList.remove('hidden');
                 
                 validateFileInput(this, ['image/jpeg', 'image/png', 'application/pdf'], 'uploadTextPembayaran', 'removeFilePembayaran');
             });
@@ -660,7 +675,7 @@
                     
                     let shortFileName = shortenFileName(file.name);
                     document.getElementById(uploadTextId).textContent = shortFileName;
-                    document.getElementById(removeButtonId).classList.remove('hidden');
+                    // document.getElementById(removeButtonId).classList.remove('hidden');
                     return true;
                 }
                 return true;
@@ -669,7 +684,7 @@
             function resetFileInput(fileInput, uploadTextId, removeButtonId) {
                 fileInput.value = ''; 
                 document.getElementById(uploadTextId).textContent = "Upload File"; 
-                document.getElementById(removeButtonId).classList.add('hidden'); 
+                // document.getElementById(removeButtonId).classList.add('hidden'); 
             }
             
             document.addEventListener('DOMContentLoaded', function() {
@@ -677,7 +692,10 @@
                 
                 tanggalBayarInput.addEventListener('change', function() {
                     const selectedDate = this.value;
-                    const today = new Date().toISOString().split('T')[0];
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const formattedToday = today.toISOString().split('T')[0];
+
 
                     if (selectedDate > today) {
                         showAlert("Tanggal bayar tidak boleh lebih dari hari ini.");
