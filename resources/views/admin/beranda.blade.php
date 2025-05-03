@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beranda Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media (max-width: 640px) {
             .alert-icon {
@@ -26,9 +25,9 @@
     </style>
 </head>
 <body class="bg-gray-100">
-    <div class="max-w-6xl mx-auto p-4 md:p-8">
-        <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">Selamat Datang, {{ $user->name }}!</h1>
-        
+    <div class="max-w-none mx-auto p-4 md">
+        <h1 class="text-xl md:text-2xl font-bold text-gray-800 ml-1 mb-4 md:mb-3">Selamat Datang, {{ $user->name }}!</h1>
+        <div class="p-1">
         @if(count($peminjamanTerlambat) > 0 || count($peminjamanAkanJatuhTempo) > 0)
         <div class="p-3 md:p-4 mb-4 md:mb-6 border border-red-300 rounded-lg bg-red-50 shadow-md" role="alert">
             {{-- Pengembalian Terlambat --}}
@@ -110,7 +109,7 @@
                 <path d="M5.25 12a.75.75 0 0 1 .75-.75h.01a.75.75 0 0 1 .75.75v.01a.75.75 0 0 1-.75.75H6a.75.75 0 0 1-.75-.75V12Z" />
                 <path fill-rule="evenodd" d="M5.75 2a.75.75 0 0 1 .75.75V4h7V2.75a.75.75 0 0 1 1.5 0V4h.25A2.75 2.75 0 0 1 18 6.75v8.5A2.75 2.75 0 0 1 15.25 18H4.75A2.75 2.75 0 0 1 2 15.25v-8.5A2.75 2.75 0 0 1 4.75 4H5V2.75A.75.75 0 0 1 5.75 2Z" clip-rule="evenodd" />
             </svg>
-            <h2 class="text-lg md:text-xl font-semibold text-gray-800">Jatuh Tempo (1 Bulan Kedepan)</h2>
+            <h2 class="text-lg md:text-xl font-semibold text-gray-800">Jatuh Tempo (1 Bulan Ke Depan)</h2>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -176,6 +175,7 @@
             </div>
         </div>
     </div>
+</div>
 </body>
 </html>
 </x-app-layout>

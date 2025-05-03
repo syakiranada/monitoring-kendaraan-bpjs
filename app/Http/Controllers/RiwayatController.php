@@ -583,7 +583,8 @@ class RiwayatController extends Controller
     {
         $search = $request->search;
         $query = CekFisik::with(['kendaraan', 'user'])
-            ->orderBy('tgl_cek_fisik', 'desc');
+            ->orderBy('tgl_cek_fisik', 'desc')
+            ->orderBy('id_cek_fisik', 'desc');
 
         // // search 1 kolom aja
         // if ($request->has('search')) {

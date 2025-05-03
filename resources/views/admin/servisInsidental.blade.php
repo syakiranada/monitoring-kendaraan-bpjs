@@ -1,14 +1,5 @@
 <x-app-layout>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Kendaraan</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-</head>
-<body class="bg-gray-100 font-sans">
-    {{--  <div class="p-6 space-y-12">  --}}
+    <div class="p-6">
         {{--  <!-- Tabel Daftar Kendaraan (Only Available Vehicles) -->
         <div>
             <div class="flex justify-between items-center mb-6">
@@ -66,21 +57,21 @@
 
         <!-- Tabel Daftar Servis Insidental (All Vehicles) -->
             <div class="flex justify-between items-center mb-6">
-                <h1 class="text-3xl font-bold">Daftar Servis Insidental Kendaraan</h1>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Daftar Servis Insidental Kendaraan</h2>
                 <form action="{{ route('admin.servisInsidental') }}" method="GET" class="relative">
-                    <input type="text" name="search" class="border rounded-lg py-2 px-4 pl-10 w-64" placeholder="Search" value="{{ request('search') }}">
+                    <input type="text" name="search" class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-60 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" placeholder="Cari" value="{{ request('search') }}">
                     <i class="fas fa-search absolute left-3 top-3 text-gray-500"></i>
                 </form>
             </div>
             <div class="bg-white shadow-md rounded-lg overflow-hidden">
-                <table class="min-w-full bg-white">
-                    <thead class="bg-gray-100 text-gray-600">
+                <table class="w-full text-sm text-left rtl:text-right text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                         <tr>
                             <th class="py-3 px-4 text-left">MERK DAN TIPE</th>
                             <th class="py-3 px-4 text-left">PLAT</th>
                             <th class="py-3 px-4 text-left">TANGGAL SERVIS INSIDENTAL</th>
                             <th class="py-3 px-4 text-left">STATUS KETERSEDIAAN</th>
-                            <th class="py-3 px-4 text-left">AKSI</th>
+                            <th class="py-3 px-4 text-center">AKSI</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -103,17 +94,17 @@
                                         'merk' => $servis->merk ?? 'Tidak Diketahui',
                                         'tipe' => $servis->tipe ?? '',
                                         'plat' => $servis->plat_nomor ?? '-'
-                                    ]) }}" class="text-blue-500 hover:underline">
+                                    ]) }}" class="font-medium text-blue-500 hover:underline">
                                         Input
                                     </a>
                                     @if ($servis->id_servis_insidental)
-                                        <a href="{{ route('admin.servisInsidental.detail', $servis->id_servis_insidental) }}" class="text-blue-500 hover:underline">Detail</a>
-                                        <a href="{{ route('admin.servisInsidental.edit', ['id' => $servis->id_servis_insidental]) }}" class="text-green-500 hover:underline">Edit</a>
+                                        <a href="{{ route('admin.servisInsidental.detail', $servis->id_servis_insidental) }}" class="font-medium text-gray-500 hover:underline">Detail</a>
+                                        <a href="{{ route('admin.servisInsidental.edit', ['id' => $servis->id_servis_insidental]) }}" class="font-medium text-yellow-500 hover:underline">Edit</a>
                             
                                         <form action="{{ route('admin.servisInsidental.destroy', $servis->id_servis_insidental) }}" method="POST" class="inline form-delete">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="button" class="text-red-500 hover:underline delete-button"
+                                            <button type="button" class="font-medium text-red-600 hover:underline delete-button"
                                                 data-url="{{ route('admin.servisInsidental.destroy', $servis->id_servis_insidental) }}">
                                                 Hapus
                                             </button>
@@ -135,11 +126,9 @@
                 </table>
             </div>
             <!-- Pagination -->
-                <div class="flex justify-center items-center py-4">
-                    <div class="bg-white rounded-lg shadow-md p-2">
-                        {{ $servisInsidentals->appends(request()->query())->links('pagination::tailwind') }}
-                    </div>
-                </div>
+            <div class="mt-4">
+                {{ $servisInsidentals->appends(request()->query())->links() }}
+            </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -251,6 +240,4 @@
             });
         });
     </script>
-</body>
-</html>
 </x-app-layout>

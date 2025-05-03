@@ -16,7 +16,157 @@ class ServisRutinController extends Controller
 {
     // public function index(Request $request)
     // {
-    //     // Cara 1: Gunakan query builder yang lebih eksplisit
+    //     $search = $request->input('search');
+
+    //     // Subquery: Ambil id_servis_rutin terakhir per kendaraan
+    //     $latestServiceSub = DB::table('servis_rutin')
+    //         ->select(DB::raw('MAX(id_servis_rutin) as id_servis_rutin'), 'id_kendaraan')
+    //         ->groupBy('id_kendaraan');
+
+    //     $query = Kendaraan::whereIn('aset', ['guna', 'tidak guna'])
+    //         ->leftJoinSub($latestServiceSub, 'latest', function ($join) {
+    //             $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
+    //         })
+    //         ->leftJoin('servis_rutin', 'servis_rutin.id_servis_rutin', '=', 'latest.id_servis_rutin')
+    //         ->select(
+    //             'kendaraan.*',
+    //             'servis_rutin.id_servis_rutin',
+    //             'servis_rutin.tgl_servis_real',
+    //             'servis_rutin.updated_at as servis_updated_at'
+    //         );
+
+        
+    //     // Tambahkan logic pencarian jika ada
+    //     if (!empty($search)) {
+    //         $query->where(function ($q) use ($search) {
+    //             $q->where('plat_nomor', 'like', "%$search%")
+    //               ->orWhere('merk', 'like', "%$search%");
+    //               // Tambahkan kolom lain sesuai kebutuhan
+    //         });
+    //     }
+        
+    //     // Ambil data
+    //     $servisRutins = $query->orderBy('servis_rutin.tgl_servis_real', 'desc')
+    //         ->orderBy('servis_rutin.updated_at', 'desc')
+    //         ->paginate(10)
+    //         ->appends(['search' => $search]);
+        
+    //     return view('admin.servisRutin', [
+    //         'kendaraan' => Kendaraan::whereIn('aset', ['guna', 'tidak guna'])->get(),
+    //         'servisRutins' => $servisRutins,
+    //         'search' => $search
+    //     ]);
+    // }    
+    
+    public function index(Request $request)
+    {
+        $search = $request->input('search');
+        
+        $subquery = DB::table('servis_rutin')
+            ->select('id_kendaraan', DB::raw('MAX(id_servis_rutin) as max_id_servis_rutin'))
+            ->groupBy('id_kendaraan');
+
+        $query = Kendaraan::select(
+                'kendaraan.*',
+                'servis_rutin.id_servis_rutin',
+                'servis_rutin.tgl_servis_real',
+                'servis_rutin.tgl_servis_selanjutnya',
+                'servis_rutin.updated_at as servis_updated_at'
+            )
+            ->leftJoinSub($subquery, 'latest', function ($join) {
+                $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
+            })
+            ->leftJoin('servis_rutin', function ($join) {
+                $join->on('kendaraan.id_kendaraan', '=', 'servis_rutin.id_kendaraan')
+                     ->on('servis_rutin.id_servis_rutin', '=', 'latest.max_id_servis_rutin');
+            })
+            ->whereIn('kendaraan.aset', ['guna', 'tidak guna']);
+
+        if (!empty($search)) {
+            // Logika pencarian tanggal
+            if (preg_match('/^\d{4}$/', $search)) { // Hanya tahun
+                $query->whereYear('servis_rutin.tgl_servis_real', $search);
+            } elseif (preg_match('/^\d{2}$/', $search)) { // Hanya bulan atau tanggal
+                if (strlen($search) == 2 && $search <= 12) { // Asumsikan bulan
+                    $query->whereMonth('servis_rutin.tgl_servis_real', $search);
+                } else { // Asumsikan tanggal
+                    $query->whereDay('servis_rutin.tgl_servis_real', $search);
+                }
+            } elseif (preg_match('/^\d{2}-\d{4}$/', $search)) { // Bulan-Tahun
+                $parts = explode('-', $search);
+                $query->whereMonth('servis_rutin.tgl_servis_real', $parts[0])->whereYear('servis_rutin.tgl_servis_real', $parts[1]);
+            } elseif (preg_match('/^\d{4}-\d{2}$/', $search)) { // Tahun-Bulan
+                $parts = explode('-', $search);
+                $query->whereYear('servis_rutin.tgl_servis_real', $parts[0])->whereMonth('servis_rutin.tgl_servis_real', $parts[1]);
+            } elseif (preg_match('/^\d{2}-\d{2}-\d{4}$/', $search)) { // Tanggal-Bulan-Tahun (format lengkap)
+                try {
+                    $searchDate = Carbon::createFromFormat('d-m-Y', $search);
+                    $query->whereDate('servis_rutin.tgl_servis_real', $searchDate);
+                } catch (\Exception $e) {
+                    Log::error("Error parsing search date:", ['search' => $search, 'error' => $e->getMessage()]);
+                }
+            } else {
+                // Logika pencarian teks lainnya
+                // Inside your search logic, modify this part
+                $searchTerms = explode(' ', strtolower($search));
+                $searchTerms = array_filter($searchTerms); // filter empty terms
+
+                if (!empty($searchTerms)) {
+                    $query->where(function ($outerQuery) use ($searchTerms) {
+                        // Check if any term is a year format
+                        $yearTerm = null;
+                        foreach ($searchTerms as $index => $term) {
+                            if (preg_match('/^\d{4}$/', $term)) {
+                                $yearTerm = $term;
+                                unset($searchTerms[$index]); // Remove from regular search terms
+                                break;
+                            }
+                        }
+
+                        if ($yearTerm) {
+                            $outerQuery->whereYear('servis_rutin.tgl_servis_real', $yearTerm);
+                        }
+                        
+                        // Continue with regular text search for remaining terms
+                        foreach ($searchTerms as $term) {
+                            $outerQuery->where(function ($innerQuery) use ($term) {
+                                // OR antar kolom
+                                $innerQuery->orWhereRaw("LOWER(kendaraan.plat_nomor) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.merk) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.tipe) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.warna) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.jenis) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.aset) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.bahan_bakar) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.no_mesin) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.no_rangka) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("CAST(kendaraan.kapasitas AS CHAR) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.frekuensi_servis) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("CAST(YEAR(servis_rutin.tgl_servis_real) AS CHAR) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LPAD(MONTH(servis_rutin.tgl_servis_real), 2, '0') LIKE ?", ["%{$term}%"])
+                                    ->orWhereRaw("LPAD(DAY(servis_rutin.tgl_servis_real), 2, '0') LIKE ?", ["%{$term}%"]);
+                            });
+                        }
+                    });
+                }
+            }
+        }
+
+        $servisRutins = $query
+            ->orderByDesc('servis_rutin.tgl_servis_real')
+            ->orderByDesc('servis_rutin.updated_at')
+            ->paginate(10)
+            ->appends(['search' => $search]);
+
+        return view('admin.servisRutin', [
+            'kendaraan' => Kendaraan::whereIn('aset', ['guna', 'tidak guna'])->get(),
+            'servisRutins' => $servisRutins,
+            'search' => $search,
+            ]);
+    }
+
+    // public function index(Request $request)
+    // {
     //     $subquery = DB::table('servis_rutin')
     //         ->selectRaw('MAX(id_servis_rutin) as max_id')
     //         ->groupBy('id_kendaraan');
@@ -26,158 +176,109 @@ class ServisRutinController extends Controller
     //     $query = ServisRutin::with(['kendaraan'])
     //         ->whereIn('id_servis_rutin', $ids);
         
-    //     if ($request->has('search')) {
-    //         $search = $request->search;
-    //         $query->whereHas('kendaraan', function($q) use ($search) {
-    //             $q->where('merk', 'like', "%{$search}%")  // Perhatikan perubahan 'merek' menjadi 'merk'
-    //               ->orWhere('tipe', 'like', "%{$search}%")
-    //               ->orWhere('plat_nomor', 'like', "%{$search}%");
-    //         });
-    //     }
-        
-    //     // Filter untuk kendaraan dengan aset 'guna' atau 'tidak guna'
     //     $query->whereHas('kendaraan', function($q) {
     //         $q->whereIn('aset', ['guna', 'tidak guna']);
     //     });
     
-    //     $count = $query->count(); // Periksa jumlah record sebelum pagination
+    //     $search = $request->input('search');
+    //     Log::info("Search parameter received: " . ($search ?: 'empty'));
         
-    //     $servisRutins = $query->orderBy('tgl_servis_real', 'desc')
-    //                           ->paginate(10);
-        
-    //     // Tambahkan log untuk debugging
-    //     Log::info("Total records: {$count}, Page records: {$servisRutins->count()}");
-        
-    //     return view('admin.servisRutin', compact('servisRutins'));
-    // }
-
-    public function index(Request $request)
-    {
-        // Get the latest service record for each vehicle
-        $subquery = DB::table('servis_rutin')
-            ->selectRaw('MAX(id_servis_rutin) as max_id')
-            ->groupBy('id_kendaraan');
-        
-        $ids = $subquery->pluck('max_id')->toArray();
-        
-        // Start with ServisRutin model and preload kendaraan relationship
-        $query = ServisRutin::with(['kendaraan'])
-            ->whereIn('id_servis_rutin', $ids);
-        
-        // Filter to only include vehicles with asset type 'guna' or 'tidak guna'
-        $query->whereHas('kendaraan', function($q) {
-            $q->whereIn('aset', ['guna', 'tidak guna']);
-        });
+    //     if (!empty($search)) {
+    //         // Logika pencarian tanggal
+    //         if (preg_match('/^\d{4}$/', $search)) { // Hanya tahun
+    //             $query->whereYear('servis_rutin.tgl_servis_real', $search);
+    //             Log::info("Applying year search: {$search}");
+    //         } elseif (preg_match('/^\d{2}$/', $search)) { // Hanya bulan atau tanggal
+    //             if (strlen($search) == 2 && $search <= 12) { // Asumsikan bulan
+    //                 $query->whereMonth('servis_rutin.tgl_servis_real', $search);
+    //                 Log::info("Applying month search: {$search}");
+    //             } else { // Asumsikan tanggal
+    //                 $query->whereDay('servis_rutin.tgl_servis_real', $search);
+    //                 Log::info("Applying day search: {$search}");
+    //             }
+    //         } elseif (preg_match('/^\d{2}-\d{4}$/', $search)) { // Bulan-Tahun
+    //             $parts = explode('-', $search);
+    //             $query->whereMonth('servis_rutin.tgl_servis_real', $parts[0])->whereYear('servis_rutin.tgl_servis_real', $parts[1]);
+    //             Log::info("Applying month-year search: {$parts[0]}-{$parts[1]}");
+    //         } elseif (preg_match('/^\d{4}-\d{2}$/', $search)) { // Tahun-Bulan
+    //             $parts = explode('-', $search);
+    //             $query->whereYear('servis_rutin.tgl_servis_real', $parts[0])->whereMonth('servis_rutin.tgl_servis_real', $parts[1]);
+    //             Log::info("Applying year-month search: {$parts[0]}-{$parts[1]}");
+    //         } elseif (preg_match('/^\d{2}-\d{2}-\d{4}$/', $search)) { // Tanggal-Bulan-Tahun (format lengkap)
+    //             try {
+    //                 $searchDate = Carbon::createFromFormat('d-m-Y', $search);
+    //                 $query->whereDate('servis_rutin.tgl_servis_real', $searchDate);
+    //                 Log::info("Applying full date search: {$searchDate}");
+    //             } catch (\Exception $e) {
+    //                 Log::error("Error parsing search date:", ['search' => $search, 'error' => $e->getMessage()]);
+    //             }
+    //         } else {
+    //             // Logika pencarian teks lainnya
+    //             $searchTerms = explode(' ', strtolower($search));
+    //             $searchTerms = array_filter($searchTerms); // filter empty terms
+    //             Log::info("Search terms: " . implode(', ', $searchTerms));
     
-        // Debugging to verify we're getting the search parameter
-        $search = $request->input('search');
-        Log::info("Search parameter received: " . ($search ?: 'empty'));
-        
-        if (!empty($search)) {
-            // Logika pencarian tanggal
-            if (preg_match('/^\d{4}$/', $search)) { // Hanya tahun
-                $query->whereYear('servis_rutin.tgl_servis_real', $search);
-                Log::info("Applying year search: {$search}");
-            } elseif (preg_match('/^\d{2}$/', $search)) { // Hanya bulan atau tanggal
-                if (strlen($search) == 2 && $search <= 12) { // Asumsikan bulan
-                    $query->whereMonth('servis_rutin.tgl_servis_real', $search);
-                    Log::info("Applying month search: {$search}");
-                } else { // Asumsikan tanggal
-                    $query->whereDay('servis_rutin.tgl_servis_real', $search);
-                    Log::info("Applying day search: {$search}");
-                }
-            } elseif (preg_match('/^\d{2}-\d{4}$/', $search)) { // Bulan-Tahun
-                $parts = explode('-', $search);
-                $query->whereMonth('servis_rutin.tgl_servis_real', $parts[0])->whereYear('servis_rutin.tgl_servis_real', $parts[1]);
-                Log::info("Applying month-year search: {$parts[0]}-{$parts[1]}");
-            } elseif (preg_match('/^\d{4}-\d{2}$/', $search)) { // Tahun-Bulan
-                $parts = explode('-', $search);
-                $query->whereYear('servis_rutin.tgl_servis_real', $parts[0])->whereMonth('servis_rutin.tgl_servis_real', $parts[1]);
-                Log::info("Applying year-month search: {$parts[0]}-{$parts[1]}");
-            } elseif (preg_match('/^\d{2}-\d{2}-\d{4}$/', $search)) { // Tanggal-Bulan-Tahun (format lengkap)
-                try {
-                    $searchDate = Carbon::createFromFormat('d-m-Y', $search);
-                    $query->whereDate('servis_rutin.tgl_servis_real', $searchDate);
-                    Log::info("Applying full date search: {$searchDate}");
-                } catch (\Exception $e) {
-                    Log::error("Error parsing search date:", ['search' => $search, 'error' => $e->getMessage()]);
-                }
-            } else {
-                // Logika pencarian teks lainnya
-                $searchTerms = explode(' ', strtolower($search));
-                $searchTerms = array_filter($searchTerms); // filter empty terms
-                Log::info("Search terms: " . implode(', ', $searchTerms));
+    //             if (!empty($searchTerms)) {
+    //                 $query->where(function ($outerQuery) use ($searchTerms) {
+    //                     // Check if any term is a year format
+    //                     $yearTerm = null;
+    //                     foreach ($searchTerms as $index => $term) {
+    //                         if (preg_match('/^\d{4}$/', $term)) {
+    //                             $yearTerm = $term;
+    //                             unset($searchTerms[$index]); // Remove from regular search terms
+    //                             Log::info("Year term found: {$yearTerm}");
+    //                             break;
+    //                         }
+    //                     }
     
-                if (!empty($searchTerms)) {
-                    $query->where(function ($outerQuery) use ($searchTerms) {
-                        // Check if any term is a year format
-                        $yearTerm = null;
-                        foreach ($searchTerms as $index => $term) {
-                            if (preg_match('/^\d{4}$/', $term)) {
-                                $yearTerm = $term;
-                                unset($searchTerms[$index]); // Remove from regular search terms
-                                Log::info("Year term found: {$yearTerm}");
-                                break;
-                            }
-                        }
-    
-                        if ($yearTerm) {
-                            $outerQuery->whereYear('servis_rutin.tgl_servis_real', $yearTerm);
-                        }
+    //                     if ($yearTerm) {
+    //                         $outerQuery->whereYear('servis_rutin.tgl_servis_real', $yearTerm);
+    //                     }
                         
-                        // Continue with regular text search for remaining terms
-                        foreach ($searchTerms as $term) {
-                            Log::info("Applying text search for term: {$term}");
-                            $outerQuery->where(function ($innerQuery) use ($term) {
-                                // OR antar kolom - Important change here, we need to reference the relationship correctly
-                                $innerQuery->whereHas('kendaraan', function($vehicleQuery) use ($term) {
-                                    $vehicleQuery->where(function($q) use ($term) {
-                                        $q->whereRaw("LOWER(plat_nomor) LIKE ?", ["%{$term}%"])
-                                            ->orWhereRaw("LOWER(merk) LIKE ?", ["%{$term}%"])
-                                            ->orWhereRaw("LOWER(tipe) LIKE ?", ["%{$term}%"])
-                                            ->orWhereRaw("LOWER(warna) LIKE ?", ["%{$term}%"])
-                                            ->orWhereRaw("LOWER(jenis) LIKE ?", ["%{$term}%"])
-                                            ->orWhereRaw("LOWER(aset) LIKE ?", ["%{$term}%"])
-                                            ->orWhereRaw("LOWER(bahan_bakar) LIKE ?", ["%{$term}%"])
-                                            ->orWhereRaw("LOWER(no_mesin) LIKE ?", ["%{$term}%"])
-                                            ->orWhereRaw("LOWER(no_rangka) LIKE ?", ["%{$term}%"])
-                                            ->orWhereRaw("CAST(kapasitas AS CHAR) LIKE ?", ["%{$term}%"])
-                                            ->orWhereRaw("LOWER(frekuensi_servis) LIKE ?", ["%{$term}%"]);
-                                    });
-                                });
-                                // Also search in servis_rutin date fields
-                                $innerQuery->orWhereRaw("CAST(YEAR(servis_rutin.tgl_servis_real) AS CHAR) LIKE ?", ["%{$term}%"])
-                                    ->orWhereRaw("LPAD(MONTH(servis_rutin.tgl_servis_real), 2, '0') LIKE ?", ["%{$term}%"])
-                                    ->orWhereRaw("LPAD(DAY(servis_rutin.tgl_servis_real), 2, '0') LIKE ?", ["%{$term}%"]);
+    //                     // Continue with regular text search for remaining terms
+    //                     foreach ($searchTerms as $term) {
+    //                         Log::info("Applying text search for term: {$term}");
+    //                         $outerQuery->where(function ($innerQuery) use ($term) {
+    //                             // OR antar kolom - Important change here, we need to reference the relationship correctly
+    //                             $innerQuery->whereHas('kendaraan', function($vehicleQuery) use ($term) {
+    //                                 $vehicleQuery->where(function($q) use ($term) {
+    //                                     $q->whereRaw("LOWER(plat_nomor) LIKE ?", ["%{$term}%"])
+    //                                         ->orWhereRaw("LOWER(merk) LIKE ?", ["%{$term}%"])
+    //                                         ->orWhereRaw("LOWER(tipe) LIKE ?", ["%{$term}%"])
+    //                                         ->orWhereRaw("LOWER(warna) LIKE ?", ["%{$term}%"])
+    //                                         ->orWhereRaw("LOWER(jenis) LIKE ?", ["%{$term}%"])
+    //                                         ->orWhereRaw("LOWER(aset) LIKE ?", ["%{$term}%"])
+    //                                         ->orWhereRaw("LOWER(bahan_bakar) LIKE ?", ["%{$term}%"])
+    //                                         ->orWhereRaw("LOWER(no_mesin) LIKE ?", ["%{$term}%"])
+    //                                         ->orWhereRaw("LOWER(no_rangka) LIKE ?", ["%{$term}%"])
+    //                                         ->orWhereRaw("CAST(kapasitas AS CHAR) LIKE ?", ["%{$term}%"])
+    //                                         ->orWhereRaw("LOWER(frekuensi_servis) LIKE ?", ["%{$term}%"]);
+    //                                 });
+    //                             });
+    //                             // Also search in servis_rutin date fields
+    //                             $innerQuery->orWhereRaw("CAST(YEAR(servis_rutin.tgl_servis_real) AS CHAR) LIKE ?", ["%{$term}%"])
+    //                                 ->orWhereRaw("LPAD(MONTH(servis_rutin.tgl_servis_real), 2, '0') LIKE ?", ["%{$term}%"])
+    //                                 ->orWhereRaw("LPAD(DAY(servis_rutin.tgl_servis_real), 2, '0') LIKE ?", ["%{$term}%"]);
 
-                            });
-                        }
-                    });
-                }
-            }
-        }
-    
-        // Get the SQL query for debugging
-        $sqlQuery = $query->toSql();
-        $bindings = $query->getBindings();
-        Log::info("Generated SQL: " . $sqlQuery);
-        Log::info("Query bindings: ", $bindings);
-    
-        $count = $query->count(); // Periksa jumlah record sebelum pagination
+    //                         });
+    //                     }
+    //                 });
+    //             }
+    //         }
+    //     }
+    //     $count = $query->count();
         
-        $servisRutins = $query->orderBy('servis_rutin.tgl_servis_real', 'desc')
-                            ->orderBy('servis_rutin.updated_at', 'desc')
-                            ->paginate(10);
+    //     $servisRutins = $query->orderBy('servis_rutin.tgl_servis_real', 'desc')
+    //                         ->orderBy('servis_rutin.updated_at', 'desc')
+    //                         ->paginate(10)
+    //                         ->appends(['search' => $search]);
         
-        // Tambahkan log untuk debugging
-        Log::info("Total records: {$count}, Page records: {$servisRutins->count()}");
-        
-        return view('admin.servisRutin', [
-            'kendaraan' => Kendaraan::whereIn('aset', ['guna', 'tidak guna'])->get(),
-            'servisRutins' => $servisRutins,
-            'search' => $search // Pass the search back to the view
-        ]);
-    }
+    //     return view('admin.servisRutin', [
+    //         'kendaraan' => Kendaraan::whereIn('aset', ['guna', 'tidak guna'])->get(),
+    //         'servisRutins' => $servisRutins,
+    //         'search' => $search
+    //     ]);
+    // }
     
 
     public function create()

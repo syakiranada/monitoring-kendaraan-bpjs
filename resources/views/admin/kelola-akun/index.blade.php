@@ -41,7 +41,7 @@ Jane Doe,jane@example.com,password123,pengguna
                 </div>
                 
                 <div class="flex items-center space-x-4">
-                    <button type="submit" class="text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center">
+                    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
                         Impor Akun
                     </button>
                     {{-- <a href="{{ route('admin.kelola-akun.template') }}" class="text-gray-900 bg-white border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-full text-sm px-5 py-2.5 text-center">
@@ -58,7 +58,7 @@ Jane Doe,jane@example.com,password123,pengguna
                     type="text" 
                     name="search"
                     class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-60 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
-                    placeholder="Cari pengguna, ..."
+                    placeholder="Cari"
                     value="{{ request('search') }}"
                 >
                 <div class="absolute inset-y-0 start-0 flex items-center ps-3">
@@ -87,11 +87,17 @@ Jane Doe,jane@example.com,password123,pengguna
                             <td class="px-6 py-4">{{ $user->name }}</td>
                             <td class="px-6 py-4">{{ $user->email }}</td>
                             <td class="px-6 py-4">{{ $user->peran }}</td>
-                            <td class="px-6 py-4">
+                            {{-- <td class="px-6 py-4">
                                 <span class="{{ $user->status ? 'text-green-600' : 'text-red-600' }}">
                                     {{ $user->status ? 'AKTIF' : 'NONAKTIF' }}
                                 </span>
+                            </td> --}}
+                            <td class="px-6 py-4">
+                                <span class="{{ $user->status ? 'bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm border border-green-400' : 'bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400' }}">
+                                    {{ $user->status ? 'AKTIF' : 'NON-AKTIF' }}
+                                </span>
                             </td>
+                            
                             <td class="flex space-x-2 px-6 py-4">
                                 <a href="{{ route('admin.kelola-akun.edit', ['id' => $user->id, 'page' => request()->query('page'), 'search' => request()->query('search')]) }}"
                                     class="font-medium text-yellow-600 hover:underline">
@@ -133,6 +139,7 @@ Jane Doe,jane@example.com,password123,pengguna
                     title: "Berhasil!",
                     text: "{{ session('success') }}",
                     icon: "success",
+                    confirmButtonColor: '#3085d6',
                     confirmButtonText: "OK"
                 });
                 // }).then(() => {
@@ -145,6 +152,7 @@ Jane Doe,jane@example.com,password123,pengguna
                     title: "Gagal!",
                     text: "{{ session('error') }}",
                     icon: "error",
+                    confirmButtonColor: '#3085d6',
                     confirmButtonText: "OK"
                 });
             @endif
@@ -159,10 +167,10 @@ Jane Doe,jane@example.com,password123,pengguna
                         // text: "Anda tidak dapat mengubah kembali setelah ini!",
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Ya, lanjutkan!',
-                        cancelButtonText: 'Batal'
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: 'Ya',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true
                     }).then((result) => {
                         if (result.isConfirmed) {
                             form.submit();

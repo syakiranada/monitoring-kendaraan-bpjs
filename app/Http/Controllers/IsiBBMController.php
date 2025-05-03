@@ -44,20 +44,25 @@ class IsiBBMController extends Controller
 public function index(Request $request)
 {
     $search = $request->input('search');
+
+    $latestBbmSub = DB::table('bbm')
+    ->select('id_kendaraan', DB::raw('MAX(updated_at) as latest_updated'))
+    ->groupBy('id_kendaraan');
+
     $query = Kendaraan::select(
-        'kendaraan.*',
-        'bbm.id_bbm',
-        'bbm.tgl_isi',
-        'bbm.updated_at as bbm_updated_at'
-    )
-    ->leftJoin(DB::raw('(SELECT id_kendaraan, MAX(updated_at) as max_jam FROM bbm GROUP BY id_kendaraan) as latest'), function ($join) {
-        $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
-    })
-    ->leftJoin('bbm', function ($join) {
-        $join->on('kendaraan.id_kendaraan', '=', 'bbm.id_kendaraan')
-            ->on('bbm.updated_at', '=', 'latest.max_jam');
-    })
-    ->where('kendaraan.status_ketersediaan', '=', 'Tersedia');
+            'kendaraan.*',
+            'bbm.id_bbm',
+            'bbm.tgl_isi',
+            'bbm.updated_at as bbm_updated_at'
+        )
+        ->leftJoinSub($latestBbmSub, 'latest', function ($join) {
+            $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
+        })
+        ->leftJoin('bbm', function ($join) {
+            $join->on('kendaraan.id_kendaraan', '=', 'bbm.id_kendaraan')
+                 ->on('bbm.updated_at', '=', 'latest.latest_updated');
+        })
+        ->where('kendaraan.status_ketersediaan', 'Tersedia');
 
     if (!empty($search)) {
         // Logika pencarian tanggal
@@ -119,9 +124,9 @@ public function index(Request $request)
     }
 }
 
-    $pengisianBBMs = $query->orderBy('bbm.tgl_isi', 'desc')
-        ->orderBy('bbm.updated_at', 'desc')
-        ->paginate(10);
+    $pengisianBBMs = $query->orderBy('kendaraan.id_kendaraan', 'asc')
+        ->paginate(10)
+        ->appends(['search' => $search]);
 
     return view('admin.pengisianBBM', [
         'kendaraanTersedia' => Kendaraan::where('status_ketersediaan', 'Tersedia')->get(),
@@ -147,7 +152,7 @@ public function index(Request $request)
             'id_peminjaman' => 'nullable|exists:peminjaman,id_peminjaman',
             'tgl_isi' => 'required|date',
             'nominal' => 'required|numeric|min:0',
-            'jenis_bbm' => 'required|string|in:Pertalite,Pertamax,Pertamax Turbo,Dexlite,Pertamina Dex',
+            'jenis_bbm' => 'required|string|in:Pertalite,Pertamax,Pertamax Turbo,Dexlite,Pertamina Dex,Solar,Bio Solar',
         ]);
     
         // Pastikan user login
@@ -206,7 +211,7 @@ public function index(Request $request)
         $validated = $request->validate([
             'tgl_isi' => 'required|date',
             'nominal' => 'required|numeric|min:0',
-            'jenis_bbm' => 'required|string|in:Pertalite,Pertamax,Pertamax Turbo,Dexlite,Pertamina Dex',
+            'jenis_bbm' => 'required|string|in:Pertalite,Pertamax,Pertamax Turbo,Dexlite,Pertamina Dex,Solar,Bio Solar',
         ]);
     
         $bbm = BBM::findOrFail($id);

@@ -100,7 +100,7 @@
 
     $(document).ready(function () {
         let previousSelectedKendaraan = null;
-
+//INI KODENYA 
         function showWarning(input, warningElement) {
             if (!input.val()) {
                 warningElement.removeClass("hidden");

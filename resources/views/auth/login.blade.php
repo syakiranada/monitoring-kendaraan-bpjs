@@ -14,15 +14,20 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="flex items-center justify-center min-h-screen bg-gray-100">
+<style>
+    .bg-custom {
+        background-color: #3575B8;
+    }
+</style>
+<body class="flex items-center justify-center min-h-screen bg-custom">
     <div class="flex flex-col items-center justify-center">
-        <!-- Logo di atas -->
-        <div class="mb-6 w-80">
-            <img src="{{ asset('car_simonas_hitam.png') }}" alt="Monitoring Kendaraan Dinas Logo" class="w-full mx-auto">
-        </div>
 
         <!-- Form Login -->
         <div class="bg-white p-8 rounded-lg shadow-md w-96">
+            <!-- Logo di atas -->
+            <div class="mb-6 w-80">
+                <img src="{{ asset('car_simonas_hitam.png') }}" alt="Monitoring Kendaraan Dinas Logo" class="w-full mx-auto">
+            </div>
             <h2 class="text-2xl font-semibold mb-6 text-center">Selamat Datang!</h2>
             <form method="POST" action="{{ route('login') }}">
                 @csrf

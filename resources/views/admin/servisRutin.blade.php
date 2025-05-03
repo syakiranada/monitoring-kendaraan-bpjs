@@ -1,99 +1,97 @@
 <x-app-layout>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Daftar Servis Rutin Kendaraan</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-</head>
-<body class="bg-gray-100 font-sans leading-normal tracking-normal">
     <div class="flex">
         <!-- Main content -->
         <div class="flex-1 p-6">
             <div class="flex justify-between items-center mb-6">
-                <h1 class="text-3xl font-bold">Daftar Servis Rutin Kendaraan</h1>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Daftar Servis Rutin Kendaraan</h2>
                 <form action="{{ route('admin.servisRutin') }}" method="GET" class="relative">
-                    <input type="text" name="search" class="border rounded-lg py-2 px-4 pl-10 w-64" placeholder="Search" value="{{ request('search') }}">
+                    <input type="text" name="search" class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-60 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" placeholder="Cari" value="{{ request('search') }}">
                     <i class="fas fa-search absolute left-3 top-3 text-gray-500"></i>
                 </form>
             </div>
             <div class="bg-white shadow-md rounded-lg overflow-hidden">
-                <table class="min-w-full bg-white">
-                    <thead class="bg-gray-100 text-gray-600">
+                <table class="w-full text-sm text-left rtl:text-right text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                         <tr>
                             <th class="py-3 px-4 text-left">Merk dan Tipe</th>
                             <th class="py-3 px-4 text-left">Plat</th>
                             <th class="py-3 px-4 text-left">Tanggal Servis Rutin</th>
-                            <th class="py-3 px-4 text-left">Status</th>
-                            <th class="py-3 px-4 text-left">Aksi</th>
+                            <th class="py-3 px-4 text-left">Status Servis</th>
+                            <th class="py-3 px-4 text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($servisRutins as $servis)
-                            @if(isset($servis->kendaraan) && in_array($servis->kendaraan->aset, ['Guna', 'Tidak Guna']))
-                            <tr class="kendaraan-row cursor-pointer" data-id="{{ $servis->kendaraan->id_kendaraan ?? '' }}">
+                            @if(in_array(strtolower($servis->aset ?? ''), ['guna', 'tidak guna']))
+                            <tr class="kendaraan-row cursor-pointer" data-id="{{ $servis->id_kendaraan ?? '' }}">
                                 <td class="py-3 px-4 border-b">
-                                    <div>{{ ($servis->kendaraan->merk ?? 'Tidak Diketahui') . ' ' . ($servis->kendaraan->tipe ?? '') }}</div>
+                                    <div>{{ ($servis->merk ?? 'Tidak Diketahui') . ' ' . ($servis->tipe ?? '') }}</div>
                                 </td> 
-                                <td class="py-3 px-4 border-b">{{ $servis->kendaraan->plat_nomor ?? '-' }}</td>
-                                <td class="py-3 px-4 border-b">{{ \Carbon\Carbon::parse($servis->tgl_servis_real)->locale('id')->format('d-m-Y') }}</td>
+                                <td class="py-3 px-4 border-b">{{ $servis->plat_nomor ?? '-' }}</td>
+                                <td class="py-3 px-4 border-b">
+                                    {{ $servis->tgl_servis_real ? \Carbon\Carbon::parse($servis->tgl_servis_real)->locale('id')->format('d-m-Y') : '-' }}
+                                </td>
                                 <td class="py-3 px-4 border-b">
                                     @php
-                                        $tglServis = \Carbon\Carbon::parse($servis->tgl_servis_selanjutnya);
                                         $hariIni = \Carbon\Carbon::now();
-                                        $selisihHari = $hariIni->diffInDays($tglServis, false);
-                                
-                                        if ($selisihHari <= 30 && $selisihHari > 0) {
-                                            $status = 'Mendekati Jatuh Tempo';
-                                            $color = 'yellow';
-                                        } elseif ($selisihHari <= 0) {
-                                            $status = 'Jatuh Tempo';
-                                            $color = 'red';
+                                    
+                                        if (!$servis->tgl_servis_selanjutnya) {
+                                            $status = 'Belum Pernah Servis';
+                                            $color = 'gray';
                                         } else {
-                                            $status = 'Sudah Dibayar';
-                                            $color = 'green';
+                                            $tglServis = \Carbon\Carbon::parse($servis->tgl_servis_selanjutnya);
+                                            $selisihHari = $hariIni->diffInDays($tglServis, false);
+                                    
+                                            if ($selisihHari > 0 && $selisihHari <= 30) {
+                                                $status = 'Mendekati Jatuh Tempo';
+                                                $color = 'yellow';
+                                            } elseif ($selisihHari <= 0) {
+                                                $status = 'Jatuh Tempo';
+                                                $color = 'red';
+                                            } else {
+                                                $status = 'Sudah Dibayar';
+                                                $color = 'green';
+                                            }
                                         }
                                     @endphp
+                                
                                 
                                     <span class="text-xs font-medium px-2.5 py-0.5 rounded text-{{ $color }}-500 bg-{{ $color }}-100">
                                         {{ strtoupper($status) }}
                                     </span>
                                 </td>
                                 
-                                <td class="py-3 px-4 border-b">
-                                    <a href="{{ route('admin.servisRutin.detail', $servis->id_servis_rutin) }}" 
-                                        class="text-blue-500 hover:underline">Detail</a>
-                                    <a href="{{ route('admin.servisRutin.create', [
-                                        'id_kendaraan' => $servis->kendaraan->id_kendaraan ?? '',
-                                        'merk' => $servis->kendaraan->merk ?? 'Tidak Diketahui',
-                                        'tipe' => $servis->kendaraan->tipe ?? '',
-                                        'plat' => $servis->kendaraan->plat_nomor ?? '-',
-                                        'jadwal_servis' => $servis->tgl_servis_selanjutnya ?? '-'
-                                    ]) }}" class="text-gray-500 hover:underline">Input</a>
-                                    {{--  <a href="{{ route('admin.servisRutin.edit', [
-                                        'servis' => $servis,
-                                        'id_kendaraan' => $servis->kendaraan->id_kendaraan ?? '',
-                                        'merk' => $servis->kendaraan->merk ?? 'Tidak Diketahui',
-                                        'tipe' => $servis->kendaraan->tipe ?? '',
-                                        'plat' => $servis->kendaraan->plat_nomor ?? '-',
-                                        'jadwal_servis' => $servis->tgl_servis_selanjutnya ?? '-'
-                                    ]) }}" class="text-blue-500 hover:underline">Edit</a>  --}}
-                                    <a href="{{ route('admin.servisRutin.edit', ['id' => $servis->id_servis_rutin]) }}" class="text-blue-500 hover:underline">
-                                        Edit
-                                    </a>
-                                    
-                                    <form action="{{ route('admin.servisRutin.destroy', $servis->id_servis_rutin) }}" method="POST" class="delete-form inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" class="text-red-500 hover:underline delete-button" data-url="{{ route('admin.servisRutin.destroy', $servis->id_servis_rutin) }}">
-                                            Hapus
-                                        </button>
-                                    </form>                                
-                                </td>
+                                <td class="py-3 px-4 border-b text-center">
+                                    <div class="flex justify-center space-x-4">
+                                        {{-- Input button is always shown --}}
+                                        <a href="{{ route('admin.servisRutin.create', [
+                                            'id_kendaraan' => $servis->id_kendaraan ?? '',
+                                            'merk' => $servis->merk ?? 'Tidak Diketahui',
+                                            'tipe' => $servis->tipe ?? '',
+                                            'plat' => $servis->plat_nomor ?? '-',
+                                            'jadwal_servis' => $servis->tgl_servis_selanjutnya ?? '-'
+                                        ]) }}" class="font-medium text-blue-500 hover:underline">Input</a>
+                                
+                                        @if ($servis->id_servis_rutin)
+                                            <a href="{{ route('admin.servisRutin.detail', $servis->id_servis_rutin) }}" class="font-medium text-gray-500 hover:underline">Detail</a>
+                                            <a href="{{ route('admin.servisRutin.edit', ['id' => $servis->id_servis_rutin]) }}" class="font-medium text-yellow-500 hover:underline">Edit</a>
+                                            <form action="{{ route('admin.servisRutin.destroy', $servis->id_servis_rutin) }}" method="POST" class="inline form-delete">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" class="font-medium text-red-600 hover:underline delete-button"
+                                                        data-url="{{ route('admin.servisRutin.destroy', $servis->id_servis_rutin) }}">
+                                                    Hapus
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="text-gray-400">Detail</span>
+                                            <span class="text-gray-400">Edit</span>
+                                            <span class="text-gray-400">Hapus</span>
+                                        @endif
+                                    </div>                              
+                                </td>                                
                             </tr>
-                            @endif {{-- ✅ Tutup if di sini, sebelum @empty --}}
+                            @endif
                         @empty
                             <tr>
                                 <td colspan="6" class="py-6 text-center text-gray-500">
@@ -102,14 +100,16 @@
                             </tr>
                         @endforelse
                     </tbody>
-                    
                 </table>
             </div>
             <!-- Pagination -->
-            <div class="flex justify-center items-center py-4">
+            {{--  <div class="flex justify-center items-center py-4">
                 <div class="bg-white rounded-lg shadow-md p-2">
                     {{ $servisRutins->appends(request()->query())->links('pagination::tailwind') }}
                 </div>
+            </div>  --}}
+            <div class="mt-4">
+                {{ $servisRutins->appends(request()->query())->links() }}
             </div>
         </div>
     </div>
@@ -203,8 +203,4 @@
             });
         });
     </script>
-    
-</body>
-</html>
-
 </x-app-layout>

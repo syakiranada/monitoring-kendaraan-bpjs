@@ -45,20 +45,31 @@ class ServisInsidentalController extends Controller
 
     public function index(Request $request)
     {
+        // $search = $request->input('search');
+        // $query = Kendaraan::select(
+        //     'kendaraan.*',
+        //     'servis_insidental.id_servis_insidental',
+        //     'servis_insidental.tgl_servis',
+        //     'servis_insidental.updated_at as servis_updated_at'
+        // )
+        // ->leftJoin(DB::raw('(SELECT id_kendaraan, MAX(updated_at) as max_jam FROM servis_insidental GROUP BY id_kendaraan) as latest'), function ($join) {
+        //     $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
+        // })
+        // ->leftJoin('servis_insidental', function ($join) {
+        //     $join->on('kendaraan.id_kendaraan', '=', 'servis_insidental.id_kendaraan')
+        //         ->on('servis_insidental.updated_at', '=', 'latest.max_jam');
+        // })
+        // ->where('kendaraan.status_ketersediaan', '=', 'Tersedia');
+
         $search = $request->input('search');
+
         $query = Kendaraan::select(
             'kendaraan.*',
             'servis_insidental.id_servis_insidental',
             'servis_insidental.tgl_servis',
             'servis_insidental.updated_at as servis_updated_at'
         )
-        ->leftJoin(DB::raw('(SELECT id_kendaraan, MAX(updated_at) as max_jam FROM servis_insidental GROUP BY id_kendaraan) as latest'), function ($join) {
-            $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
-        })
-        ->leftJoin('servis_insidental', function ($join) {
-            $join->on('kendaraan.id_kendaraan', '=', 'servis_insidental.id_kendaraan')
-                ->on('servis_insidental.updated_at', '=', 'latest.max_jam');
-        })
+        ->leftJoin('servis_insidental', 'kendaraan.id_kendaraan', '=', 'servis_insidental.id_kendaraan')
         ->where('kendaraan.status_ketersediaan', '=', 'Tersedia');
 
         if (!empty($search)) {
@@ -131,9 +142,20 @@ class ServisInsidentalController extends Controller
             }
         }
 
-        $servisInsidentals = $query->orderBy('servis_insidental.tgl_servis', 'desc')
-            ->orderBy('servis_insidental.updated_at', 'desc')
-            ->paginate(10);
+        // $servisInsidentals = $query->orderBy('servis_insidental.tgl_servis', 'desc')
+        //     ->orderBy('servis_insidental.updated_at', 'desc')
+        //     ->paginate(10)
+        //     ->appends(['search' => $search]);
+
+        // return view('admin.servisInsidental', [
+        //     'kendaraanTersedia' => Kendaraan::where('status_ketersediaan', 'Tersedia')->get(),
+        //     'servisInsidentals' => $servisInsidentals
+        // ]);
+
+        $servisInsidentals = $query->orderBy('kendaraan.id_kendaraan', 'asc')
+            ->orderBy('servis_insidental.tgl_servis', 'desc')
+            ->paginate(10)
+            ->appends(['search' => $search]);
 
         return view('admin.servisInsidental', [
             'kendaraanTersedia' => Kendaraan::where('status_ketersediaan', 'Tersedia')->get(),

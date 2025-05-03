@@ -3,33 +3,34 @@
 @section('content') --}}
 <x-app-layout>
     <div class="p-6">
-        <div class="mb-4 flex space-x-2">
-            <a href="{{ route('admin.riwayat.index') }}" class="flex items-center px-5 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-full text-sm hover:bg-gray-100">
-                <svg class="w-4 h-4 text-gray-800 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7"/>
-                </svg>              
-                Kembali
-            </a>
-        </div> 
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Riwayat Pembayaran Asuransi Kendaraan</h2>
-        
-        <!-- Search Form -->
-        <form action="{{ route('admin.riwayat.asuransi') }}" method="GET" class="flex justify-end pb-4">
-            <div class="relative">
-                <input 
-                    type="text" 
-                    name="search"
-                    class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-60 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
-                    placeholder="Cari merek, tipe, plat nomor, tahun, dll..."
-                    value="{{ request('search') }}"
-                >
-                <div class="absolute inset-y-0 start-0 flex items-center ps-3">
-                    <svg class="w-4 h-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                    </svg>
+        <!-- Button Back -->
+        <a href="{{ route('admin.riwayat.index') }}" class="flex items-center text-blue-600 font-semibold hover:underline mb-5">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Kembali
+        </a>
+        <!-- Container dengan Flexbox -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Riwayat Pembayaran Asuransi Kendaraan</h2>
+            <!-- Search Form -->
+            <form action="{{ route('admin.riwayat.asuransi') }}" method="GET" class="flex justify-end pb-4">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        name="search"
+                        class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-60 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
+                        placeholder="Cari"
+                        value="{{ request('search') }}"
+                    >
+                    <div class="absolute inset-y-0 start-0 flex items-center ps-3">
+                        <svg class="w-4 h-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                        </svg>
+                    </div>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
 
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
             <table class="w-full text-sm text-left rtl:text-right text-gray-500">
@@ -52,7 +53,7 @@
                             <td class="px-6 py-4">{{ $item->tgl_bayar ? \Carbon\Carbon::parse($item->tgl_bayar)->format('d-m-Y') : '-' }}</td>
                             <td class="px-6 py-4">Rp{{ number_format($item->nominal + $item->biaya_asuransi_lain, 0, ',', '.') }}</td>
                             <td class="px-6 py-4">
-                                <a href="{{ route('admin.riwayat.detail-asuransi', ['id' => $item->id_asuransi, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" class="text-blue-600 hover:underline">
+                                <a href="{{ route('admin.riwayat.detail-asuransi', ['id' => $item->id_asuransi, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" class="font-medium text-blue-600 hover:underline">
                                     Detail
                                 </a>
                             </td>

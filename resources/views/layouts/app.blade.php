@@ -91,6 +91,14 @@
         </style>
     </head>
     <body class="font-sans antialiased">
+        {{--  <header>
+            <!-- Logo -->
+            <div class="logo">
+                <a href="{{ url('/') }}">
+                    <img src="{{ asset('logo_simonas_hitam.png') }}" alt="Logo SiMonas" class="w-32 h-auto">
+                </a>
+            </div>
+        </header>  --}}
         <div id="main-container" class="flex min-h-screen top-0 h-full bg-gray-100">
             <!-- Sidebar -->
             @php

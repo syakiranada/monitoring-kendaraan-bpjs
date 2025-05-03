@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_kendaraan');
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('id_peminjaman')->nullable(); // Tambahkan kolom untuk relasi ke peminjaman
-            $table->integer('harga');
+            $table->unsignedBigInteger('harga');
             $table->string('lokasi', 100);
             $table->string('deskripsi', 200);
             $table->string('bukti_bayar')->nullable();; // simpan path di sini

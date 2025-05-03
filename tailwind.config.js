@@ -16,7 +16,7 @@ export default {
             },
         },
     },
-    darMode: false,
+    darkMode: false,
 
     plugins: [forms],
 };

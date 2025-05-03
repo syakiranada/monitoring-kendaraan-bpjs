@@ -1,6 +1,4 @@
 <?php
-// app/Http/Controllers/DashboardController.php
-
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Peminjaman;
@@ -12,26 +10,29 @@ use App\Models\CekFisik;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class BerandaController extends Controller
 {
-   public function pengguna()
+    public function pengguna()
     {
         $user = Auth::user();
         $now = Carbon::now('Asia/Jakarta');
         $threeHoursLater = $now->copy()->addHours(3);
-
-        $peminjaman = Peminjaman::where('user_id', $user->id)
+        
+        // First get all the necessary data without pagination
+        $allPeminjaman = Peminjaman::where('user_id', $user->id)
             ->whereRaw("UPPER(status_pinjam) = 'DISETUJUI'")
             ->with('kendaraan')
             ->get();
-
+        
         $latePeminjaman = [];
         $upcomingPeminjaman = [];
-
-        foreach ($peminjaman as $pinjam) {
+        
+        // Process all items to categorize them
+        foreach ($allPeminjaman as $pinjam) {
             $tanggalKembali = Carbon::parse($pinjam->tgl_selesai . ' ' . $pinjam->jam_selesai, 'Asia/Jakarta');
-
+            
             if ($now->greaterThan($tanggalKembali)) {
                 $pinjam->status_pinjam = 'BELUM DIKEMBALIKAN';
                 $latePeminjaman[] = $pinjam;
@@ -39,7 +40,22 @@ class BerandaController extends Controller
                 $upcomingPeminjaman[] = $pinjam;
             }
         }
-
+        
+        // Create a custom paginator for the collection
+        $page = request()->get('page', 1); // Get the current page from the request
+        $perPage = 10;
+        $offset = ($page - 1) * $perPage;
+        
+        $paginatedItems = $allPeminjaman->slice($offset, $perPage);
+        
+        $peminjaman = new \Illuminate\Pagination\LengthAwarePaginator(
+            $paginatedItems,
+            $allPeminjaman->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+        
         return view('pengguna.beranda', compact('user', 'peminjaman', 'latePeminjaman', 'upcomingPeminjaman'));
     }
 
@@ -71,8 +87,12 @@ class BerandaController extends Controller
 
         $batasWaktu = collect();
 
+        // Pajak: Kecuali kendaraan aset = 'lelang'
         $pajak = Pajak::whereIn('id_pajak', function ($query) {
                 $query->selectRaw('MAX(id_pajak)')->from('pajak')->groupBy('id_kendaraan');
+            })
+            ->whereHas('kendaraan', function ($query) {
+                $query->where('aset', '!=', 'lelang');
             })
             ->whereDate(DB::raw("DATE_ADD(tgl_jatuh_tempo, INTERVAL 1 YEAR)"), '<=', Carbon::now()->addMonth())
             ->with('kendaraan')
@@ -87,8 +107,12 @@ class BerandaController extends Controller
             });
         $batasWaktu = $batasWaktu->concat($pajak);
 
+        // Servis: Kecuali kendaraan aset = 'jual' atau 'lelang'
         $servis = ServisRutin::whereIn('id_servis_rutin', function ($query) {
                 $query->selectRaw('MAX(id_servis_rutin)')->from('servis_rutin')->groupBy('id_kendaraan');
+            })
+            ->whereHas('kendaraan', function ($query) {
+                $query->whereNotIn('aset', ['lelang', 'jual']);
             })
             ->whereDate('tgl_servis_selanjutnya', '<=', Carbon::now()->addMonth())
             ->with('kendaraan')
@@ -103,8 +127,12 @@ class BerandaController extends Controller
             });
         $batasWaktu = $batasWaktu->concat($servis);
 
+        // Asuransi: Kecuali kendaraan aset = 'lelang'
         $asuransi = Asuransi::whereIn('id_asuransi', function ($query) {
                 $query->selectRaw('MAX(id_asuransi)')->from('asuransi')->groupBy('id_kendaraan');
+            })
+            ->whereHas('kendaraan', function ($query) {
+                $query->where('aset', '!=', 'lelang');
             })
             ->whereDate('tgl_perlindungan_akhir', '<=', Carbon::now()->addMonth())
             ->with('kendaraan')

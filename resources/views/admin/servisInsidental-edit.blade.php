@@ -1,23 +1,15 @@
 <x-app-layout>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Form Input Servis Insidental Kendaraan</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-        <!-- SweetAlert2 CSS -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.7.12/sweetalert2.min.css">
-        <!-- SweetAlert2 JS -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.7.12/sweetalert2.all.min.js"></script>
-    </head>   
-    <body class="bg-gray-100">
-        <div class="flex">
+    <a href="{{  url()->previous()  }}" class="flex items-center text-blue-600 font-semibold hover:underline mb-5">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Kembali
+    </a>
+        <div class="flex justify-center">
             <!-- Main Content -->
-            <div class="w-4/5 p-8">
-                <h1 class="text-3xl font-bold mb-8">Form Edit Servis Insidental Kendaraan</h1>
+            <div class="w-4/5">                
                 <div class="bg-white p-8 rounded shadow-md">
-                    <h2 class="text-xl font-semibold mb-4">Detail Servis</h2>
+                <h1 class="text-3xl font-bold mb-8 text-center">Form Edit Servis Insidental Kendaraan</h1>
                     <form id="serviceForm" action="{{ route('admin.servisInsidental.update', $servis->id_servis_insidental) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
@@ -34,11 +26,15 @@
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-gray-700">Tanggal Servis</label>
-                                <input type="date" name="tgl_servis" class="w-full p-2 border border-gray-300 rounded" value="{{ $servis->tgl_servis }}" required>
+                                <input type="date" id="tglServis" name="tgl_servis" class="w-full p-2 border border-gray-300 rounded" value="{{ $servis->tgl_servis }}" max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" required>
                             </div>
                             <div>
                                 <label class="block text-gray-700">Jumlah Pembayaran</label>
-                                <input type="text" id="hargaInput" name="harga" class="w-full p-2 border border-gray-300 rounded" value="{{ number_format($servis->harga, 0, '', '.') }}" required>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">Rp</span>
+                                    <input type="text" id="hargaInput" name="harga" class="w-full pl-10 p-2 border border-gray-300 rounded" value="{{ number_format($servis->harga, 0, '', '.') }}" required>
+                                </div>
+                                <div id="hargaAlert" class="text-red-500 text-sm mt-1"></div>
                             </div>
                         </div>
                         <div class="mb-4">
@@ -54,13 +50,13 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Upload Bukti Pembayaran Servis</label>
                                 <div class="flex flex-col items-center">
                                     <label id="uploadLabelBuktiBayar" class="cursor-pointer flex flex-col items-center justify-center w-32 h-14 border border-blue-500 text-blue-600 font-medium rounded-lg hover:bg-blue-100 transition">
-                                        <span id="uploadTextBuktiBayar" class="text-sm">
-                                            {{ $servis->bukti_bayar ? 'Ganti File' : 'Upload File' }}
+                                        <span id="uploadTextBuktiBayar" class="text-sm">Upload File
+                                            {{--  {{ $servis->bukti_bayar ? basename($servis->bukti_bayar) : 'Upload File' }}  --}}
                                         </span>
                                         <input type="file" name="bukti_bayar" id="fotoInputBuktiBayar" class="hidden" accept=".jpg, .jpeg, .png, .pdf">
                                     </label>
                                     @if($servis->bukti_bayar)
-                                        <div class="mt-2 text-sm text-gray-700">File saat ini: {{ basename($servis->bukti_bayar) }}</div>
+                                        {{--  <div class="mt-2 text-sm text-gray-700">File saat ini: {{ basename($servis->bukti_bayar) }}</div>  --}}
                                         <a href="#" id="removeFileBuktiBayar" class="text-red-600 font-medium text-sm mt-1 hover:underline text-center">Remove</a>
                                         <input type="hidden" name="bukti_bayar_lama" value="{{ $servis->bukti_bayar }}">
                                     @else
@@ -76,13 +72,13 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Upload Bukti Fisik Servis</label>
                                 <div class="flex flex-col items-center">
                                     <label id="uploadLabelBuktiFisik" class="cursor-pointer flex flex-col items-center justify-center w-32 h-14 border border-blue-500 text-blue-600 font-medium rounded-lg hover:bg-blue-100 transition">
-                                        <span id="uploadTextBuktiFisik" class="text-sm">
-                                            {{ $servis->bukti_fisik ? 'Ganti File' : 'Upload File' }}
+                                        <span id="uploadTextBuktiFisik" class="text-sm">Upload File
+                                            {{--  {{ $servis->bukti_fisik ? basename($servis->bukti_fisik) : 'Upload File' }}  --}}
                                         </span>
                                         <input type="file" name="bukti_fisik" id="fotoInputBuktiFisik" class="hidden" accept=".jpg, .jpeg, .png, .pdf">
                                     </label>
                                     @if($servis->bukti_fisik)
-                                        <div class="mt-2 text-sm text-gray-700">File saat ini: {{ basename($servis->bukti_fisik) }}</div>
+                                        {{--  <div class="mt-2 text-sm text-gray-700">File saat ini: {{ basename($servis->bukti_fisik) }}</div>  --}}
                                         <a href="#" id="removeFileBuktiFisik" class="text-red-600 font-medium text-sm mt-1 hover:underline text-center">Remove</a>
                                         <input type="hidden" name="bukti_fisik_lama" value="{{ $servis->bukti_fisik }}">
                                     @else
@@ -107,16 +103,16 @@
                         </div>
                         
                         <!-- Tombol submit dan navigasi -->
-                        <div class="flex justify-between items-center">
-                            <!-- Tombol Kembali (di kiri) -->
+                        <div class="flex justify-end items-center">
+                            {{--  <!-- Tombol Kembali (di kiri) -->
                             <a href="{{ url()->previous() }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-md">
                                 Kembali
-                            </a>
+                            </a>  --}}
                         
                             <!-- Tombol Batal dan Simpan (di kanan) -->
                             <div class="flex space-x-2">
-                                <button type="button" onclick="history.back()" class="bg-red-500 text-white px-4 py-2 rounded">Batal</button>
-                                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Simpan</button>
+                                {{--  <button type="button" onclick="history.back()" class="bg-red-500 text-white px-4 py-2 rounded">Batal</button>  --}}
+                                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Simpan Perubahan</button>
                             </div>
                         </div>
                     </form>
@@ -125,8 +121,107 @@
             </div>
         </div>
 
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
+            {{--  function shortenFileName(fileName, maxLength = 15) {
+                if (!fileName || typeof fileName !== "string") return "";
+                if (fileName.length <= maxLength) return fileName;
+            
+                const lastDot = fileName.lastIndexOf(".");
+                const hasExtension = lastDot !== -1 && lastDot < fileName.length - 1;
+                const extension = hasExtension ? fileName.slice(lastDot + 1) : "";
+                const baseName = hasExtension ? fileName.slice(0, lastDot) : fileName;
+            
+                const allowedBaseLength = maxLength - (extension.length + 4);
+                const trimmedBase = baseName.slice(0, Math.max(allowedBaseLength, 0));
+            
+                return trimmedBase + "..." + (extension ? "." + extension : "");
+            }   --}}
+
             document.addEventListener('DOMContentLoaded', function() {
+                const shortenFileName = (fileName, maxLength = 15) => {
+                    if (!fileName || typeof fileName !== "string") return "";
+                    if (fileName.length <= maxLength) return fileName;
+        
+                    const lastDot = fileName.lastIndexOf(".");
+                    const hasExtension = lastDot !== -1 && lastDot < fileName.length - 1;
+                    const extension = hasExtension ? fileName.slice(lastDot + 1) : "";
+                    const baseName = hasExtension ? fileName.slice(0, lastDot) : fileName;
+        
+                    const allowedBaseLength = maxLength - (extension.length + 4);
+                    const trimmedBase = baseName.slice(0, Math.max(allowedBaseLength, 0));
+        
+                    return trimmedBase + "..." + (extension ? "." + extension : "");
+                };
+        
+                // Handler: Bukti Bayar
+                const fotoInputBuktiBayar = document.getElementById('fotoInputBuktiBayar');
+                const uploadTextBuktiBayar = document.getElementById('uploadTextBuktiBayar');
+                const removeFileBuktiBayar = document.getElementById('removeFileBuktiBayar');
+        
+                fotoInputBuktiBayar.addEventListener('change', function () {
+                    if (this.files.length > 0) {
+                        uploadTextBuktiBayar.textContent = shortenFileName(this.files[0].name, 15);
+                        removeFileBuktiBayar.classList.remove('hidden');
+                    } else {
+                        uploadTextBuktiBayar.textContent = 'Upload File';
+                        removeFileBuktiBayar.classList.add('hidden');
+                    }
+                });
+        
+                removeFileBuktiBayar.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    fotoInputBuktiBayar.value = '';
+                    uploadTextBuktiBayar.textContent = 'Upload File';
+                    removeFileBuktiBayar.classList.add('hidden');
+                });
+        
+                // Handler: Bukti Fisik
+                const fotoInputBuktiFisik = document.getElementById('fotoInputBuktiFisik');
+                const uploadTextBuktiFisik = document.getElementById('uploadTextBuktiFisik');
+                const removeFileBuktiFisik = document.getElementById('removeFileBuktiFisik');
+        
+                fotoInputBuktiFisik.addEventListener('change', function () {
+                    if (this.files.length > 0) {
+                        uploadTextBuktiFisik.textContent = shortenFileName(this.files[0].name, 15);
+                        removeFileBuktiFisik.classList.remove('hidden');
+                    } else {
+                        uploadTextBuktiFisik.textContent = 'Upload File';
+                        removeFileBuktiFisik.classList.add('hidden');
+                    }
+                });
+        
+                removeFileBuktiFisik.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    fotoInputBuktiFisik.value = '';
+                    uploadTextBuktiFisik.textContent = 'Upload File';
+                    removeFileBuktiFisik.classList.add('hidden');
+                });
+
+                const buktiBayarLama = "{{ $servis->bukti_bayar ? basename($servis->bukti_bayar) : '' }}";
+                if (buktiBayarLama) {
+                    uploadTextBuktiBayar.textContent = shortenFileName(buktiBayarLama, 15);
+                    removeFileBuktiBayar.classList.remove('hidden');
+                }
+
+                const buktiFisikLama = "{{ $servis->bukti_fisik ? basename($servis->bukti_fisik) : '' }}";
+                if (buktiFisikLama) {
+                    uploadTextBuktiFisik.textContent = shortenFileName(buktiFisikLama, 15);
+                    removeFileBuktiFisik.classList.remove('hidden');
+                }
+
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                const todayStr = year + '-' + month + '-' + day;
+    
+                // Set atribut max pada input tanggal
+                const tglServis = document.getElementById('tglServis');
+                if (tglServis) {
+                tglServis.setAttribute('max', todayStr);
+               }
+
                 console.log('Bukti Bayar Path:', '{{ $servis->bukti_bayar ?? 'KOSONG' }}');
                 console.log('Bukti Fisik Path:', '{{ $servis->bukti_fisik ?? 'KOSONG' }}');
                 
@@ -137,10 +232,55 @@
                 console.log('Bukti Fisik Lama Input:', 
                     document.querySelector('input[name="bukti_fisik_lama"]').value
                 );
-            });
-        </script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script>
+
+                const lokasiInput = document.querySelector('input[name="lokasi"]');
+                const deskripsiTextarea = document.querySelector('textarea[name="deskripsi"]');
+                const lokasiAlert = document.createElement('div');
+                const deskripsiAlert = document.createElement('div');
+              
+                lokasiAlert.className = 'text-red-500 text-sm mt-1';
+                deskripsiAlert.className = 'text-red-500 text-sm mt-1';
+              
+                lokasiInput.parentNode.insertBefore(lokasiAlert, lokasiInput.nextSibling);
+                deskripsiTextarea.parentNode.insertBefore(deskripsiAlert, deskripsiTextarea.nextSibling);
+              
+                lokasiInput.addEventListener('input', function() {
+                  if (lokasiInput.value.length > 100) {
+                    lokasiAlert.textContent = 'Lokasi Servis tidak boleh lebih dari 100 karakter.';
+                  } else {
+                    lokasiAlert.textContent = '';
+                  }
+                });
+              
+                deskripsiTextarea.addEventListener('input', function() {
+                  if (deskripsiTextarea.value.length > 200) {
+                    deskripsiAlert.textContent = 'Deskripsi Servis tidak boleh lebih dari 200 karakter.';
+                  } else {
+                    deskripsiAlert.textContent = '';
+                  }
+                });
+    
+                const hargaInput = document.getElementById('hargaInput');
+                const hargaAlert = document.getElementById('hargaAlert');
+                const maxHarga = 1000000000000;
+                
+                hargaInput.addEventListener('input', function (e) {
+                    let rawValue = e.target.value.replace(/\D/g, '');
+                    let numericValue = parseInt(rawValue) || 0;
+                
+                    // Cek dan tampilkan alert
+                    if (numericValue > maxHarga) {
+                        hargaAlert.textContent = 'Nonimal melebihi batas maksimum Rp 1.000.000.000.000.';
+                        numericValue = maxHarga;
+                    } else {
+                        hargaAlert.textContent = '';
+                    }
+                
+                    // Format angka ribuan
+                    e.target.value = numericValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                });            
+              });
+
             document.addEventListener('DOMContentLoaded', function() {
                 const form = document.getElementById('serviceForm');
                 if (form) {
@@ -364,7 +504,7 @@
                 e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
             });
     
-            // File upload handler for bukti bayar
+            {{--  // File upload handler for bukti bayar
             const fotoInputBuktiBayar = document.getElementById('fotoInputBuktiBayar');
             const uploadLabelBuktiBayar = document.getElementById('uploadLabelBuktiBayar');
             const uploadTextBuktiBayar = document.getElementById('uploadTextBuktiBayar');
@@ -372,7 +512,7 @@
     
             fotoInputBuktiBayar.addEventListener('change', function() {
                 if (this.files.length > 0) {
-                    uploadTextBuktiBayar.textContent = this.files[0].name;
+                    uploadTextBuktiBayar.textContent = shortenFileName(this.files[0].name, 15);
                     removeFileBuktiBayar.classList.remove('hidden');
                 }
             });
@@ -392,7 +532,7 @@
     
             fotoInputBuktiFisik.addEventListener('change', function() {
                 if (this.files.length > 0) {
-                    uploadTextBuktiFisik.textContent = this.files[0].name;
+                    uploadTextBuktiFisik.textContent = shortenFileName(this.files[0].name, 15);
                     removeFileBuktiFisik.classList.remove('hidden');
                 }
             });
@@ -402,8 +542,6 @@
                 fotoInputBuktiFisik.value = '';
                 uploadTextBuktiFisik.textContent = 'Upload Photo';
                 removeFileBuktiFisik.classList.add('hidden');
-            });
-        </script>
-    </body>
-    </html>
-    </x-app-layout>
+            });  --}}
+        </script>        
+</x-app-layout>

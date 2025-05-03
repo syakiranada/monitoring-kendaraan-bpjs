@@ -22,8 +22,8 @@ return new class extends Migration
             //$table->string('status', 25); // Status (varchar 10)
             $table->date('tgl_perlindungan_awal'); // Tanggal awal perlindungan
             $table->date('tgl_perlindungan_akhir'); // Tanggal akhir perlindungan
-            $table->integer('nominal')->nullable(); // Nominal pembayaran
-            $table->integer('biaya_asuransi_lain')->nullable(); // Biaya lain-lain
+            $table->bigInteger('nominal')->nullable(); // Nominal pembayaran
+            $table->bigInteger('biaya_asuransi_lain')->nullable(); // Biaya lain-lain
             $table->timestamps(); // Created_at & Updated_at
 
             // Foreign Key Constraint

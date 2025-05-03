@@ -217,8 +217,17 @@ class CekFisikController extends Controller
                 'search' => $search
             ])->with('error', 'Cek fisik tidak ditemukan.');
         }
+
+        $kendaraan = Kendaraan::find($id_kendaraan);
+
+        if (!$kendaraan) {
+            return redirect()->route('admin.cek-fisik.index', [
+                'page' => $page,
+                'search' => $search
+            ])->with('error', 'Kendaraan tidak ditemukan.');
+        }
     
-        return view('admin.cek-fisik.edit', compact('cekFisik', 'search', 'page'));
+        return view('admin.cek-fisik.edit', compact('cekFisik', 'kendaraan', 'search', 'page'));
     }
 
     public function update(Request $request, $id)
