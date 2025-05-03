@@ -176,8 +176,8 @@
                         <p class="text-gray-700 sm:w-56 detail-label font-bold">Status Peminjaman</p>
                         <p class="font-normal text-gray-900  text-right uppercase">
                             <span class="
-                                @if($kendaraan->status_ketersediaan == 'Tersedia') bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm  border border-green-400
-                                @elseif($kendaraan->status_ketersediaan == 'Tidak Tersedia') bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm  border-red-400
+                                @if($kendaraan->status_ketersediaan == 'Tersedia' || $kendaraan->status_ketersediaan == 'TERSEDIA'  ) bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm  border border-green-400
+                                @elseif($kendaraan->status_ketersediaan == 'Tidak Tersedia' ||  $kendaraan->status_ketersediaan == ' TIDAK TERSEDIA') bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm  border-red-400
                                 @else bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm  border border-green-400
 
                                 @endif">

@@ -7,7 +7,7 @@
     <title>Peminjaman</title>
 </head>
 <body>
-    <div class="relative">
+    <div class="relative p-4">
         <div class="relative overflow-x-auto sm:rounded-lg">
             <h1 class="text-2xl font-bold text-black mb-4">Daftar Peminjaman Kendaraan</h1>
            
@@ -63,17 +63,17 @@
                                 <td class="px-6 py-4 whitespace-nowrap">{{ \Carbon\Carbon::parse($peminjaman->tgl_selesai)->format('d-m-Y') }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap uppercase">
                                     <span class="
-                                        @if($peminjaman->status_pinjam == 'Menunggu Persetujuan') bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm  border border-blue-400
-                                    
-                                        @elseif($peminjaman->status_pinjam == 'Disetujui') bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm border border-green-400
+                                         @if($peminjaman->status_pinjam == 'Menunggu Persetujuan' || $peminjaman->status_pinjam == 'MENUNGGU PERSETUJUAN') bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm  border border-blue-400
+                            
+                                        @elseif($peminjaman->status_pinjam == 'Disetujui' || $peminjaman->status_pinjam == 'DISETUJUI') bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm border border-green-400
                                         
-                                        @elseif($peminjaman->status_pinjam == 'Dibatalkan') bg-gray-100 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm border border-gray-500
+                                        @elseif($peminjaman->status_pinjam == 'Dibatalkan' || $peminjaman->status_pinjam == 'DIBATALKAN') bg-gray-100 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm border border-gray-500
+                                        
+                                        @elseif($peminjaman->status_pinjam == 'Ditolak' || $peminjaman->status_pinjam == 'DITOLAK') bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm  border border-red-400
 
-                                        @elseif($peminjaman->status_pinjam == 'Ditolak') bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm  border border-red-400
+                                        @elseif($peminjaman->status_pinjam == 'Diperpanjang' || $peminjaman->status_pinjam == 'DIPERPANJANG') bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm  border border-yellow-300
 
-                                        @elseif($peminjaman->status_pinjam == 'Diperpanjang') bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm  border border-yellow-300
-
-                                        @elseif($peminjaman->status_pinjam == 'Telah Dikembalikan') bg-gray-100 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm border border-gray-500
+                                        @elseif($peminjaman->status_pinjam == 'Telah Dikembalikan' || $peminjaman->status_pinjam == 'TELAH DIKEMBALIKAN') bg-gray-100 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm border border-gray-500
             
                                         @endif">
                                         {{$peminjaman->status_pinjam}}

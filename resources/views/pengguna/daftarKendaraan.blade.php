@@ -9,7 +9,7 @@
     <title>Daftar Kendaraan</title>
 </head>
 <body>
-    <div class="relative">
+    <div class="relative p-4">
         <div class="relative overflow-x-auto sm:rounded-lg">
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
                 <h1 class="text-2xl font-bold text-gray-900">Daftar Kendaraan Dinas</h1>
@@ -57,25 +57,23 @@
                         <td class="px-6 py-4 whitespace-nowrap">{{ $item->plat_nomor }}</td>
                         <td class="px-6 py-4 uppercase whitespace-nowrap">
                             <span class="
-                                @if($item->status_ketersediaan == 'Tersedia') bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm border border-green-400
-                                @elseif($item->status_ketersediaan == 'Tidak Tersedia') bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm  border border-red-400
+                                @if($item->status_ketersediaan == 'Tersedia' || $item->status_ketersediaan === 'TERSEDIA') bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm border border-green-400
+                                @elseif($item->status_ketersediaan === 'Tidak Tersedia' || $item->status_ketersediaan === 'TIDAK TERSEDIA') bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm  border border-red-400
                                 @else bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm border border-green-400
 
                                 @endif">
                                 {{ $item->status_ketersediaan }}
                             </span>
-                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                         <!-- <a href="{{ route('kendaraan.detail', $item->id_kendaraan) }}" 
                             <button type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-2 py-1.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Detail</button> -->
                             <!-- <a  href="{{ route('kendaraan.getDetail', $item->id_kendaraan) }}" class="font-medium text-blue-600 hover:underline">Detail</a> -->
                             <a href="{{ route('kendaraan.getDetail', ['id' => $item->id_kendaraan, 'page' => request('page'), 'search' => request()->query('search')]) }}" class="font-medium text-blue-600 hover:underline">Detail</a>
-
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center px-6 py-4">Data tidak tersedia.</td>
+                        <td colspan="8" class="text-center px-6 py-4">Data tidak ditemukan</td>
                     </tr>                        
                     @endforelse
                 </tbody>
