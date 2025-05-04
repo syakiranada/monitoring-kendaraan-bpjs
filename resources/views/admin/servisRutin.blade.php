@@ -83,10 +83,10 @@
                                                     Hapus
                                                 </button>
                                             </form>
-                                        @else
+                                        {{--  @else
                                             <span class="text-gray-400">Detail</span>
                                             <span class="text-gray-400">Edit</span>
-                                            <span class="text-gray-400">Hapus</span>
+                                            <span class="text-gray-400">Hapus</span>  --}}
                                         @endif
                                     </div>                              
                                 </td>                                
@@ -131,20 +131,21 @@
                         text: "Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan!",
                         icon: "warning",
                         showCancelButton: true,
+                        reverseButtons: true,
                         confirmButtonColor: "#d33",
                         cancelButtonColor: "#3085d6",
                         confirmButtonText: "Ya, Hapus!",
                         cancelButtonText: "Batal"
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            Swal.fire({
+                            {{--  Swal.fire({
                                 title: "Menghapus...",
                                 text: "Mohon tunggu sebentar",
                                 allowOutsideClick: false,
                                 didOpen: () => {
                                     Swal.showLoading();
                                 }
-                            });
+                            });  --}}
     
                             fetch(deleteUrl, {
                                 method: 'POST', // Tetap POST karena Laravel butuh method spoofing

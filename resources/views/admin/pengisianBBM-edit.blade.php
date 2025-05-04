@@ -33,7 +33,7 @@
                     </div>
                     <div class="mb-4">
                         <label class="block text-gray-700">Tanggal Pengisian BBM</label>
-                        <input type="date" id="tglIsiBBM" name="tgl_isi" class="w-full p-2 border border-gray-300 rounded" value="{{ $bbm->tgl_isi }}" max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" required>
+                        <input type="date" id="tglI  siBBM" name="tgl_isi" class="w-full p-2 border border-gray-300 rounded" value="{{ $bbm->tgl_isi }}" max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" required>
                     </div>
                     <div class="mb-4">
                         <label class="block text-gray-700">Nominal</label>
@@ -125,6 +125,7 @@
                             text: "Apakah Anda yakin ingin mengubah data pengisian BBM ini?",
                             icon: "warning",
                             showCancelButton: true,
+                            reverseButtons: true,
                             confirmButtonColor: "#3085d6",
                             cancelButtonColor: "#d33",
                             confirmButtonText: "Ya, Ubah!",
@@ -132,14 +133,14 @@
                         }).then((result) => {
                             if (result.isConfirmed) {
                                 // Tampilkan loading
-                                Swal.fire({
+                                {{--  Swal.fire({
                                     title: "Memproses...",
                                     text: "Mohon tunggu sebentar",
                                     allowOutsideClick: false,
                                     didOpen: () => {
                                         Swal.showLoading();
                                     }
-                                });
+                                });  --}}
             
                                 const formData = new FormData(form);
                                 formData.append('_method', 'PUT');

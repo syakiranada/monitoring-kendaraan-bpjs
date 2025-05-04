@@ -290,6 +290,7 @@
                             text: "Apakah Anda yakin ingin mengubah data servis ini?",
                             icon: "warning",
                             showCancelButton: true,
+                            reverseButtons: true,
                             confirmButtonColor: "#3085d6",
                             cancelButtonColor: "#d33",
                             confirmButtonText: "Ya, Ubah!",
@@ -297,14 +298,14 @@
                         }).then((result) => {
                             if (result.isConfirmed) {
                                 // Tampilkan loading
-                                Swal.fire({
+                                {{--  Swal.fire({
                                     title: "Memproses...",
                                     text: "Mohon tunggu sebentar",
                                     allowOutsideClick: false,
                                     didOpen: () => {
                                         Swal.showLoading();
                                     }
-                                });
+                                });  --}}
                                 
                                 const formData = new FormData(form);
                                 formData.append('ajax', 'true');

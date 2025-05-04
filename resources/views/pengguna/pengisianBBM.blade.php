@@ -24,7 +24,7 @@
                         </thead>
                         <tbody>
                             @forelse ($peminjamans as $peminjaman)
-                                @if($peminjaman->status_pinjam == 'Disetujui')
+                                @if($peminjaman->status_pinjam == 'Disetujui' && $peminjaman->user_id == auth()->id())
                                     <tr class="kendaraan-row cursor-pointer" data-id="{{ $peminjaman->kendaraan->id_kendaraan ?? '' }}">
                                         <td class="py-3 px-4 border-b">
                                             <div>{{ ($peminjaman->kendaraan->merk ?? 'Tidak Diketahui') . ' ' . ($peminjaman->kendaraan->tipe ?? '') }}</div>
@@ -187,6 +187,7 @@
                                 text: "Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan!",
                                 icon: "warning",
                                 showCancelButton: true,
+                                reverseButtons: true,
                                 confirmButtonColor: "#d33",
                                 cancelButtonColor: "#3085d6",
                                 confirmButtonText: "Ya, Hapus!",
@@ -194,14 +195,14 @@
                             }).then((result) => {
                                 if (result.isConfirmed) {
                                     // Tampilkan loading
-                                    Swal.fire({
+                                    {{--  Swal.fire({
                                         title: "Menghapus...",
                                         text: "Mohon tunggu sebentar",
                                         allowOutsideClick: false,
                                         didOpen: () => {
                                             Swal.showLoading();
                                         }
-                                    });
+                                    });  --}}
         
                                     // Cek apakah element csrf token ada
                                     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
