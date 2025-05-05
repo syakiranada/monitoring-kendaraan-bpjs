@@ -101,17 +101,15 @@
     
             <!-- Daftar Peminjaman - Positioned higher and more to the left -->
             <div class="flex items-center mb-2">
-                <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">
+                <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
                     Daftar Peminjaman Kendaraan
                 </h2>
             </div>
             <div class = "mt-4"></div>
             <!-- Table positioned higher -->
             <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                @if(count($peminjaman) > 0)
-               
                 <table class="w-full text-sm text-left rtl:text-right text-gray-500">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 font-normal">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 font-normal">
                         <tr>
                             <th class="px-6 py-3">Merk dan Tipe</th>
                             <th class="px-6 py-3">Plat</th>
@@ -121,47 +119,51 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($peminjaman as $pinjam)
-                        <tr class="bg-white border-b hover:bg-gray-50">
-                            <td class="px-6 py-3 whitespace-nowrap">
-                                {{ $pinjam->kendaraan->merk }} {{ $pinjam->kendaraan->tipe }}
-                            </td>
-                            
-                            <td class="px-6 py-3">
-                                {{ $pinjam->kendaraan->plat_nomor }}
-                            </td>
-                            <td class="px-6 py-3">
-                                {{ \Carbon\Carbon::parse($pinjam->tgl_selesai)->format('d-m-Y') }}
-                                <span class="block text-xs text-gray-500 sm:hidden">
-                                    {{ \Carbon\Carbon::parse($pinjam->jam_selesai)->format('H:i') }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-3 hidden sm:table-cell">
-                                {{ \Carbon\Carbon::parse($pinjam->jam_selesai)->format('H:i') }}
-                            </td>
-                            <td class="px-6 py-3">
-                                @if(strtoupper($pinjam->status_pinjam) === 'BELUM DIKEMBALIKAN')
-                                <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-sm border border-red-400">
-                                    BELUM DIKEMBALIKAN
-                                </span>
-                                @else
-                                <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-sm border border-green-400">
-                                    SUDAH DISETUJUI
-                                </span>  
-                                @endif
-                            </td>
-                        </tr>
-                        @endforeach
+                        @if(count($peminjaman) > 0)
+                            @foreach($peminjaman as $pinjam)
+                                <tr class="bg-white border-b hover:bg-gray-50">
+                                    <td class="px-6 py-3 whitespace-nowrap">
+                                        {{ $pinjam->kendaraan->merk }} {{ $pinjam->kendaraan->tipe }}
+                                    </td>
+                                    <td class="px-6 py-3">
+                                        {{ $pinjam->kendaraan->plat_nomor }}
+                                    </td>
+                                    <td class="px-6 py-3">
+                                        {{ \Carbon\Carbon::parse($pinjam->tgl_selesai)->format('d-m-Y') }}
+                                        <span class="block text-xs text-gray-500 sm:hidden">
+                                            {{ \Carbon\Carbon::parse($pinjam->jam_selesai)->format('H:i') }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-3 hidden sm:table-cell">
+                                        {{ \Carbon\Carbon::parse($pinjam->jam_selesai)->format('H:i') }}
+                                    </td>
+                                    <td class="px-6 py-3">
+                                        @if(strtoupper($pinjam->status_pinjam) === 'BELUM DIKEMBALIKAN')
+                                            <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-sm border border-red-400">
+                                                BELUM DIKEMBALIKAN
+                                            </span>
+                                        @else 
+                                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-sm border border-green-400">
+                                                SUDAH DISETUJUI
+                                            </span>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td colspan="5" class="text-sm text-gray-500 text-center py-4 bg-white">
+                                    Tidak ada kendaraan yang sedang dipinjam, akan dipinjam, atau belum dikembalikan.
+                                </td>
+                            </tr>
+                        @endif
                     </tbody>
                 </table>
-                @else
-                <p class="text-sm text-gray-500 text-center py-4">Tidak ada kendaraan yang sedang dipinjam, akan dipinjam, atau belum dikembalikan.</p>
-                @endif
             </div>
-        </div>
-        <div class="mt-4">
-            {{  $peminjaman->appends(request()->query())->links() }}
-        </div>
+            
+            <div class="mt-4">
+                {{ $peminjaman->appends(request()->query())->links() }}
+            </div>            
     </div>
     </body>
     </html>
