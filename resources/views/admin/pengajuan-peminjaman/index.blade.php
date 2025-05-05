@@ -54,7 +54,7 @@
                 <tbody>
                     @forelse ($peminjaman as $item)
                         <tr class="bg-white border-b hover:bg-gray-50">
-                            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 {{ $item->user->name }}
                             </td>
                             <td class="px-6 py-4">{{ $item->kendaraan->merk }} {{ $item->kendaraan->tipe }}</td>

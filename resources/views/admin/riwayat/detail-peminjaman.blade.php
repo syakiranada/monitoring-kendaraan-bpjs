@@ -27,7 +27,7 @@
         {{-- <div class="grid grid-cols-2 gap-6"> --}}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Informasi Peminjaman -->
-            <div class="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <div class="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm text-sm">
                 <h3 class="mb-2 text-xl font-bold tracking-tight text-gray-900">Informasi Peminjaman</h3>
                 {{-- <div class="grid grid-cols-2 gap-y-2 text-gray-700"> --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-gray-700">
@@ -60,7 +60,7 @@
             </div>
 
             <!-- Informasi Kendaraan -->
-            <div class="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <div class="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm text-sm">
                 <h3 class="mb-2 text-xl font-bold tracking-tight text-gray-900">Informasi Kendaraan</h3>
                 {{-- <div class="grid grid-cols-2 gap-y-2 text-gray-700"> --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-gray-700">
@@ -78,7 +78,7 @@
 
         @if ($peminjaman->status_pinjam == 'Telah Dikembalikan')
             <!-- Card Pengembalian Kendaraan -->
-            <div class="block p-6 mt-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <div class="block p-6 mt-6 bg-white border border-gray-200 rounded-lg shadow-sm text-sm">
                 <h3 class="mb-2 text-xl font-bold tracking-tight text-gray-900">Pengembalian Kendaraan</h3>
                 {{-- <div class="grid grid-cols-2 gap-y-2 text-gray-700"> --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-gray-700">
