@@ -109,10 +109,10 @@
                                                 Hapus
                                             </button>
                                         </form>
-                                    @else
+                                    {{--  @else
                                         <span class="text-gray-400">Detail</span>
                                         <span class="text-gray-400">Edit</span>
-                                        <span class="text-gray-400">Hapus</span>
+                                        <span class="text-gray-400">Hapus</span>  --}}
                                     @endif
                                 </div>
                             </td>
@@ -155,6 +155,7 @@
                             text: "Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan!",
                             icon: "warning",
                             showCancelButton: true,
+                            reverseButtons: true,
                             confirmButtonColor: "#d33",
                             cancelButtonColor: "#3085d6",
                             confirmButtonText: "Ya, Hapus!",
@@ -162,14 +163,14 @@
                         }).then((result) => {
                             if (result.isConfirmed) {
                                 // Tampilkan loading
-                                Swal.fire({
+                                {{--  Swal.fire({
                                     title: "Menghapus...",
                                     text: "Mohon tunggu sebentar",
                                     allowOutsideClick: false,
                                     didOpen: () => {
                                         Swal.showLoading();
                                     }
-                                });
+                                });  --}}
     
                                 // Cek apakah element csrf token ada
                                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');

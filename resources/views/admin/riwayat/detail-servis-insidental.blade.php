@@ -1,56 +1,60 @@
 <x-app-layout>
-    <div class="flex-1 p-10">
+    <style>
+        @media (max-width: 640px) {
+            .detail-container {
+                padding: 1rem;
+            }
+            .detail-item {
+                margin-bottom: 0.75rem;
+            }
+            .detail-label {
+                margin-bottom: 0.25rem;
+                font-weight: 500;
+            }
+        }
+    </style>
+
+    <div class="container px-4 py-6 w-fit">
+        <!-- Button Back -->
+        <a href="{{ route('admin.riwayat.servis-insidental', ['page' => request('page'), 'search' => request('search')]) }}" class="flex items-center text-blue-600 font-semibold hover:underline mb-5">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Kembali
+        </a>
+
         <h1 class="text-2xl font-bold mb-6">Detail Servis Insidental Kendaraan</h1>
-        <div class="bg-white p-6 rounded-lg shadow-md w-1/3">
-            {{-- @php 
-                $currentPage = request()->query('page');
-            @endphp  --}}
+
+        <div class="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl p-4 sm:p-6 bg-white border border-gray-200 rounded-lg shadow-sm mx-auto detail-container">
             <input type="hidden" name="page" value="{{ request()->query('page', 1) }}">
             <input type="hidden" name="search" value="{{ request()->query('search') }}">
 
-            <h2 class="text-lg font-semibold mb-4">{{ $servis->kendaraan->merk }} {{ $servis->kendaraan->tipe }}</h2>
-            <div class="space-y-4">
-                <div class="flex justify-between">
-                    <span>Plat Nomor</span>
-                    <span>{{ $servis->kendaraan->plat_nomor }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="font-medium text-gray-600">Tanggal Servis</span>
-                    <span>{{ $servis->tgl_servis ? \Carbon\Carbon::parse($servis->tgl_servis)->format('d-m-Y') : '-' }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="font-medium text-gray-600">Lokasi Servis</span>
-                    <span>{{ $servis->lokasi ?? '-' }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="font-medium text-gray-600">Deskripsi Servis</span>
-                    <span>{{ $servis->deskripsi ?? 'Tidak ada deskripsi' }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="font-medium text-gray-600">Jumlah Pembayaran</span>
-                    <span>Rp {{ number_format($servis->harga, 0, ',', '.') }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="font-medium text-gray-600">Kondisi Kendaraan</span>
-                    @if($servis->bukti_fisik)
-                        <a href="{{ asset('storage/' . $servis->bukti_fisik) }}" target="_blank" class="text-blue-500 hover:underline">Lihat kondisi</a>
-                    @else
-                        <span class="text-gray-500">Tidak ada bukti</span>
-                    @endif
-                </div>
-                <div class="flex justify-between">
-                    <span class="font-medium text-gray-600">Bukti Pembayaran</span>
-                    @if($servis->bukti_bayar)
-                        <a href="{{ asset('storage/' . $servis->bukti_bayar) }}" target="_blank" class="text-blue-500 hover:underline">Lihat bukti</a>
-                    @else
-                        <span class="text-gray-500">Tidak ada bukti</span>
-                    @endif
-                </div> 
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    {{ $servis->kendaraan->merk }} {{ $servis->kendaraan->tipe }} - {{ $servis->kendaraan->plat_nomor }}
+                </h2>
             </div>
-            <button type="button" onclick="window.location.href='{{ route('admin.riwayat.servis-insidental', ['page' => request('page'), 'search' => request('search')]) }}'" class="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
-                Kembali
-            </button>  
+
+            <div class="space-y-3 text-sm">
+                @php
+                    $fields = [
+                        'Diinput Oleh' => $servis->user->name,
+                        'Tanggal Servis' => $servis->tgl_servis ? \Carbon\Carbon::parse($servis->tgl_servis)->format('d-m-Y') : '-',
+                        'Lokasi Servis' => $servis->lokasi ?? '-',
+                        'Deskripsi Servis' => $servis->deskripsi ?? 'Tidak ada deskripsi',
+                        'Jumlah Pembayaran' => 'Rp ' . number_format($servis->harga, 0, ',', '.'),
+                        'Kondisi Kendaraan' => $servis->bukti_fisik ? '<a href="' . asset('storage/' . $servis->bukti_fisik) . '" target="_blank" class="text-blue-500 hover:underline">Lihat kondisi</a>' : '<span class="text-gray-500">Tidak ada bukti</span>',
+                        'Bukti Pembayaran' => $servis->bukti_bayar ? '<a href="' . asset('storage/' . $servis->bukti_bayar) . '" target="_blank" class="text-blue-500 hover:underline">Lihat bukti</a>' : '<span class="text-gray-500">Tidak ada bukti</span>',
+                    ];
+                @endphp
+
+                @foreach ($fields as $label => $value)
+                    <div class="flex flex-col sm:flex-row items-start detail-item w-full">
+                        <span class="text-gray-700 sm:w-56 detail-label font-semibold">{{ $label }}</span>
+                        <span class="text-gray-900 break-words sm:max-w-[calc(100%-14rem)]">{!! $value !!}</span>
+                    </div>
+                @endforeach
+            </div>
         </div>
     </div>
 </x-app-layout>
-    

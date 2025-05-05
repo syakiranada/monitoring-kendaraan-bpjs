@@ -233,28 +233,19 @@
                             text: "Apakah Anda yakin ingin menyimpan data servis ini?",
                             icon: "warning",
                             showCancelButton: true,
+                            reverseButtons: true,
                             confirmButtonColor: "#3085d6",
                             cancelButtonColor: "#d33",
-                            confirmButtonText: "Ya, Simpan!",
-                            cancelButtonText: "Batal"
+                            cancelButtonText: "Batal",
+                            confirmButtonText: "Ya, Simpan!"
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                // Tampilkan loading
-                                Swal.fire({
-                                    title: "Memproses...",
-                                    text: "Mohon tunggu sebentar",
-                                    allowOutsideClick: false,
-                                    didOpen: () => {
-                                        Swal.showLoading();
-                                    }
-                                });
-                                
-                                // Menggunakan AJAX untuk submit form
+                                // Submit langsung tanpa loading
                                 const formData = new FormData(form);
-                                
+                        
                                 // Tambahkan parameter ajax=true untuk memudahkan deteksi di server
                                 formData.append('ajax', 'true');
-                                
+                        
                                 fetch(form.action, {
                                     method: form.method,
                                     body: formData,

@@ -43,7 +43,7 @@ Route::middleware(['auth', 'user'])->group(function () {
     Route::post('/peminjaman/simpan', [PeminjamanPenggunaController::class, 'simpan'])->name('peminjaman.simpan');
     Route::get('/get-kendaraan', [PeminjamanPenggunaController::class, 'getAvailableKendaraan'])->name('peminjaman.getKendaraan');
     Route::get('/peminjaman/{id}/detail', [PeminjamanPenggunaController::class, 'detail'])->name('peminjaman.detail');
-    Route::get('/peminjaman/{id}/batal', [PeminjamanPenggunaController::class, 'batal'])->name('peminjaman.batal');
+    Route::post('/peminjaman/{id}/batal', [PeminjamanPenggunaController::class, 'batal'])->name('peminjaman.batal');
     Route::get('/peminjaman/{id}/formPengembalian', [PeminjamanPenggunaController::class, 'showFormPengembalian'])->name('peminjaman.showFormPengembalian');
     Route::post('/peminjaman/pengembalian/{id}', [PeminjamanPenggunaController::class, 'simpanPengembalian'])->name('peminjaman.pengembalian');
     Route::get('/peminjaman/{id}/formPerpanjangan', [PeminjamanPenggunaController::class, 'showFormPerpanjangan'])->name('peminjaman.showFormPerpanjangan');

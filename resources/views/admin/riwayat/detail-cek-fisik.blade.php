@@ -52,7 +52,7 @@
 
                 @foreach ($fields as $label => $value)
                     <div class="flex flex-col sm:flex-row items-start text-sm detail-item w-full">
-                        <span class="text-gray-600 sm:w-56 detail-label font-semibold">{{ $label }}</span>
+                        <span class="text-gray-700 sm:w-56 detail-label font-semibold">{{ $label }}</span>
                         <span class="text-gray-900 break-words sm:max-w-[calc(100%-14rem)]">{{ $value ?: '-' }}</span>
                     </div>
                 @endforeach

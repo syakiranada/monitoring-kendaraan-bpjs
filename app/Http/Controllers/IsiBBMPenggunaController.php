@@ -153,7 +153,12 @@ class IsiBBMPenggunaController extends Controller{
         }
     }
     
-    $peminjamans = Peminjaman::where('status_pinjam', 'Disetujui')->paginate(5, ['*'], 'peminjamans_page');
+    // $peminjamans = Peminjaman::where('status_pinjam', 'Disetujui')->paginate(5, ['*'], 'peminjamans_page');
+    $peminjamans = Peminjaman::with('kendaraan')
+    ->where('status_pinjam', 'Disetujui')
+    ->where('user_id', Auth::id())
+    ->paginate(5, ['*'], 'peminjamans_page');
+    
     $pengisianBBMs = $bbmQuery->orderBy('tgl_isi', 'desc')->paginate(5, ['*'], 'pengisian_page');    
 
     return view('pengguna.pengisianBBM', compact('peminjamans', 'pengisianBBMs', 'searchDaftar', 'searchRiwayat'));

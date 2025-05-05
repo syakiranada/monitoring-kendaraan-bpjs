@@ -206,8 +206,12 @@
                     ['icon' => 'home', 'title' => 'Beranda', 'route' => 'beranda', 'active_routes' => [
                         'beranda'
                     ]],
-                    ['icon' => 'car', 'title' => 'Daftar Kendaraan', 'route' => 'kendaraan'],
-                    ['icon' => 'pen-to-square', 'title' => 'Peminjaman', 'route' => 'peminjaman'],
+                    ['icon' => 'car', 'title' => 'Daftar Kendaraan', 'route' => 'kendaraan', 'active_routes' => 
+                        ['kendaraan.getDetail'
+                    ]],
+                    ['icon' => 'pen-to-square', 'title' => 'Peminjaman', 'route' => 'peminjaman', 'active_routes' => 
+                        ['peminjaman.showForm', 'peminjaman.simpan', 'peminjaman.getKendaraan', 'peminjaman.detail', 'peminjaman.batal','peminjaman.showFormPengembalian', 'peminjaman.pengembalian','peminjaman.showfromperpanjangan','peminjaman.perpanjang'
+                    ]],
                     ['icon' => 'gears', 'title' => 'Servis Insidental', 'route' => 'servisInsidental', 'active_routes' => [
                         'servisInsidental',
                         'servisInsidental.create',
