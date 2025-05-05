@@ -42,14 +42,9 @@
             <table class="w-full text-sm text-left rtl:text-right text-gray-500">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                     <tr>
-                        {{-- <th scope="col" class="p-4">
-                            <div class="flex items-center">
-                                <input id="checkbox-all" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500">
-                            </div>
-                        </th> --}}
                         <th scope="col" class="px-6 py-3">Nama Peminjam</th>
-                        <th scope="col" class="px-6 py-3">Merek & Tipe</th>
-                        <th scope="col" class="px-6 py-3">Plat Nomor</th>
+                        <th scope="col" class="px-6 py-3">Merek dan Tipe</th>
+                        <th scope="col" class="px-6 py-3">Plat</th>
                         <th scope="col" class="px-6 py-3">Tanggal Mulai</th>
                         <th scope="col" class="px-6 py-3">Tanggal Pengembalian</th>
                         <th scope="col" class="px-6 py-3">Tujuan</th>
@@ -59,11 +54,6 @@
                 <tbody>
                     @forelse ($peminjaman as $item)
                         <tr class="bg-white border-b hover:bg-gray-50">
-                            {{-- <td class="w-4 p-4">
-                                <div class="flex items-center">
-                                    <input type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500">
-                                </div>
-                            </td> --}}
                             <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                 {{ $item->user->name }}
                             </td>
@@ -72,25 +62,28 @@
                             <td class="px-6 py-4">{{ $item->tgl_mulai ? \Carbon\Carbon::parse($item->tgl_mulai)->format('d-m-Y') : '-' }}</td>
                             <td class="px-6 py-4">{{ $item->tgl_selesai ? \Carbon\Carbon::parse($item->tgl_selesai)->format('d-m-Y') : '-' }}</td>
                             <td class="px-6 py-4">{{ $item->tujuan }}</td>
-                            <td class="flex space-x-2 px-6 py-4">
-                                <a href="{{ route('admin.pengajuan-peminjaman.detail', ['id' => $item->id_peminjaman, 'page' => request()->query('page'), 'search' => request()->query('search')]) }}" class="font-medium text-blue-600 hover:underline">
-                                    Detail
-                                </a>
-                                <!-- Form Setujui -->
-                                <form action="{{ route('admin.pengajuan-peminjaman.setujui', $item->id_peminjaman) }}" method="POST" id="setujui-form-{{ $item->id_peminjaman }}">
-                                    @csrf
-                                    <button type="button" onclick="confirmAction('setujui', {{ $item->id_peminjaman }})" class="font-medium text-green-600 hover:underline">
-                                        Setujui
-                                    </button>
-                                </form>
-
-                                <!-- Form Tolak -->
-                                <form action="{{ route('admin.pengajuan-peminjaman.tolak', $item->id_peminjaman) }}" method="POST" id="tolak-form-{{ $item->id_peminjaman }}">
-                                    @csrf
-                                    <button type="button" onclick="confirmAction('tolak', {{ $item->id_peminjaman }})" class="font-medium text-red-600 hover:underline">
-                                        Tolak
-                                    </button>
-                                </form>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <a href="{{ route('admin.pengajuan-peminjaman.detail', ['id' => $item->id_peminjaman, 'page' => request()->query('page'), 'search' => request()->query('search')]) }}" class="font-medium text-gray-600 hover:underline">
+                                        Detail
+                                    </a>
+                                    <!-- Form Setujui -->
+                                    <form action="{{ route('admin.pengajuan-peminjaman.setujui', $item->id_peminjaman) }}" method="POST" id="setujui-form-{{ $item->id_peminjaman }}">
+                                        @csrf
+                                        <button type="button" onclick="confirmAction('setujui', {{ $item->id_peminjaman }})" class="font-medium text-green-600 hover:underline">
+                                            Setujui
+                                        </button>
+                                    </form>
+    
+                                    <!-- Form Tolak -->
+                                    <form action="{{ route('admin.pengajuan-peminjaman.tolak', $item->id_peminjaman) }}" method="POST" id="tolak-form-{{ $item->id_peminjaman }}">
+                                        @csrf
+                                        <button type="button" onclick="confirmAction('tolak', {{ $item->id_peminjaman }})" class="font-medium text-red-600 hover:underline">
+                                            Tolak
+                                        </button>
+                                    </form>
+                                </div>
+                                
                             </td>
                         </tr>
                     @empty

@@ -36,8 +36,8 @@
                                 <input id="checkbox-all" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500">
                             </div>
                         </th> --}}
-                        <th scope="col" class="px-6 py-3">Merek & Tipe</th>
-                        <th scope="col" class="px-6 py-3">Plat Nomor</th>
+                        <th scope="col" class="px-6 py-3">Merek dan Tipe</th>
+                        <th scope="col" class="px-6 py-3">Plat</th>
                         <th scope="col" class="px-6 py-3">Tanggal Cek Fisik Terakhir</th>
                         <th scope="col" class="px-6 py-3">Aksi</th>
                     </tr>
@@ -70,21 +70,23 @@
                                         Input
                                     </a>
                                 @endif
-                                <a href="{{ route('admin.cek-fisik.detail', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page'), 'search' => request()->query('search')]) }}" 
-                                    class="font-medium text-gray-600 hover:underline">
-                                    Detail
-                                </a>
-                                <a href="{{ route('admin.cek-fisik.edit', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page'), 'search' => request()->query('search')]) }}"
-                                    class="font-medium text-yellow-600 hover:underline">
-                                    Edit
-                                </a>
-                                <form action="{{ route('admin.cek-fisik.destroy', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page'), 'search' => request()->query('search')]) }}" method="POST" onsubmit="return confirmDelete(event, this);">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="font-medium text-red-600 hover:underline">
-                                        Hapus
-                                    </button>
-                                </form>
+                                @if (!is_null($cekFisikTerakhir))
+                                    <a href="{{ route('admin.cek-fisik.detail', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page'), 'search' => request()->query('search')]) }}" 
+                                        class="font-medium text-gray-600 hover:underline">
+                                        Detail
+                                    </a>
+                                    <a href="{{ route('admin.cek-fisik.edit', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page'), 'search' => request()->query('search')]) }}"
+                                        class="font-medium text-yellow-600 hover:underline">
+                                        Edit
+                                    </a>
+                                    <form action="{{ route('admin.cek-fisik.destroy', ['id_kendaraan' => $item->id_kendaraan, 'page' => request()->query('page'), 'search' => request()->query('search')]) }}" method="POST" onsubmit="return confirmDelete(event, this);">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="font-medium text-red-600 hover:underline">
+                                            Hapus
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                     @empty
