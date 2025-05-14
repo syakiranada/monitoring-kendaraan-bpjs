@@ -93,14 +93,6 @@
         </style>
     </head>
     <body class="font-sans antialiased">
-        {{--  <header>
-            <!-- Logo -->
-            <div class="logo">
-                <a href="{{ url('/') }}">
-                    <img src="{{ asset('logo_simonas_hitam.png') }}" alt="Logo SiMonas" class="w-32 h-auto">
-                </a>
-            </div>
-        </header>  --}}
         <div id="main-container" class="flex min-h-screen top-0 h-full bg-gray-100">
             <!-- Sidebar -->
             @php
@@ -287,16 +279,9 @@
              </div>
 
             <!-- Content Area -->
-            <div id="content" class="ml-64 w-full transition-all duration-300 ease-in-out">
+            <div id="content" class="w-full transition-all duration-300 ease-in-out lg:ml-64">
+
                 @include('layouts.navigation')
-                
-                {{--  @isset($header)
-                    <header class="bg-white shadow">
-                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                            {{ $header }}
-                        </div>
-                    </header>
-                @endisset  --}}
 
                 <!-- Konten akan masuk di sini -->
                 <main class="p-6">
@@ -311,22 +296,38 @@
                 const content = document.getElementById('content');
                 const collapseBtn = document.getElementById('collapseBtn');
                 const expandBtn = document.getElementById('expandBtn');
-            
+                
+                // Check sidebar state from localStorage
+                const isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+                
                 function collapseSidebar() {
                     sidebar.classList.add('sidebar-hidden');
                     content.classList.add('content-expanded');
                     content.style.marginLeft = '50px';
+                    localStorage.setItem('sidebarCollapsed', 'true');
+                    collapseBtn.style.display = 'none';
+                    expandBtn.style.display = 'block';
                 }
-            
+                
                 function expandSidebar() {
                     sidebar.classList.remove('sidebar-hidden');
                     content.classList.remove('content-expanded');
                     content.style.marginLeft = '256px';
+                    localStorage.setItem('sidebarCollapsed', 'false');
+                    collapseBtn.style.display = 'block';
+                    expandBtn.style.display = 'none';
                 }
-            
+                
+                // Apply the sidebar state when page loads
+                if (isSidebarCollapsed) {
+                    collapseSidebar();
+                } else {
+                    expandSidebar();
+                }
+
                 // Collapse button click
                 collapseBtn.addEventListener('click', collapseSidebar);
-            
+                
                 // Expand button click
                 expandBtn.addEventListener('click', expandSidebar);
             });

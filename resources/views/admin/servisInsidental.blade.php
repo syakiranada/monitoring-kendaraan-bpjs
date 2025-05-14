@@ -1,60 +1,5 @@
 <x-app-layout>
     <div class="p-6">
-        {{--  <!-- Tabel Daftar Kendaraan (Only Available Vehicles) -->
-        <div>
-            <div class="flex justify-between items-center mb-6">
-                <h1 class="text-3xl font-bold">Daftar Kendaraan Tersedia</h1>
-                <div class="relative">
-                    <input type="text" class="border rounded-lg py-2 px-4 pl-10 w-64" placeholder="Search">
-                    <i class="fas fa-search absolute left-3 top-3 text-gray-500"></i>
-                </div>
-            </div>
-            <div class="bg-white shadow-md rounded-lg overflow-hidden">
-                <table class="min-w-full bg-white">
-                    <thead class="bg-gray-100 text-gray-600">
-                        <tr>
-                            <th class="py-3 px-4 text-left">MEREK DAN TIPE</th>
-                            <th class="py-3 px-4 text-left">PLAT</th>
-                            <th class="py-3 px-4 text-left">STATUS KETERSEDIAAN</th>
-                            <th class="py-3 px-4 text-left">AKSI</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($kendaraanTersedia as $kendaraan)
-                        <tr class="kendaraan-row cursor-pointer" data-id="{{ $kendaraan->id_kendaraan }}">
-                            <td class="py-3 px-4 border-b">
-                                <div>{{ ($kendaraan->merk ?? 'Tidak Diketahui') . ' ' . ($kendaraan->tipe ?? '') }}</div>
-                            </td>
-                            <td class="py-3 px-4 border-b">{{ $kendaraan->plat_nomor ?? '-' }}</td>
-                            <td class="py-3 px-4 border-b">
-                                <span class="text-xs font-medium px-2.5 py-0.5 rounded text-{{
-                                    $kendaraan->status_ketersediaan == 'Tersedia' ? 'green' : 
-                                    ($kendaraan->status_ketersediaan == 'Tidak Tersedia' ? 'red' : 'gray') 
-                                }}-500 bg-{{
-                                    $kendaraan->status_ketersediaan == 'Tersedia' ? 'green' : 
-                                    ($kendaraan->status_ketersediaan == 'Tidak Tersedia' ? 'red' : 'gray') 
-                                }}-100">
-                                    {{ strtoupper($kendaraan->status_ketersediaan) }}
-                                </span>
-                            </td>
-
-                            <td class="py-3 px-4 border-b">
-                                <a href="{{ route('admin.servisInsidental.create', [
-                                            'id_kendaraan'   => $kendaraan->id_kendaraan ?? '',
-                                            'merk'           => $kendaraan->merk ?? 'Tidak Diketahui',
-                                            'tipe'           => $kendaraan->tipe ?? '',
-                                            'plat'           => $kendaraan->plat_nomor ?? '-'
-                                        ]) }}" class="text-blue-500 hover:underline">
-                                            Input
-                                        </a>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>  --}}
-
         <!-- Tabel Daftar Servis Insidental (All Vehicles) -->
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-semibold text-gray-800 mb-4">Daftar Servis Insidental Kendaraan</h2>
@@ -71,7 +16,7 @@
                             <th class="py-3 px-4 text-left">PLAT</th>
                             <th class="py-3 px-4 text-left">TANGGAL SERVIS INSIDENTAL</th>
                             <th class="py-3 px-4 text-left">STATUS KETERSEDIAAN</th>
-                            <th class="py-3 px-4 text-center">AKSI</th>
+                            <th class="py-3 px-4 text-left">AKSI</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -83,12 +28,12 @@
                             <td class="py-3 px-4 border-b">{{ $servis->plat_nomor ?? '-' }}</td>
                             <td class="py-3 px-4 border-b">{{ $servis->tgl_servis ? \Carbon\Carbon::parse($servis->tgl_servis)->locale('id')->format('d-m-Y') : '-' }}</td>
                             <td class="py-3 px-4 border-b">
-                                <span class="text-xs font-medium px-2.5 py-0.5 rounded text-green-500 bg-green-100">
+                                <span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm border border-green-400">
                                     TERSEDIA
                                 </span>
                             </td> 
                             <td class="py-3 px-4 border-b text-center">
-                                <div class="flex justify-center space-x-4">
+                                <div class="flex space-x-4">
                                     <a href="{{ route('admin.servisInsidental.create', [
                                         'id_kendaraan' => $servis->id_kendaraan,
                                         'merk' => $servis->merk ?? 'Tidak Diketahui',
@@ -109,10 +54,6 @@
                                                 Hapus
                                             </button>
                                         </form>
-                                    {{--  @else
-                                        <span class="text-gray-400">Detail</span>
-                                        <span class="text-gray-400">Edit</span>
-                                        <span class="text-gray-400">Hapus</span>  --}}
                                     @endif
                                 </div>
                             </td>
@@ -131,6 +72,19 @@
             </div>
         </div>
     </div>
+    <style>
+        .swal2-cancel-gray {
+            background-color: #6c757d !important;
+            color: white !important;
+            border: none !important;
+        }
+        
+        .swal2-confirm-blue {
+            background-color: #3085d6 !important;
+            color: white !important;
+            border: none !important;
+        }
+    </style> 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -159,18 +113,13 @@
                             confirmButtonColor: "#d33",
                             cancelButtonColor: "#3085d6",
                             confirmButtonText: "Ya, Hapus!",
-                            cancelButtonText: "Batal"
+                            cancelButtonText: "Batal",
+                            customClass: {
+                                confirmButton: "swal2-confirm-blue",
+                                cancelButton: "swal2-cancel-gray"
+                            }
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                // Tampilkan loading
-                                {{--  Swal.fire({
-                                    title: "Menghapus...",
-                                    text: "Mohon tunggu sebentar",
-                                    allowOutsideClick: false,
-                                    didOpen: () => {
-                                        Swal.showLoading();
-                                    }
-                                });  --}}
     
                                 // Cek apakah element csrf token ada
                                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');

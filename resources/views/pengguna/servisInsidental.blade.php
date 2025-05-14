@@ -31,7 +31,7 @@
                                         </td>      
                                         <td class="py-3 px-4 border-b">{{ $peminjaman->kendaraan->plat_nomor ?? '-' }}</td>
                                         <td class="py-3 px-4 border-b">
-                                            <span class="text-xs font-medium px-2.5 py-0.5 rounded text-blue-500 bg-blue-100">
+                                            <span class="text-xs font-medium px-2.5 py-0.5 rounded-sm border text-blue-800 bg-blue-100 border-blue-400">
                                                 {{ strtoupper($peminjaman->status_pinjam ?? 'TIDAK DIKETAHUI') }}
                                             </span>
                                         </td>
@@ -89,7 +89,7 @@
                                 <th class="py-3 px-4 text-left">PLAT</th>
                                 <th class="py-3 px-4 text-left">TANGGAL SERVIS INSIDENTAL</th>
                                 <th class="py-3 px-4 text-left">STATUS PEMINJAMAN</th>
-                                <th class="py-3 px-4 text-center">AKSI</th>
+                                <th class="py-3 px-4 text-left">AKSI</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -102,27 +102,35 @@
                                 <td class="py-3 px-4 border-b">{{ \Carbon\Carbon::parse($servis->tgl_servis)->locale('id')->format('d-m-Y') }}</td>
                                 <td class="py-3 px-4 border-b">
                                     @if($servis->id_peminjaman && $servis->peminjaman)
-                                        <span class="text-xs font-medium px-2.5 py-0.5 rounded text-{{ 
-                                            $servis->peminjaman->status_pinjam == 'Telah Dikembalikan' ? 'green' : 
-                                            ($servis->peminjaman->status_pinjam == 'Dibatalkan' ? 'red' : 
-                                            ($servis->peminjaman->status_pinjam == 'Ditolak' ? 'red' : 
-                                            ($servis->peminjaman->status_pinjam == 'Diperpanjang' ? 'yellow' : 
-                                            ($servis->peminjaman->status_pinjam == 'Disetujui' ? 'blue' : 'gray')))) }}-500 bg-{{ 
-                                            $servis->peminjaman->status_pinjam == 'Telah Dikembalikan' ? 'green' : 
-                                            ($servis->peminjaman->status_pinjam == 'Dibatalkan' ? 'red' : 
-                                            ($servis->peminjaman->status_pinjam == 'Ditolak' ? 'red' : 
-                                            ($servis->peminjaman->status_pinjam == 'Diperpanjang' ? 'yellow' : 
-                                            ($servis->peminjaman->status_pinjam == 'Disetujui' ? 'blue' : 'gray')))) }}-100">
-                                            {{ strtoupper($servis->peminjaman->status_pinjam) }}
+                                        @php
+                                            $status = $servis->peminjaman->status_pinjam;
+                                            $colorMap = [
+                                                'Telah Dikembalikan' => 'green',
+                                                'Dibatalkan' => 'red',
+                                                'Ditolak' => 'red',
+                                                'Diperpanjang' => 'yellow',
+                                                'Disetujui' => 'blue',
+                                            ];
+                                            $color = $colorMap[$status] ?? 'gray';
+                                
+                                            $textColor = "text-{$color}-800";
+                                            $bgColor = "bg-{$color}-100";
+                                            $borderColor = "border-{$color}-400";
+                                        @endphp
+                                
+                                        <span class="text-xs font-medium px-2.5 py-0.5 rounded-sm border {{ $textColor }} {{ $bgColor }} {{ $borderColor }}">
+                                            {{ strtoupper($status) }}
                                         </span>
                                     @else
-                                        <span class="text-xs font-medium px-2.5 py-0.5 rounded text-gray-500 bg-gray-100">
+                                        <span class="text-xs font-medium px-2.5 py-0.5 rounded-sm border text-gray-800 bg-gray-100 border-gray-400">
                                             TIDAK TERKAIT PEMINJAMAN
                                         </span>
                                     @endif
-                                </td>                                
+                                </td>
+                                                               
                                 
                                 <td class="py-3 px-4 border-b text-center">
+                                    <div class="flex space-x-4">
                                     <a href="{{ route('servisInsidental.detail', ['id' => $servis->id_servis_insidental, 'page' => request()->query('page', 1), 'search' => request()->query('search')]) }}" 
                                         class="font-medium text-gray-500 hover:underline mr-2">Detail</a>
                                     
@@ -157,6 +165,21 @@
                 </div>
             </div>
         </div>
+        
+        <style>
+            .swal2-cancel-gray {
+                background-color: #6c757d !important;
+                color: white !important;
+                border: none !important;
+            }
+            
+            .swal2-confirm-blue {
+                background-color: #3085d6 !important;
+                color: white !important;
+                border: none !important;
+            }
+        </style> 
+
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
@@ -185,18 +208,13 @@
                                 confirmButtonColor: "#d33",
                                 cancelButtonColor: "#3085d6",
                                 confirmButtonText: "Ya, Hapus!",
-                                cancelButtonText: "Batal"
+                                cancelButtonText: "Batal",
+                                customClass: {
+                                    confirmButton: "swal2-confirm-blue",
+                                    cancelButton: "swal2-cancel-gray"
+                                }
                             }).then((result) => {
                                 if (result.isConfirmed) {
-                                    // Tampilkan loading
-                                    {{--  Swal.fire({
-                                        title: "Menghapus...",
-                                        text: "Mohon tunggu sebentar",
-                                        allowOutsideClick: false,
-                                        didOpen: () => {
-                                            Swal.showLoading();
-                                        }
-                                    });  --}}
         
                                     // Cek apakah element csrf token ada
                                     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');

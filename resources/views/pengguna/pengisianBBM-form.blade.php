@@ -1,5 +1,5 @@
 <x-app-layout>
-    <a href="{{  url()->previous()  }}" class="flex items-center text-blue-600 font-semibold hover:underline mb-5">
+    <a href="{{ route('pengisianBBM') }}" class="flex items-center text-blue-600 font-semibold hover:underline mb-5">
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
         </svg>
@@ -7,22 +7,22 @@
     </a>
         <div class="flex justify-center">
             <div class="w-full max-w-lg bg-white p-8 rounded shadow-md">
-                <h1 class="text-3xl font-bold mb-6 text-center">Form Pengisian BBM Kendaraan</h1>
+                <h1 class="text-2xl font-bold mb-6 text-center">Form Pengisian BBM Kendaraan</h1>
                 <form id="bbmForm" action="{{ route('pengisianBBM.store') }}" method="POST">
                     @csrf
                     <div class="mb-4">
-                        <label class="block text-gray-700">Merek dan Tipe Kendaraan</label>
+                        <label class="block text-sm font-medium text-gray-700">Merek dan Tipe Kendaraan</label>
                         <input type="text" name="merk_tipe" class="w-full p-2 border border-gray-300 rounded bg-gray-100" readonly value="{{ request('merk') . ' ' . request('tipe') }}">
                         <input type="hidden" name="id_kendaraan" value="{{ request('id_kendaraan') }}">
                         <input type="hidden" id="id_peminjaman" name="id_peminjaman" value="{{ request('id_peminjaman') }}">
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700">Nomor Plat</label>
+                        <label class="block text-sm font-medium text-gray-700">Nomor Plat</label>
                         <input type="text" class="w-full p-2 border border-gray-300 rounded bg-gray-100" readonly value="{{ request('plat') }}">
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700">Jenis BBM</label>
-                        <select name="jenis_bbm" class="w-full p-2 border border-gray-300 rounded" required>
+                        <label class="block text-sm font-medium text-gray-700">Jenis BBM</label>
+                        <select name="jenis_bbm" class="w-full p-2 border border-gray-300 rounded">
                             <option value="" disabled selected>Pilih Jenis BBM</option>
                             <option value="Pertalite">Pertalite</option>
                             <option value="Pertamax">Pertamax</option>
@@ -32,6 +32,7 @@
                             <option value="Solar">Solar</option>
                             <option value="Bio Solar">Bio Solar</option>
                         </select>
+                        <p id="warning-jenis-bbm" class="text-red-500 text-sm mt-1 hidden">Jenis BBM wajib diisi!</p>
                     </div>
                     <div class="grid gap-4 mb-4">
                     @php
@@ -40,74 +41,114 @@
                     @endphp
 
                         <div>
-                            <label class="block text-gray-700">Tanggal Pengisian BBM</label>
+                            <label class="block text-sm font-medium text-gray-700">Tanggal Pengisian BBM</label>
                             <input 
                             type="date" 
                             name="tgl_isi" 
                             class="w-full p-2 border border-gray-300 rounded" 
-                            required
                             @if($tglMulai) min="{{ \Carbon\Carbon::parse($tglMulai)->format('Y-m-d') }}" @endif
                             @if($tglSelesai) max="{{ \Carbon\Carbon::parse($tglSelesai)->format('Y-m-d') }}" @endif
                         >
                         <small class="text-gray-500 text-sm">
                             Pilih tanggal antara {{ \Carbon\Carbon::parse($tglMulai)->format('d M Y') }} dan {{ \Carbon\Carbon::parse($tglSelesai)->format('d M Y') }}.
                         </small>
+                        <p id="warning-tanggal" class="text-red-500 text-sm mt-1 hidden">Tanggal pengisian BBM wajib diisi!</p>
                         </div>
-{{--  
-                        <div>
-                            <label class="block text-gray-700">Jumlah Pembayaran</label>
-                            <input type="text" id="hargaInput" name="harga" class="w-full p-2 border border-gray-300 rounded" required>
-                        </div>  --}}
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700">Nominal</label>
+                        <label class="block text-sm font-medium text-gray-700">Nominal</label>
                         <div class="relative">
                             <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">Rp</span>
                             <input type="text" 
                                    id="nominalInput" 
                                    name="nominal" 
                                    class="w-full pl-10 p-2 border border-gray-300 rounded" 
-                                   required>
+                                   >
                         </div>
+                        <p id="warning-nominal" class="text-red-500 text-sm mt-1 hidden">Nominal pengisian BBM wajib diisi!</p>
                     </div>   
                     <div class="flex justify-end">
-                        {{--  <a href="{{ url()->previous() }}" class="bg-gray-500 text-white px-4 py-2 rounded">Kembali</a>  --}}
                         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Simpan</button>
                     </div>
                 </form>
             </div>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <style>
+            .swal2-cancel-gray {
+                background-color: #6c757d !important;
+                color: white !important;
+                border: none !important;
+            }
+            
+            .swal2-confirm-blue {
+                background-color: #3085d6 !important;
+                color: white !important;
+                border: none !important;
+            }
+        </style> 
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>      
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('bbmForm');
             if (form) {
-                // Menambahkan fungsi validasi ukuran file
+                const jenisBBMSelect = form.querySelector('select[name="jenis_bbm"]');
+                const tanggalInput = form.querySelector('input[name="tgl_isi"]');
+                const nominalInput = form.querySelector('input[name="nominal"]');
+                const warningJenisBBM = document.getElementById('warning-jenis-bbm');
+                const warningTanggal = document.getElementById('warning-tanggal');
+                const warningNominal = document.getElementById('warning-nominal');
+
                 function validateFileSize() {
                     const fileInput = form.querySelector('input[type="file"]');
                     if (fileInput && fileInput.files.length > 0) {
                         const maxSize = 2 * 1024 * 1024;
-                        if (fileInput.files[0].size > maxSize) {
-                            return false;
-                        }
+                        return fileInput.files[0].size <= maxSize;
                     }
                     return true;
                 }
-        
+
+                // Event listener untuk menyembunyikan warning jenis BBM saat ada perubahan
+                jenisBBMSelect.addEventListener('change', function() {
+                    if (jenisBBMSelect.value) {
+                        warningJenisBBM.classList.add('hidden');
+                    }
+                });
+
+                // Event listener untuk menyembunyikan warning tanggal saat ada perubahan
+                tanggalInput.addEventListener('input', function() {
+                    if (tanggalInput.value) {
+                        warningTanggal.classList.add('hidden');
+                    }
+                });
+
+                // Event listener untuk menyembunyikan warning nominal saat ada perubahan
+                nominalInput.addEventListener('input', function() {
+                    if (nominalInput.value.trim()) {
+                        warningNominal.classList.add('hidden');
+                    }
+                });
+
                 form.addEventListener('submit', function(event) {
                     event.preventDefault();
-                    
-                    // Validasi ukuran file
-                    if (!validateFileSize()) {
-                        Swal.fire({
-                            title: "Gagal!",
-                            text: "Ukuran file tidak boleh melebihi 2MB",
-                            icon: "error",
-                            confirmButtonColor: "#d33",
-                            confirmButtonText: "OK"
-                        });
-                        return;
+                    let isValid = true;
+
+                    if (!jenisBBMSelect.value) {
+                        warningJenisBBM.classList.remove('hidden');
+                        isValid = false;
                     }
+        
+                    if (!tanggalInput.value) {
+                        warningTanggal.classList.remove('hidden');
+                        isValid = false;
+                    }
+        
+                    if (!nominalInput.value.trim()) {
+                        warningNominal.classList.remove('hidden');
+                        isValid = false;
+                    }
+
+                    if (!isValid) return;
                     
                     // Konfirmasi simpan data
                     Swal.fire({
@@ -119,19 +160,13 @@
                         confirmButtonColor: "#3085d6",
                         cancelButtonColor: "#d33",
                         confirmButtonText: "Ya, Simpan!",
-                        cancelButtonText: "Batal"
+                        cancelButtonText: "Batal",
+                        customClass: {
+                            confirmButton: "swal2-confirm-blue",
+                            cancelButton: "swal2-cancel-gray"
+                        }
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Tampilkan loading
-                            {{--  Swal.fire({
-                                title: "Memproses...",
-                                text: "Mohon tunggu sebentar",
-                                allowOutsideClick: false,
-                                didOpen: () => {
-                                    Swal.showLoading();
-                                }
-                            });  --}}
-                            
                             // Menggunakan AJAX untuk submit form
                             const formData = new FormData(form);
                             
@@ -215,10 +250,5 @@
                 let value = e.target.value.replace(/\D/g, '');
                 e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
             });
-
-            {{--  document.getElementById('hargaInput').addEventListener('input', function (e) {
-                let value = e.target.value.replace(/\D/g, '');
-                e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            });  --}}
         </script>
 </x-app-layout>

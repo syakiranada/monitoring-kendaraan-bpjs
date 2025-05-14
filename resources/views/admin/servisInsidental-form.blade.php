@@ -1,5 +1,5 @@
 <x-app-layout>
-    <a href="{{  url()->previous()  }}" class="flex items-center text-blue-600 font-semibold hover:underline mb-5">
+    <a href="{{ route('admin.servisInsidental') }}" class="flex items-center text-blue-600 font-semibold hover:underline mb-5">
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
         </svg>
@@ -9,12 +9,12 @@
         <!-- Main Content -->
         <div class="w-4/5">
             <div class="bg-white p-8 rounded shadow-md">
-            <h1 class="text-3xl font-bold mb-8 text-center">Form Input Servis Insidental Kendaraan</h1>
+            <h1 class="text-2xl font-bold mb-6 text-center">Form Input Servis Insidental Kendaraan</h1>
                 <form id="serviceForm" action="{{ route('admin.servisInsidental.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label class="block text-gray-700">Merk dan Tipe Kendaraan</label>
+                            <label class="block text-sm font-medium text-gray-700">Merk dan Tipe Kendaraan</label>
                             <input type="text" id="merkTipe" name="merk_tipe" 
                                    class="w-full p-2 border border-gray-300 rounded bg-gray-100" 
                                    readonly 
@@ -23,33 +23,37 @@
                             <input type="hidden" id="id_peminjaman" name="id_peminjaman" value="">
                         </div>
                         <div>
-                            <label class="block text-gray-700">Nomor Plat</label>
+                            <label class="block text-sm font-medium text-gray-700">Nomor Plat</label>
                             <input type="text" id="nomorPlat" class="w-full p-2 border border-gray-300 rounded bg-gray-100" 
                                    readonly value="{{ request('plat') }}">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label class="block text-gray-700">Tanggal Servis</label>
-                            <input type="date" id="tglServis" name="tgl_servis" class="w-full p-2 border border-gray-300 rounded" max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" required>
+                            <label class="block text-sm font-medium text-gray-700">Tanggal Servis</label>
+                            <input type="date" id="tglServis" name="tgl_servis" class="w-full p-2 border border-gray-300 rounded" max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}">
+                            <p id="warning-tanggal" class="text-red-500 text-sm mt-1 hidden">Tanggal servis wajib diisi!</p>
                         </div>
                         <div>
-                            <label class="block text-gray-700">Jumlah Pembayaran</label>
+                            <label class="block text-sm font-medium text-gray-700">Jumlah Pembayaran</label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">Rp</span>
-                                <input type="text" id="hargaInput" name="harga" class="w-full pl-10 p-2 border border-gray-300 rounded" required>
+                                <input type="text" id="hargaInput" name="harga" class="w-full pl-10 p-2 border border-gray-300 rounded">
                             </div>
                             <div id="hargaAlert" class="text-red-500 text-sm mt-1"></div>
+                            <p id="warning-harga" class="text-red-500 text-sm mt-1 hidden">Jumlah pembayaran wajib diisi!</p>
                         </div>
                         
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700">Lokasi Servis</label>
-                        <input type="text" name="lokasi" class="w-full p-2 border border-gray-300 rounded" required>
+                        <label class="block text-sm font-medium text-gray-700">Lokasi Servis</label>
+                        <input type="text" name="lokasi" class="w-full p-2 border border-gray-300 rounded">
+                        <p id="warning-lokasi" class="text-red-500 text-sm mt-1 hidden">Lokasi servis wajib diisi!</p>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700">Deskripsi Servis</label>
-                        <textarea name="deskripsi" class="w-full p-2 border border-gray-300 rounded" rows="3" required></textarea>
+                        <label class="block text-sm font-medium text-gray-700">Deskripsi Servis</label>
+                        <textarea name="deskripsi" class="w-full p-2 border border-gray-300 rounded" rows="3"></textarea>
+                        <p id="warning-deskripsi" class="text-red-500 text-sm mt-1 hidden">Deskripsi servis wajib diisi!</p>
                     </div>
                     <div class="mb-6 flex justify-start space-x-4">
                         <!-- Upload Bukti Pembayaran Servis -->
@@ -58,11 +62,13 @@
                             <div class="flex flex-col items-center">
                                 <label id="uploadLabelBuktiBayar" class="cursor-pointer flex flex-col items-center justify-center w-32 h-14 border border-blue-500 text-blue-600 font-medium rounded-lg hover:bg-blue-100 transition">
                                     <span id="uploadTextBuktiBayar" class="text-sm">Upload</span>
-                                    <input type="file" name="bukti_bayar" id="fotoInputBuktiBayar" class="hidden" accept=".jpg, .jpeg, .png, .pdf" required>
+                                    <input type="file" name="bukti_bayar" id="fotoInputBuktiBayar" class="hidden" accept=".jpg, .jpeg, .png, .pdf">
                                 </label>
                                 <p id="fileNameBuktiBayar" class="text-sm mt-2 text-gray-600 hidden"></p>
                                 <a href="#" id="removeFileBuktiBayar" class="hidden text-red-600 font-medium text-sm mt-2 hover:underline text-center">Remove</a>
                             </div>
+                            <p id="warning-bukti-bayar" class="text-red-500 text-sm mt-1 hidden">Bukti pembayaran wajib diunggah!</p>
+                            <p id="warning-bukti-bayar-2mb" class="text-red-500 text-sm mt-1 hidden">Bukti pembayaran melebihi 2MB!</p>
                         </div>
                     
                         <!-- Garis Pemisah -->
@@ -74,11 +80,13 @@
                             <div class="flex flex-col items-center">
                                 <label id="uploadLabelBuktiFisik" class="cursor-pointer flex flex-col items-center justify-center w-32 h-14 border border-blue-500 text-blue-600 font-medium rounded-lg hover:bg-blue-100 transition">
                                     <span id="uploadTextBuktiFisik" class="text-sm">Upload</span>
-                                    <input type="file" name="bukti_fisik" id="fotoInputBuktiFisik" class="hidden" accept=".jpg, .jpeg, .png, .pdf" required>
+                                    <input type="file" name="bukti_fisik" id="fotoInputBuktiFisik" class="hidden" accept=".jpg, .jpeg, .png, .pdf">
                                 </label>
                                 <p id="fileNameBuktiFisik" class="text-sm mt-2 text-gray-600 hidden"></p>
                                 <a href="#" id="removeFileBuktiFisik" class="hidden text-red-600 font-medium text-sm mt-2 hover:underline text-center">Remove</a>
                             </div>
+                            <p id="warning-bukti-fisik" class="text-red-500 text-sm mt-1 hidden">Bukti fisik wajib diunggah!</p>
+                            <p id="warning-bukti-fisik-2mb" class="text-red-500 text-sm mt-1 hidden">Bukti fisik melebihi 2MB!</p>
                         </div>
                     
                         <!-- Garis Pemisah -->
@@ -97,10 +105,6 @@
                     
                     <!-- Tombol submit dan navigasi -->
                     <div class="flex justify-end items-center">
-                        {{--  <!-- Tombol Kembali (di kiri) -->
-                        <a href="{{ url()->previous() }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-md">
-                            Kembali
-                        </a>  --}}
                     
                         <!-- Tombol Batal dan Simpan (di kanan) -->
                         <div class="flex space-x-2">
@@ -113,6 +117,20 @@
             </div>
         </div>
     </div>
+
+    <style>
+        .swal2-cancel-gray {
+            background-color: #6c757d !important;
+            color: white !important;
+            border: none !important;
+        }
+        
+        .swal2-confirm-blue {
+            background-color: #3085d6 !important;
+            color: white !important;
+            border: none !important;
+        }
+    </style> 
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -132,6 +150,8 @@
         }   
 
         document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('serviceForm');
+
             const today = new Date();
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -144,83 +164,152 @@
             tglServis.setAttribute('max', todayStr);
            }
 
+            // Lokasi & Deskripsi validation
             const lokasiInput = document.querySelector('input[name="lokasi"]');
             const deskripsiTextarea = document.querySelector('textarea[name="deskripsi"]');
             const lokasiAlert = document.createElement('div');
             const deskripsiAlert = document.createElement('div');
-          
-            lokasiAlert.className = 'text-red-500 text-sm mt-1';
-            deskripsiAlert.className = 'text-red-500 text-sm mt-1';
-          
-            lokasiInput.parentNode.insertBefore(lokasiAlert, lokasiInput.nextSibling);
-            deskripsiTextarea.parentNode.insertBefore(deskripsiAlert, deskripsiTextarea.nextSibling);
-          
-            lokasiInput.addEventListener('input', function() {
-              if (lokasiInput.value.length > 100) {
-                lokasiAlert.textContent = 'Lokasi Servis tidak boleh lebih dari 100 karakter.';
-              } else {
-                lokasiAlert.textContent = '';
-              }
-            });
-          
-            deskripsiTextarea.addEventListener('input', function() {
-              if (deskripsiTextarea.value.length > 200) {
-                deskripsiAlert.textContent = 'Deskripsi Servis tidak boleh lebih dari 200 karakter.';
-              } else {
-                deskripsiAlert.textContent = '';
-              }
-            });
 
+            // Harga input validation & formatting
             const hargaInput = document.getElementById('hargaInput');
             const hargaAlert = document.getElementById('hargaAlert');
             const maxHarga = 1000000000000;
-            
+
+            const requiredFields = [
+                { selector: 'input[name="tgl_servis"]', warningId: 'warning-tanggal' },
+                { selector: 'input[name="harga"]', warningId: 'warning-harga' },
+                { selector: 'input[name="lokasi"]', warningId: 'warning-lokasi' },
+                { selector: 'textarea[name="deskripsi"]', warningId: 'warning-deskripsi' },
+                { selector: 'input[name="bukti_bayar"]', warningId: 'warning-bukti-bayar' },
+                { selector: 'input[name="bukti_fisik"]', warningId: 'warning-bukti-fisik' }
+            ];
+
+            requiredFields.forEach(field => {
+                const inputEl = document.querySelector(field.selector);
+                const warningEl = document.getElementById(field.warningId);
+
+                if (inputEl && warningEl) {
+                    inputEl.addEventListener('input', () => {
+                        if (inputEl.value.trim() !== '') {
+                            warningEl.classList.add('hidden');
+                        }
+                    });
+
+                    // Untuk file input, pakai 'change'
+                    if (inputEl.type === 'file') {
+                        inputEl.addEventListener('change', () => {
+                            if (inputEl.files.length > 0) {
+                                warningEl.classList.add('hidden');
+                            }
+                        });
+                    }
+                }
+            });
+        
+            lokasiAlert.className = 'text-red-500 text-sm mt-1';
+            deskripsiAlert.className = 'text-red-500 text-sm mt-1';
+        
+            lokasiInput.parentNode.insertBefore(lokasiAlert, lokasiInput.nextSibling);
+            deskripsiTextarea.parentNode.insertBefore(deskripsiAlert, deskripsiTextarea.nextSibling);
+        
+            lokasiInput.addEventListener('input', function () {
+                lokasiAlert.textContent = lokasiInput.value.length > 100 ? 'Lokasi Servis tidak boleh lebih dari 100 karakter.' : '';
+            });
+        
+            deskripsiTextarea.addEventListener('input', function () {
+                deskripsiAlert.textContent = deskripsiTextarea.value.length > 200 ? 'Deskripsi Servis tidak boleh lebih dari 200 karakter.' : '';
+            });
+        
             hargaInput.addEventListener('input', function (e) {
-                let rawValue = e.target.value.replace(/\D/g, '');
-                let numericValue = parseInt(rawValue) || 0;
-            
-                // Cek dan tampilkan alert
-                if (numericValue > maxHarga) {
-                    hargaAlert.textContent = 'Nonimal melebihi batas maksimum Rp 1.000.000.000.000.';
-                    numericValue = maxHarga;
+                const digitsOnly = e.target.value.replace(/\D/g, '');
+
+                if (!digitsOnly) {
+                    e.target.value = '';
+                    hargaAlert.textContent = '';
+                    return;
+                }
+
+                const value = Number(digitsOnly);
+
+                if (value > maxHarga) {
+                    hargaAlert.textContent = 'Nominal melebihi batas maksimum Rp 1.000.000.000.000.';
                 } else {
                     hargaAlert.textContent = '';
                 }
-            
-                // Format angka ribuan
-                e.target.value = numericValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            });            
-          });
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('serviceForm');
-            if (form) {
-                // Menambahkan fungsi validasi ukuran file
-                function validateFileSize() {
-                    const fileInput = form.querySelector('input[type="file"]');
-                    if (fileInput && fileInput.files.length > 0) {
-                        const maxSize = 2 * 1024 * 1024;
-                        if (fileInput.files[0].size > maxSize) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }
+                // Format with thousand separators
+                e.target.value = Math.min(value, maxHarga)
+                    .toString()
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            });
         
-                form.addEventListener('submit', function(event) {
-                    event.preventDefault();
-                    
-                    // Validasi ukuran file
-                    if (!validateFileSize()) {
-                        Swal.fire({
-                            title: "Gagal!",
-                            text: "Ukuran file tidak boleh melebihi 2MB",
-                            icon: "error",
-                            confirmButtonColor: "#d33",
-                            confirmButtonText: "OK"
-                        });
-                        return;
+            // Tanggal Servis validation
+            const tglServisInput = document.querySelector('input[name="tgl_servis"]');
+            const warningTanggal = document.getElementById('warning-tanggal');
+
+            tglServisInput.addEventListener('input', function () {
+                warningTanggal.classList.toggle('hidden', !!tglServisInput.value);
+            });
+        
+            // File input single validation
+            function validateSingleFile(input, warningId) {
+                if (input.files.length > 0) {
+                    const maxSize = 2 * 1024 * 1024;
+                    if (input.files[0].size > maxSize) {
+                        document.getElementById(warningId).classList.remove('hidden');
+                        input.value = '';
+                    } else {
+                        document.getElementById(warningId).classList.add('hidden');
                     }
+                }
+            }
+        
+            document.getElementById('fotoInputBuktiBayar').addEventListener('change', function () {
+                validateSingleFile(this, 'warning-bukti-bayar-2mb');
+            });
+        
+            document.getElementById('fotoInputBuktiFisik').addEventListener('change', function () {
+                validateSingleFile(this, 'warning-bukti-fisik-2mb');
+            });
+
+            // Final form submission
+            if (form) {
+                form.addEventListener('submit', function (event) {
+                    event.preventDefault();
+        
+                    let valid = true;
+        
+                    if (!tglServisInput.value) {
+                        warningTanggal.classList.remove('hidden');
+                        valid = false;
+                    }
+        
+                    if (!hargaInput.value.trim()) {
+                        document.getElementById('warning-harga').classList.remove('hidden');
+                        valid = false;
+                    }
+        
+                    if (!lokasiInput.value.trim()) {
+                        document.getElementById('warning-lokasi').classList.remove('hidden');
+                        valid = false;
+                    }
+        
+                    if (!deskripsiTextarea.value.trim()) {
+                        document.getElementById('warning-deskripsi').classList.remove('hidden');
+                        valid = false;
+                    }
+        
+                    if (!document.getElementById('fotoInputBuktiBayar').files.length) {
+                        document.getElementById('warning-bukti-bayar').classList.remove('hidden');
+                        valid = false;
+                    }
+        
+                    if (!document.getElementById('fotoInputBuktiFisik').files.length) {
+                        document.getElementById('warning-bukti-fisik').classList.remove('hidden');
+                        valid = false;
+                    }
+
+                    if (!valid) return;
                     
                     // Konfirmasi simpan data
                     Swal.fire({
@@ -232,18 +321,13 @@
                         confirmButtonColor: "#3085d6",
                         cancelButtonColor: "#d33",
                         confirmButtonText: "Ya, Simpan!",
-                        cancelButtonText: "Batal"
+                        cancelButtonText: "Batal",
+                        customClass: {
+                            confirmButton: "swal2-confirm-blue",
+                            cancelButton: "swal2-cancel-gray"
+                        }
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Tampilkan loading
-                            {{--  Swal.fire({
-                                title: "Memproses...",
-                                text: "Mohon tunggu sebentar",
-                                allowOutsideClick: false,
-                                didOpen: () => {
-                                    Swal.showLoading();
-                                }
-                            });  --}}
                             
                             // Menggunakan AJAX untuk submit form
                             const formData = new FormData(form);
@@ -340,24 +424,7 @@
                         console.error("Error fetching kendaraan data:", error);
                     }
                 });
-            });   
-
-            {{--  document.getElementById('hargaInput').addEventListener('input', function (e) {
-                let rawValue = e.target.value.replace(/\D/g, ''); // Hapus semua non-digit
-                let numericValue = parseInt(rawValue) || 0;
-            
-                // Batas maksimum
-                const maxValue = 1000000000000;
-            
-                if (numericValue > maxValue) {
-                    alert('Nominal melebihi batas maksimum Rp 1.000.000.000.000');
-                    numericValue = maxValue;
-                }
-            
-                // Format angka dengan titik ribuan
-                e.target.value = numericValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            });  --}}
-                        
+            });         
 
         // File upload handler for bukti bayar
         const fotoInputBuktiBayar = document.getElementById('fotoInputBuktiBayar');

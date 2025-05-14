@@ -16,60 +16,24 @@ use Illuminate\Contracts\Filesystem\FileNotFoundException;
 
 class ServisInsidentalController extends Controller
 {
-    // public function index(Request $request)
-    // {
-    //     // Query kendaraan dengan servis insidental terakhir (jika ada)
-    //     $query = Kendaraan::select(
-    //             'kendaraan.*',
-    //             'servis_insidental.id_servis_insidental',
-    //             'servis_insidental.tgl_servis',
-    //             'servis_insidental.updated_at as servis_updated_at'
-    //         )
-    //         ->leftJoin(DB::raw('(SELECT id_kendaraan, MAX(updated_at) as max_jam FROM servis_insidental GROUP BY id_kendaraan) as latest'), function ($join) {
-    //             $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
-    //         })
-    //         ->leftJoin('servis_insidental', function ($join) {
-    //             $join->on('kendaraan.id_kendaraan', '=', 'servis_insidental.id_kendaraan')
-    //                 ->on('servis_insidental.updated_at', '=', 'latest.max_jam');
-    //         })
-    //         ->where('kendaraan.status_ketersediaan', '=', 'Tersedia')
-    //         ->orderBy('servis_insidental.tgl_servis', 'desc')
-    //         ->orderBy('servis_insidental.updated_at', 'desc')
-    //         ->paginate(10);
-
-    //     return view('admin.servisInsidental', [
-    //         'kendaraanTersedia' => Kendaraan::where('status_ketersediaan', 'Tersedia')->get(),
-    //         'servisInsidentals' => $query
-    //     ]);
-    // }
-
     public function index(Request $request)
     {
-        // $search = $request->input('search');
-        // $query = Kendaraan::select(
-        //     'kendaraan.*',
-        //     'servis_insidental.id_servis_insidental',
-        //     'servis_insidental.tgl_servis',
-        //     'servis_insidental.updated_at as servis_updated_at'
-        // )
-        // ->leftJoin(DB::raw('(SELECT id_kendaraan, MAX(updated_at) as max_jam FROM servis_insidental GROUP BY id_kendaraan) as latest'), function ($join) {
-        //     $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
-        // })
-        // ->leftJoin('servis_insidental', function ($join) {
-        //     $join->on('kendaraan.id_kendaraan', '=', 'servis_insidental.id_kendaraan')
-        //         ->on('servis_insidental.updated_at', '=', 'latest.max_jam');
-        // })
-        // ->where('kendaraan.status_ketersediaan', '=', 'Tersedia');
-
+        $user = Auth::user();
         $search = $request->input('search');
-
         $query = Kendaraan::select(
             'kendaraan.*',
             'servis_insidental.id_servis_insidental',
             'servis_insidental.tgl_servis',
             'servis_insidental.updated_at as servis_updated_at'
         )
-        ->leftJoin('servis_insidental', 'kendaraan.id_kendaraan', '=', 'servis_insidental.id_kendaraan')
+        ->leftJoin(DB::raw('(SELECT id_kendaraan, MAX(updated_at) as max_jam FROM servis_insidental GROUP BY id_kendaraan) as latest'), function ($join) {
+            $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
+        })
+        ->leftJoin('servis_insidental', function ($join) use ($user) {
+            $join->on('kendaraan.id_kendaraan', '=', 'servis_insidental.id_kendaraan')
+                ->on('servis_insidental.updated_at', '=', 'latest.max_jam')
+                ->where('servis_insidental.user_id', $user->id); 
+        })
         ->where('kendaraan.status_ketersediaan', '=', 'Tersedia');
 
         if (!empty($search)) {
@@ -142,18 +106,8 @@ class ServisInsidentalController extends Controller
             }
         }
 
-        // $servisInsidentals = $query->orderBy('servis_insidental.tgl_servis', 'desc')
-        //     ->orderBy('servis_insidental.updated_at', 'desc')
-        //     ->paginate(10)
-        //     ->appends(['search' => $search]);
-
-        // return view('admin.servisInsidental', [
-        //     'kendaraanTersedia' => Kendaraan::where('status_ketersediaan', 'Tersedia')->get(),
-        //     'servisInsidentals' => $servisInsidentals
-        // ]);
-
-        $servisInsidentals = $query->orderBy('kendaraan.id_kendaraan', 'asc')
-            ->orderBy('servis_insidental.tgl_servis', 'desc')
+        $servisInsidentals = $query->orderBy('servis_insidental.tgl_servis', 'desc')
+            ->orderBy('servis_insidental.updated_at', 'desc')
             ->paginate(10)
             ->appends(['search' => $search]);
 
@@ -358,84 +312,4 @@ class ServisInsidentalController extends Controller
         }
     }    
 }
-
-    // public function update(Request $request, $id)
-    // {
-
-    //     $request->merge([
-    //         'harga' => str_replace('.', '', $request->harga),
-    //     ]);
-
-    //     $servis = ServisInsidental::findOrFail($id);
-
-    //     // Kondisi untuk validasi bukti_bayar
-    //     $buktiValidasiBayar = $request->hasFile('bukti_bayar') ? 'required|mimes:jpg,jpeg,png,pdf|max:2048' : 'nullable|mimes:jpg,jpeg,png,pdf|max:2048';
-    //     //Kondisi untuk validasi bukti_fisik
-    //     $buktiValidasiFisik = $request->hasFile('bukti_fisik') ? 'required|mimes:jpg,jpeg,png,pdf|max:2048' : 'nullable|mimes:jpg,jpeg,png,pdf|max:2048';
-
-    //     $validated = $request->validate([
-    //         'id_kendaraan' => 'required|exists:kendaraan,id_kendaraan',
-    //         'id_peminjaman' => 'nullable|exists:peminjaman,id_peminjaman',
-    //         'tgl_servis' => 'required|date',
-    //         'harga' => 'required|numeric|min:0',
-    //         'lokasi' => 'required|string|max:100',
-    //         'deskripsi' => 'required|string|max:200',
-    //         'bukti_bayar' => $buktiValidasiBayar,
-    //         'bukti_fisik' => $buktiValidasiFisik,
-    //         'remove_bukti_bayar' => 'nullable|boolean',
-    //         'remove_bukti_fisik' => 'nullable|boolean',
-    //     ]);
-
-    //     $buktiBayarPath = $servis->bukti_bayar; // Inisialisasi dengan path lama
-    //     $buktiFisikPath = $servis->bukti_fisik; // Inisialisasi dengan path lama
-
-    //     if (isset($validated['remove_bukti_bayar']) && $validated['remove_bukti_bayar'] == 1) {
-    //         if ($servis->bukti_bayar) {
-    //             Storage::disk('public')->delete($servis->bukti_bayar);
-    //         }
-    //         $buktiBayarPath = null;
-    //     }
-
-    //     if (isset($validated['remove_bukti_fisik']) && $validated['remove_bukti_fisik'] == 1) {
-    //         if ($servis->bukti_fisik) {
-    //             Storage::disk('public')->delete($servis->bukti_fisik);
-    //         }
-    //         $buktiFisikPath = null;
-    //     }
-
-    //     // Hanya ubah path jika ada file baru diunggah
-    //     if ($request->hasFile('bukti_bayar')) {
-    //         if ($servis->bukti_bayar) {
-    //             Storage::disk('public')->delete($servis->bukti_bayar);
-    //         }
-    //         $buktiBayarPath = $request->file('bukti_bayar')->store('bukti-bayar', 'public');
-    //     }
-
-    //     if ($request->hasFile('bukti_fisik')) {
-    //         if ($servis->bukti_fisik) {
-    //             Storage::disk('public')->delete($servis->bukti_fisik);
-    //         }
-    //         $buktiFisikPath = $request->file('bukti_fisik')->store('bukti-fisik', 'public');
-    //     }
-
-    //     try {
-    //         $servis->update([
-    //             'id_kendaraan' => $validated['id_kendaraan'],
-    //             'id_peminjaman' => $validated['id_peminjaman'] ?? null,
-    //             'tgl_servis' => $validated['tgl_servis'],
-    //             'harga' => $validated['harga'],
-    //             'lokasi' => $validated['lokasi'],
-    //             'deskripsi' => $validated['deskripsi'],
-    //             'bukti_bayar' => $buktiBayarPath,
-    //             'bukti_fisik' => $buktiFisikPath,
-    //         ]);
-
-    //         return redirect()->route('admin.servisRutin')
-    //         ->with('success', 'Data servis rutin berhasil diperbarui.');
-    // } catch (\Exception $e) {
-    //     Log::error('Error updating servis insidental: ' . $e->getMessage());
-    //     return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()]);
-    // }
-            
-    // }
 

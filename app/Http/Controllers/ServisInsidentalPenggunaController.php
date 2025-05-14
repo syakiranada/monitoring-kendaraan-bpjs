@@ -195,8 +195,8 @@ class ServisInsidentalPenggunaController extends Controller
             'harga' => 'required|numeric|min:0',
             'lokasi' => 'required|string|max:100',
             'deskripsi' => 'required|string|max:200',
-            'bukti_bayar' => 'required|mimes:jpg,jpeg,png,pdf|max:2048', // 5MB
-            'bukti_fisik' => 'required|mimes:jpg,jpeg,png,pdf|max:2048', // 5MB
+            'bukti_bayar' => 'required|mimes:jpg,jpeg,png,pdf|max:2048',
+            'bukti_fisik' => 'required|mimes:jpg,jpeg,png,pdf|max:2048', 
         ]);
     
         // Pastikan user login
@@ -238,9 +238,20 @@ class ServisInsidentalPenggunaController extends Controller
             // Simpan data ke database
             ServisInsidental::create($data);
     
+            if ($request->ajax()) {
+                return response()->json(['status' => 'success'], 200);
+            }
+        
             return redirect()->route('servisInsidental.index')
                 ->with('success', 'Data servis insidental berhasil disimpan.');
         } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage()
+                ], 500);
+            }
+        
             return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage()]);
         }
     }

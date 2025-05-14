@@ -17,7 +17,7 @@
                             <th class="py-3 px-4 text-left">Plat</th>
                             <th class="py-3 px-4 text-left">Tanggal Servis Rutin</th>
                             <th class="py-3 px-4 text-left">Status Servis</th>
-                            <th class="py-3 px-4 text-center">Aksi</th>
+                            <th class="py-3 px-4 text-left">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -53,40 +53,48 @@
                                                 $color = 'green';
                                             }
                                         }
+                                        // Define full Tailwind color variants
+                                        $textColor = "text-{$color}-800";
+                                        $bgColor = "bg-{$color}-100";
+                                        $borderColor = "border-{$color}-400";
                                     @endphp
-                                
-                                
-                                    <span class="text-xs font-medium px-2.5 py-0.5 rounded text-{{ $color }}-500 bg-{{ $color }}-100">
+
+                                    <span class="text-xs font-medium px-2.5 py-0.5 rounded-sm border {{ $textColor }} {{ $bgColor }} {{ $borderColor }}">
                                         {{ strtoupper($status) }}
                                     </span>
                                 </td>
                                 
                                 <td class="py-3 px-4 border-b text-center">
-                                    <div class="flex justify-center space-x-4">
-                                        {{-- Input button is always shown --}}
+                                    <div class="flex space-x-4">
                                         <a href="{{ route('admin.servisRutin.create', [
                                             'id_kendaraan' => $servis->id_kendaraan ?? '',
                                             'merk' => $servis->merk ?? 'Tidak Diketahui',
                                             'tipe' => $servis->tipe ?? '',
                                             'plat' => $servis->plat_nomor ?? '-',
                                             'jadwal_servis' => $servis->tgl_servis_selanjutnya ?? '-'
-                                        ]) }}" class="font-medium text-blue-500 hover:underline">Input</a>
-                                
+                                        ]) }}" class="font-medium text-blue-500 hover:underline">Input</a>                                
                                         @if ($servis->id_servis_rutin)
-                                            <a href="{{ route('admin.servisRutin.detail', $servis->id_servis_rutin) }}" class="font-medium text-gray-500 hover:underline">Detail</a>
-                                            <a href="{{ route('admin.servisRutin.edit', ['id' => $servis->id_servis_rutin]) }}" class="font-medium text-yellow-500 hover:underline">Edit</a>
-                                            <form action="{{ route('admin.servisRutin.destroy', $servis->id_servis_rutin) }}" method="POST" class="inline form-delete">
+                                            @php
+                                                $page = request('page');
+                                                $search = request('search');
+                                            @endphp
+
+                                            <a href="{{ route('admin.servisRutin.detail', $servis->id_servis_rutin) }}?page={{ $page }}&search={{ $search }}"
+                                            class="font-medium text-gray-500 hover:underline">Detail</a>
+
+                                            <a href="{{ route('admin.servisRutin.edit', ['id' => $servis->id_servis_rutin]) }}?page={{ $page }}&search={{ $search }}"
+                                            class="font-medium text-yellow-500 hover:underline">Edit</a>
+
+                                            <form action="{{ route('admin.servisRutin.destroy', $servis->id_servis_rutin) }}?page={{ $page }}&search={{ $search }}"
+                                                method="POST" class="inline form-delete">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" class="font-medium text-red-600 hover:underline delete-button"
-                                                        data-url="{{ route('admin.servisRutin.destroy', $servis->id_servis_rutin) }}">
+                                                <button type="button"
+                                                        class="font-medium text-red-600 hover:underline delete-button"
+                                                        data-url="{{ route('admin.servisRutin.destroy', $servis->id_servis_rutin) }}?page={{ $page }}&search={{ $search }}">
                                                     Hapus
                                                 </button>
                                             </form>
-                                        {{--  @else
-                                            <span class="text-gray-400">Detail</span>
-                                            <span class="text-gray-400">Edit</span>
-                                            <span class="text-gray-400">Hapus</span>  --}}
                                         @endif
                                     </div>                              
                                 </td>                                
@@ -103,16 +111,25 @@
                 </table>
             </div>
             <!-- Pagination -->
-            {{--  <div class="flex justify-center items-center py-4">
-                <div class="bg-white rounded-lg shadow-md p-2">
-                    {{ $servisRutins->appends(request()->query())->links('pagination::tailwind') }}
-                </div>
-            </div>  --}}
             <div class="mt-4">
                 {{ $servisRutins->appends(request()->query())->links() }}
             </div>
         </div>
     </div>
+
+    <style>
+        .swal2-cancel-gray {
+            background-color: #6c757d !important;
+            color: white !important;
+            border: none !important;
+        }
+        
+        .swal2-confirm-blue {
+            background-color: #3085d6 !important;
+            color: white !important;
+            border: none !important;
+        }
+    </style> 
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -135,17 +152,13 @@
                         confirmButtonColor: "#d33",
                         cancelButtonColor: "#3085d6",
                         confirmButtonText: "Ya, Hapus!",
-                        cancelButtonText: "Batal"
+                        cancelButtonText: "Batal",
+                        customClass: {
+                            confirmButton: "swal2-confirm-blue",
+                            cancelButton: "swal2-cancel-gray"
+                        }
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            {{--  Swal.fire({
-                                title: "Menghapus...",
-                                text: "Mohon tunggu sebentar",
-                                allowOutsideClick: false,
-                                didOpen: () => {
-                                    Swal.showLoading();
-                                }
-                            });  --}}
     
                             fetch(deleteUrl, {
                                 method: 'POST', // Tetap POST karena Laravel butuh method spoofing
