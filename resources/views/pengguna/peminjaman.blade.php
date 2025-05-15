@@ -123,7 +123,8 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center px-6 py-4">Data tidak tersedia.</td>
+                                <!-- <td colspan="8" class="text-center px-6 py-4">Data tidak tersedia.</td> -->
+                                <td colspan="6" class="text-sm text-gray-500 text-center py-4 bg-white">Data tidak ditemukan</td>
                             </tr>                        
                         @endforelse
                     </tbody>
