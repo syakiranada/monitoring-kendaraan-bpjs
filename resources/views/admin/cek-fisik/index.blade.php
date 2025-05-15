@@ -45,7 +45,7 @@
                 <tbody>
                     @forelse ($kendaraan as $item)
                         <tr class="bg-white border-b">
-                            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 {{ $item->merk }} {{ $item->tipe }}
                             </td>
                             <td class="px-6 py-4">{{ $item->plat_nomor }}</td>

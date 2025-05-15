@@ -15,125 +15,124 @@ use Illuminate\Support\Facades\Log;
 
 class IsiBBMController extends Controller
 {
-    // public function index(Request $request)
-    // {
-    //     $query = Kendaraan::select(
-    //             'kendaraan.*',
-    //             'bbm.id_bbm',
-    //             'bbm.tgl_isi',
-    //             'bbm.updated_at as bbm_updated_at'
-    //         )
-    //         ->leftJoin(DB::raw('(SELECT id_kendaraan, MAX(updated_at) as max_jam FROM bbm GROUP BY id_kendaraan) as latest'), function ($join) {
-    //             $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
-    //         })
-    //         ->leftJoin('bbm', function ($join) {
-    //             $join->on('kendaraan.id_kendaraan', '=', 'bbm.id_kendaraan')
-    //                 ->on('bbm.updated_at', '=', 'latest.max_jam');
-    //         })
-    //         ->where('kendaraan.status_ketersediaan', '=', 'Tersedia')
-    //         ->orderBy('bbm.tgl_isi', 'desc')
-    //         ->orderBy('bbm.updated_at', 'desc')
-    //         ->paginate(10);
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        $search = $request->input('search');
+        
+        // Langkah 1: Dapatkan daftar kendaraan yang tersedia
+        $availableVehicleIds = Kendaraan::where('status_ketersediaan', 'Tersedia')
+            ->pluck('id_kendaraan');
+        
+        // Langkah 2: Temukan pengisian BBM terbaru untuk setiap kendaraan
+        $latestBbmPerVehicle = DB::table('bbm')
+            ->select('id_kendaraan', DB::raw('MAX(id_bbm) as latest_bbm_id'))
+            ->whereIn('id_kendaraan', $availableVehicleIds)
+            ->where('user_id', $user->id)
+            ->groupBy('id_kendaraan');
+        
+        // Langkah 3: Gabungkan data kendaraan dengan pengisian BBM terbaru
+        $query = Kendaraan::select(
+                'kendaraan.*',
+                'bbm.id_bbm',
+                'bbm.tgl_isi',
+                'bbm.updated_at as bbm_updated_at',
+                'bbm.user_id'
+            )
+            ->leftJoinSub($latestBbmPerVehicle, 'latest_bbm', function ($join) {
+                $join->on('kendaraan.id_kendaraan', '=', 'latest_bbm.id_kendaraan');
+            })
+            ->leftJoin('bbm', function ($join) {
+                $join
+                ->on('bbm.id_bbm', '=', 'latest_bbm.latest_bbm_id');
+            })
+            ->where('kendaraan.status_ketersediaan', '=', 'Tersedia');
 
-    //     return view('admin.pengisianBBM', [
-    //         'kendaraanTersedia' => Kendaraan::where('status_ketersediaan', 'Tersedia')->get(),
-    //         'pengisianBBMs' => $query
-    //     ]);
-    // }
+        if (!empty($search)) {
+            // Logika pencarian tanggal
+            if (preg_match('/^\d{4}$/', $search)) { // Hanya tahun
+                $query->whereYear('bbm.tgl_isi', $search);
+            } elseif (preg_match('/^\d{2}$/', $search)) { // Hanya bulan atau tanggal
+                if (strlen($search) == 2 && $search <= 12) { // Asumsikan bulan
+                    $query->whereMonth('bbm.tgl_isi', $search);
+                } else { // Asumsikan tanggal
+                    $query->whereDay('bbm.tgl_isi', $search);
+                }
+            } elseif (preg_match('/^\d{2}-\d{4}$/', $search)) { // Bulan-Tahun
+                $parts = explode('-', $search);
+                $query->whereMonth('bbm.tgl_isi', $parts[0])->whereYear('bbm.tgl_isi', $parts[1]);
+            } elseif (preg_match('/^\d{4}-\d{2}$/', $search)) { // Tahun-Bulan
+                $parts = explode('-', $search);
+                $query->whereYear('bbm.tgl_isi', $parts[0])->whereMonth('bbm.tgl_isi', $parts[1]);
+            } elseif (preg_match('/^\d{2}-\d{2}-\d{4}$/', $search)) { // Tanggal-Bulan-Tahun (format lengkap)
+                try {
+                    $searchDate = Carbon::createFromFormat('d-m-Y', $search);
+                    $query->whereDate('bbm.tgl_isi', $searchDate);
+                } catch (\Exception $e) {
+                    Log::error("Error parsing search date:", ['search' => $search, 'error' => $e->getMessage()]);
+                }
+            } else {
+                // Logika pencarian teks lainnya
+                $searchTerms = explode(' ', strtolower($search));
+                $searchTerms = array_filter($searchTerms); // filter empty terms
 
-public function index(Request $request)
-{
-    $search = $request->input('search');
+                if (!empty($searchTerms)) {
+                    $query->where(function ($outerQuery) use ($searchTerms) {
+                        // Check if any term is a year format
+                        $yearTerm = null;
+                        foreach ($searchTerms as $index => $term) {
+                            if (preg_match('/^\d{4}$/', $term)) {
+                                $yearTerm = $term;
+                                unset($searchTerms[$index]); // Remove from regular search terms
+                                break;
+                            }
+                        }
 
-    $latestBbmSub = DB::table('bbm')
-    ->select('id_kendaraan', DB::raw('MAX(updated_at) as latest_updated'))
-    ->groupBy('id_kendaraan');
-
-    $query = Kendaraan::select(
-            'kendaraan.*',
-            'bbm.id_bbm',
-            'bbm.tgl_isi',
-            'bbm.updated_at as bbm_updated_at'
-        )
-        ->leftJoinSub($latestBbmSub, 'latest', function ($join) {
-            $join->on('kendaraan.id_kendaraan', '=', 'latest.id_kendaraan');
-        })
-        ->leftJoin('bbm', function ($join) {
-            $join->on('kendaraan.id_kendaraan', '=', 'bbm.id_kendaraan')
-                 ->on('bbm.updated_at', '=', 'latest.latest_updated');
-        })
-        ->where('kendaraan.status_ketersediaan', 'Tersedia');
-
-    if (!empty($search)) {
-        // Logika pencarian tanggal
-        if (preg_match('/^\d{4}$/', $search)) { // Hanya tahun
-            $query->whereYear('bbm.tgl_isi', $search);
-        } elseif (preg_match('/^\d{2}$/', $search)) { // Hanya bulan atau tanggal
-            if (strlen($search) == 2 && $search <= 12) { // Asumsikan bulan
-                $query->whereMonth('bbm.tgl_isi', $search);
-            } else { // Asumsikan tanggal
-                $query->whereDay('bbm.tgl_isi', $search);
-            }
-        } elseif (preg_match('/^\d{2}-\d{4}$/', $search)) { // Bulan-Tahun
-            $parts = explode('-', $search);
-            $query->whereMonth('bbm.tgl_isi', $parts[0])->whereYear('bbm.tgl_isi', $parts[1]);
-        } elseif (preg_match('/^\d{4}-\d{2}$/', $search)) { // Tahun-Bulan
-            $parts = explode('-', $search);
-            $query->whereYear('bbm.tgl_isi', $parts[0])->whereMonth('bbm.tgl_isi', $parts[1]);
-        } elseif (preg_match('/^\d{2}-\d{2}-\d{4}$/', $search)) { // Tanggal-Bulan-Tahun (format lengkap)
-            try {
-                $searchDate = Carbon::createFromFormat('d-m-Y', $search);
-                $query->whereDate('bbm.tgl_isi', $searchDate);
-            } catch (\Exception $e) {
-                Log::error("Error parsing search date:", ['search' => $search, 'error' => $e->getMessage()]);
-            }
-        } else {
-
-        if (strtolower($search) == 'tersedia') {
-            $query->where('kendaraan.status_ketersediaan', '=', 'Tersedia');
-        } elseif (strtolower($search) == 'tidak tersedia') {
-            $query->where('kendaraan.status_ketersediaan', '=', 'Tidak Tersedia');
-        } else {
-            // Logika pencarian teks lainnya
-            $searchTerms = explode(' ', strtolower($search));
-            $searchTerms = array_filter($searchTerms);
-
-            $query->where(function ($outerQuery) use ($searchTerms) {
-                foreach ($searchTerms as $term) {
-                    $outerQuery->where(function ($innerQuery) use ($term) {
-                        $innerQuery->orWhereRaw("LOWER(kendaraan.plat_nomor) LIKE ?", ["%$term%"])
-                            ->orWhereRaw("LOWER(kendaraan.merk) LIKE ?", ["%$term%"])
-                            ->orWhereRaw("LOWER(kendaraan.tipe) LIKE ?", ["%$term%"])
-                            ->orWhereRaw("LOWER(kendaraan.warna) LIKE ?", ["%$term%"])
-                            ->orWhereRaw("LOWER(kendaraan.jenis) LIKE ?", ["%$term%"])
-                            ->orWhereRaw("LOWER(kendaraan.aset) LIKE ?", ["%$term%"])
-                            ->orWhereRaw("LOWER(kendaraan.bahan_bakar) LIKE ?", ["%$term%"])
-                            ->orWhereRaw("LOWER(kendaraan.no_mesin) LIKE ?", ["%$term%"])
-                            ->orWhereRaw("LOWER(kendaraan.no_rangka) LIKE ?", ["%$term%"])
-                            ->orWhereRaw("CAST(kendaraan.kapasitas AS CHAR) LIKE ?", ["%$term%"])
-                            ->orWhereRaw("CAST(YEAR(kendaraan.tgl_pembelian) AS CHAR) LIKE ?", ["%$term%"])
-                            ->orWhereRaw("LOWER(kendaraan.frekuensi_servis) LIKE ?", ["%$term%"])
-                            ->orWhereRaw("CAST(YEAR(bbm.tgl_isi) AS CHAR) LIKE ?", ["%$term%"])
-                            ->orWhereRaw("LPAD(MONTH(bbm.tgl_isi), 2, '0') LIKE ?", ["%{$term}%"])
-                            ->orWhereRaw("LPAD(DAY(bbm.tgl_isi), 2, '0') LIKE ?", ["%{$term}%"]);
+                        if ($yearTerm) {
+                            $outerQuery->whereYear('bbm.tgl_isi', $yearTerm);
+                        }
+                        
+                        // Continue with regular text search for remaining terms
+                        foreach ($searchTerms as $term) {
+                            $outerQuery->where(function ($innerQuery) use ($term) {
+                                // OR antar kolom
+                                $innerQuery->orWhereRaw("LOWER(kendaraan.plat_nomor) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.merk) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.tipe) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.warna) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.jenis) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.aset) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.bahan_bakar) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.no_mesin) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.no_rangka) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("CAST(kendaraan.kapasitas AS CHAR) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("CAST(YEAR(kendaraan.tgl_pembelian) AS CHAR) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.frekuensi_servis) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("CAST(YEAR(bbm.tgl_isi) AS CHAR) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LPAD(MONTH(bbm.tgl_isi), 2, '0') LIKE ?", ["%{$term}%"])
+                                    ->orWhereRaw("LPAD(DAY(bbm.tgl_isi), 2, '0') LIKE ?", ["%{$term}%"]);
+                            });
+                        }
                     });
                 }
-            });
-                       
+            }
         }
+
+        // Mengurutkan berdasarkan id kendaraan untuk memastikan entri unik
+        // Dan kemudian berdasarkan tanggal pengisisan untuk mendapatkan yang terbaru
+        $pengisianBBMs = $query
+            // ->orderBy('kendaraan.id_kendaraan')
+            ->orderBy('bbm.tgl_isi', 'desc')
+            ->orderBy('bbm.updated_at', 'desc')
+            ->paginate(10)
+            ->appends(['search' => $search]);
+
+        return view('admin.pengisianBBM', [
+            'kendaraanTersedia' => Kendaraan::where('status_ketersediaan', 'Tersedia')->get(),
+            'pengisianBBMs' => $pengisianBBMs
+        ]);
     }
-}
 
-    $pengisianBBMs = $query->orderBy('kendaraan.id_kendaraan', 'asc')
-        ->paginate(10)
-        ->appends(['search' => $search]);
-
-    return view('admin.pengisianBBM', [
-        'kendaraanTersedia' => Kendaraan::where('status_ketersediaan', 'Tersedia')->get(),
-        'pengisianBBMs' => $pengisianBBMs
-    ]);
-}
-    
     public function create()
     {
         $kendaraan = Kendaraan::all();

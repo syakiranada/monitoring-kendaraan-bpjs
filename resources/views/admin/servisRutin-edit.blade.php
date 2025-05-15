@@ -1,5 +1,5 @@
 <x-app-layout>
-    <a href="{{  url()->previous()  }}" class="flex items-center text-blue-600 font-semibold hover:underline mb-5">
+    <a href="{{ route('admin.servisRutin') }}" class="flex items-center text-blue-600 font-semibold hover:underline mb-5">
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
         </svg>
@@ -9,13 +9,13 @@
             <!-- Main Content -->
             <div class="w-4/5">
                 <div class="bg-white p-8 rounded shadow-md">
-                <h1 class="text-3xl font-bold mb-8 text-center">Form Edit Servis Rutin Kendaraan</h1>
+                <h1 class="text-2xl font-bold mb-6 text-center">Form Edit Servis Rutin Kendaraan</h1>
                     <form id="serviceForm" action="{{ route('admin.servisRutin.update', $servis->id_servis_rutin) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
-                                <label class="block text-gray-700">Merk dan Tipe Kendaraan</label>
+                                <label class="block text-sm font-medium text-gray-700">Merk dan Tipe Kendaraan</label>
                                 <input type="text" id="merkTipe" name="merk_tipe" 
                                        class="w-full p-2 border border-gray-300 rounded bg-gray-100" 
                                        readonly 
@@ -23,24 +23,25 @@
                                 <input type="hidden" id="id_kendaraan" name="id_kendaraan" value="{{ $servis->id_kendaraan }}">
                             </div>
                             <div>
-                                <label class="block text-gray-700">Nomor Plat</label>
+                                <label class="block text-sm font-medium text-gray-700">Nomor Plat</label>
                                 <input type="text" id="nomorPlat" name="plat_nomor" class="w-full p-2 border border-gray-300 rounded bg-gray-100" 
                                        readonly value="{{ $servis->kendaraan->plat_nomor }}">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
-                                <label class="block text-gray-700">Jadwal Servis</label>
+                                <label class="block text-sm font-medium text-gray-700">Jadwal Servis</label>
                                 <input type="date" id="jadwalServis" name="tgl_servis" class="w-full p-2 border border-gray-300 rounded" 
                                        value="{{ $servis->tgl_servis_selanjutnya }}" readonly>
                             </div>
                             <div>
-                                <label class="block text-gray-700">Tanggal Servis Realtime</label>
+                                <label class="block text-sm font-medium text-gray-700">Tanggal Servis Realtime</label>
                                 <input type="date" id="tglServisReal" name="tgl_servis_real" class="w-full p-2 border border-gray-300 rounded" 
-                                       value="{{ $servis->tgl_servis_real ?? '' }}" max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" required>
+                                       value="{{ $servis->tgl_servis_real ?? '' }}" max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}">
+                                <p id="warning-tanggal" class="text-red-500 text-sm mt-1 hidden">Tanggal servis wajib diisi!</p>
                             </div>
                             <div>
-                                <label class="block text-gray-700">Tanggal Servis Selanjutnya</label>
+                                <label class="block text-sm font-medium text-gray-700">Tanggal Servis Selanjutnya</label>
                                 <input type="date" id="tglServisSelanjutnya" name="tgl_servis_selanjutnya"
                                        class="w-full p-2 border border-gray-300 rounded bg-gray-100"
                                        value="{{ $servis->tgl_servis_selanjutnya ?? '' }}"
@@ -49,30 +50,33 @@
                         </div>
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
-                                <label for="kilometer" class="block text-gray-700">Kilometer Penggunaan</label>
+                                <label for="kilometer" class="block text-sm font-medium text-gray-700">Kilometer Penggunaan</label>
                                 <input id="kilometer" type="text" name="kilometer"
                                        class="w-full p-2 border border-gray-300 rounded"
                                        value="{{ number_format($servis->kilometer, 0, '', '.') }}"
-                                       required data-raw="">
+                                       data-raw="">
                                 <div id="kilometerAlert" class="text-red-500 text-sm mt-1"></div>
+                                <p id="warning-kilometer" class="text-red-500 text-sm mt-1 hidden">Kilometer kendaraan wajib diisi!</p>
                             </div>
                         
                             <div>
-                                <label for="hargaInput" class="block text-gray-700">Jumlah Pembayaran</label>
+                                <label for="hargaInput" class="block text-sm font-medium text-gray-700">Jumlah Pembayaran</label>
                                 <div class="relative">
                                     <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">Rp</span>
                                     <input id="hargaInput" type="text" name="harga"
                                            class="w-full pl-10 p-2 border border-gray-300 rounded"
                                            value="{{ number_format($servis->harga, 0, '', '.') }}"
-                                           required data-raw="">
+                                           data-raw="">
                                 </div>
                                 <div id="hargaAlert" class="text-red-500 text-sm mt-1"></div>
+                                <p id="warning-harga" class="text-red-500 text-sm mt-1 hidden">Jumlah pembayaran wajib diisi!</p>
                             </div>
                         </div>                        
                         <div class="mb-4">
-                            <label class="block text-gray-700">Lokasi Servis</label>
+                            <label class="block text-sm font-medium text-gray-700">Lokasi Servis</label>
                             <input type="text" name="lokasi" class="w-full p-2 border border-gray-300 rounded" 
-                                   value="{{ $servis->lokasi ?? '' }}" required>
+                                   value="{{ $servis->lokasi ?? '' }}">
+                            <p id="warning-lokasi" class="text-red-500 text-sm mt-1 hidden">Lokasi servis wajib diisi!</p>
                         </div>
                         <div class="mb-6 flex justify-start space-x-4">
                             <div class="mb-4">
@@ -91,7 +95,10 @@
                                         <a href="#" id="removeFileBuktiBayar" class="hidden text-red-600 font-medium text-sm mt-2 hover:underline text-center">Remove</a>
                                     @endif
                                 </div>
+                                <p id="warning-bukti-bayar" class="text-red-500 text-sm mt-1 hidden">Bukti pembayaran wajib diunggah!</p>
+                                <p id="warning-bukti-bayar-2mb" class="text-red-500 text-sm mt-1 hidden">Bukti pembayaran melebihi 2MB!</p>
                             </div>
+
                             <div class="h-20 bg-gray-300" style="width: 0.5px;"></div>
                             <div class="mb-4">
                                 <p class="font-medium text-gray-700">Image requirements:</p>
@@ -103,13 +110,26 @@
                             </div>
                         </div>
                         <div class="flex justify-end">
-                            {{--  <button type="button" onclick="history.back()" class="bg-red-500 text-white px-4 py-2 rounded mr-2">Batal</button>  --}}
                             <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Simpan Perubahan</button>
                         </div>                        
                     </form>
                 </div>
             </div>
         </div>
+
+        <style>
+            .swal2-cancel-gray {
+                background-color: #6c757d !important;
+                color: white !important;
+                border: none !important;
+            }
+            
+            .swal2-confirm-blue {
+                background-color: #3085d6 !important;
+                color: white !important;
+                border: none !important;
+            }
+        </style> 
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
@@ -129,6 +149,7 @@
             }  
 
             document.addEventListener('DOMContentLoaded', function () {
+                const form = document.getElementById('serviceForm');
                 // Ambil tanggal hari ini
                 const today = new Date();
                 const year = today.getFullYear();
@@ -142,83 +163,216 @@
                 tglServisReal.setAttribute('max', todayStr);
                }
 
-                const bindValidation = (input, alertBox, maxLength, message) => {
-                    input.addEventListener('input', () => {
-                        if (input.value.length > maxLength) {
-                            alertBox.textContent = message;
-                        } else {
-                            alertBox.textContent = '';
-                        }
-                    });
-                };
-            
-                const bindNumericFormatter = (input, alertBox, maxVal, message) => {
-                    input.addEventListener('input', (e) => {
-                        let raw = e.target.value.replace(/\D/g, '');
-                        let num = parseInt(raw) || 0;
-            
-                        if (num > maxVal) {
-                            alertBox.textContent = message;
-                            num = maxVal;
-                        } else {
-                            alertBox.textContent = '';
-                        }
-            
-                        e.target.value = num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                    });
-                };
-            
-                // DOM elements
+                // Lokasi validation
                 const lokasiInput = document.querySelector('input[name="lokasi"]');
-                const deskripsiTextarea = document.querySelector('textarea[name="deskripsi"]');
-                const hargaInput = document.getElementById('hargaInput');
-                const kilometerInput = document.getElementById('kilometer');
-            
-                // Alerts
                 const lokasiAlert = document.createElement('div');
-                const deskripsiAlert = document.createElement('div');
-                lokasiAlert.className = deskripsiAlert.className = 'text-red-500 text-sm mt-1';
-                lokasiInput?.parentNode.insertBefore(lokasiAlert, lokasiInput.nextSibling);
-                deskripsiTextarea?.parentNode.insertBefore(deskripsiAlert, deskripsiTextarea.nextSibling);
-            
-                // Bind text length validations
-                if (lokasiInput) bindValidation(lokasiInput, lokasiAlert, 100, 'Lokasi Servis tidak boleh lebih dari 100 karakter.');
-                if (deskripsiTextarea) bindValidation(deskripsiTextarea, deskripsiAlert, 200, 'Deskripsi Servis tidak boleh lebih dari 200 karakter.');
-            
-                // Bind numeric validations and formatters
-                bindNumericFormatter(hargaInput, document.getElementById('hargaAlert'), 1_000_000_000_000, 'Nominal melebihi batas maksimum Rp 1.000.000.000.000.');
-                bindNumericFormatter(kilometerInput, document.getElementById('kilometerAlert'), 999_999, 'Kilometer melebihi batas maksimum 999.999 km');            
+                lokasiAlert.className = 'text-red-500 text-sm mt-1';
+                if (lokasiInput) {
+                lokasiInput.parentNode.insertBefore(lokasiAlert, lokasiInput.nextSibling);
 
-                const form = document.getElementById('serviceForm');
-                if (form) {
-                    // Menambahkan fungsi validasi ukuran file
-                    function validateFileSize() {
-                        const fileInput = form.querySelector('input[type="file"]');
-                        if (fileInput && fileInput.files.length > 0) {
-                            const maxSize = 2 * 1024 * 1024;
-                            if (fileInput.files[0].size > maxSize) {
-                                return false;
-                            }
-                        }
-                        return true;
+                    lokasiInput.addEventListener('input', function () {
+                        lokasiAlert.textContent = lokasiInput.value.length > 100 ? 'Lokasi Servis tidak boleh lebih dari 100 karakter.' : '';
+                    });
+                }
+
+                // Harga input validation & formatting
+                const hargaInput = document.getElementById('hargaInput');
+                const hargaAlert = document.getElementById('hargaAlert');
+                const maxHarga = 1000000000000;
+                
+                if (hargaInput && hargaAlert) {
+                hargaInput.addEventListener('input', function (e) {
+                    const digitsOnly = e.target.value.replace(/\D/g, '');
+
+                    if (!digitsOnly) {
+                        e.target.value = '';
+                        hargaAlert.textContent = '';
+                        return;
                     }
-                    
-                    // Tambahkan event listener untuk form submission
-                    form.addEventListener('submit', function(event) {
-                        // Hentikan form submission terlebih dahulu
-                        event.preventDefault();
-                        
-                        // Validasi ukuran file
-                        if (!validateFileSize()) {
-                            Swal.fire({
-                                title: "Gagal!",
-                                text: "Ukuran file tidak boleh melebihi 2MB",
-                                icon: "error",
-                                confirmButtonColor: "#d33",
-                                confirmButtonText: "OK"
-                            });
+
+                    const value = Number(digitsOnly);
+
+                    if (value > maxHarga) {
+                        hargaAlert.textContent = 'Nominal melebihi batas maksimum Rp 1.000.000.000.000.';
+                    } else {
+                        hargaAlert.textContent = '';
+                    }
+
+                    // Format with thousand separators
+                    e.target.value = Math.min(value, maxHarga)
+                        .toString()
+                        .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                });
+                }
+
+                // Kilometer validation
+                const kilometerInput = document.getElementById('kilometer');
+                const kilometerAlert = document.getElementById('kilometerAlert');
+                const maxKilometer = 999999;
+                
+                if (kilometerInput && kilometerAlert) {
+                    kilometerInput.addEventListener('input', function (e) {
+                        const digitsOnly = e.target.value.replace(/\D/g, '');
+
+                        if (!digitsOnly) {
+                            e.target.value = '';
+                            kilometerAlert.textContent = '';
                             return;
                         }
+
+                        const value = Number(digitsOnly);
+            
+                        if (value > maxKilometer) {
+                        kilometerAlert.textContent = 'Kilometer melebihi batas maksimum 999.999 km.';
+                        } else {
+                        kilometerAlert.textContent = '';
+                    }
+            
+                        // Format with thousand separators
+                        e.target.value = Math.min(value, maxKilometer)
+                            .toString()
+                            .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                    });
+                }
+
+                // Required fields validation
+                const requiredFields = [
+                    { selector: 'input[name="tgl_servis_real"]', warningId: 'warning-tanggal' },
+                    { selector: 'input[name="harga"]', warningId: 'warning-harga' },
+                    { selector: 'input[name="lokasi"]', warningId: 'warning-lokasi' },
+                    { selector: 'input[name="kilometer"]', warningId: 'warning-kilometer' },
+                    { selector: 'input[name="bukti_bayar"]', warningId: 'warning-bukti-bayar' }
+                ];
+
+                // Setup validation for each required field
+                requiredFields.forEach(field => {
+                    const inputEl = document.querySelector(field.selector);
+                    const warningEl = document.getElementById(field.warningId);
+
+                    if (inputEl && warningEl) {
+                        // Initially hide all warnings
+                        warningEl.classList.add('hidden');
+                        
+                        // Setup input event listeners to hide warnings when users enter data
+                        inputEl.addEventListener('input', () => {
+                            if (inputEl.value.trim() !== '') {
+                                warningEl.classList.add('hidden');
+                            }
+                        });
+
+                        // For file inputs use change event
+                        if (inputEl.type === 'file') {
+                            inputEl.addEventListener('change', () => {
+                                if (inputEl.files.length > 0) {
+                                    warningEl.classList.add('hidden');
+                                }
+                            });
+                        }
+                    }
+                });
+
+                // Tanggal Servis validation
+                const tglServisInput = document.querySelector('input[name="tgl_servis_real"]'); 
+                const warningTanggal = document.getElementById('warning-tanggal');
+
+                if (tglServisInput && warningTanggal) {
+                    // Initially hide the warning
+                    warningTanggal.classList.add('hidden');
+                    
+                    tglServisInput.addEventListener('input', function () {
+                        if (tglServisInput.value.trim() !== '') {
+                            warningTanggal.classList.add('hidden');
+                        }
+                    });
+                }
+        
+                function validateSingleFile(input, warningId) {
+                    const warningElement = document.getElementById(warningId);
+                    
+                    if (!warningElement) return;
+                    
+                    if (input.files.length > 0) {
+                        const maxSize = 2 * 1024 * 1024;
+                        if (input.files[0].size > maxSize) {
+                                warningElement.classList.remove('hidden');
+                            input.value = '';
+                        } else {
+                                warningElement.classList.add('hidden');
+                        }
+                    }
+                }
+
+                const fotoBuktiBayar = document.getElementById('fotoInputBuktiBayar');
+                const sizeWarning = document.getElementById('warning-bukti-bayar-2mb');
+                const requiredWarning = document.getElementById('warning-bukti-bayar');
+                const uploadTextBuktiBayar = document.getElementById('uploadTextBuktiBayar');
+                const removeFileBuktiBayar = document.getElementById('removeFileBuktiBayar');
+
+                const MAX_SIZE = 2 * 1024 * 1024;
+
+                if (fotoBuktiBayar) {
+                    fotoBuktiBayar.addEventListener('change', function () {
+                        const file = this.files[0];
+                        const maxSize = 2 * 1024 * 1024;
+
+                        if (!file) {
+                            requiredWarning?.classList.remove('hidden');
+                            sizeWarning?.classList.add('hidden');
+                            uploadTextBuktiBayar.textContent = 'Upload Photo';
+                            removeFileBuktiBayar.classList.add('hidden');
+                            return;
+                        }
+
+                        // Tampilkan nama file dulu
+                        uploadTextBuktiBayar.textContent = shortenFileName(file.name);
+                        removeFileBuktiBayar.classList.remove('hidden');
+
+                        // Lalu validasi ukuran
+                        if (file.size > maxSize) {
+                            sizeWarning?.classList.remove('hidden');
+                            requiredWarning?.classList.add('hidden');
+                        } else {
+                            sizeWarning?.classList.add('hidden');
+                            requiredWarning?.classList.add('hidden');
+                        }
+                    });
+
+                    removeFileBuktiBayar.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        fotoBuktiBayar.value = '';
+                        uploadTextBuktiBayar.textContent = 'Upload Photo';
+                        sizeWarning?.classList.add('hidden');
+                        requiredWarning?.classList.remove('hidden');
+                        removeFileBuktiBayar.classList.add('hidden');
+                    });
+
+                    const buktiBayarLama = "{{ $servis->bukti_bayar ? basename($servis->bukti_bayar) : '' }}";
+                    if (buktiBayarLama) {
+                        uploadTextBuktiBayar.textContent = shortenFileName(buktiBayarLama, 15);
+                        removeFileBuktiBayar.classList.remove('hidden');
+                    }
+                }
+
+                if (form) {
+                    form.addEventListener('submit', function(event) {
+                        event.preventDefault();
+            
+                        // Check all required fields
+                        let valid = true;
+            
+                        requiredFields.forEach(field => {
+                            const inputEl = document.querySelector(field.selector);
+                            const warningEl = document.getElementById(field.warningId);
+                            
+                            if (inputEl && warningEl) {
+                                if (inputEl.value.trim() === '' || (inputEl.type === 'file' && inputEl.files.length === 0)) {
+                                    warningEl.classList.remove('hidden');
+                            valid = false;
+                        }
+                            }
+                        });
+
+                        if (!valid) return;
                         
                         // Konfirmasi edit data
                         Swal.fire({
@@ -230,18 +384,13 @@
                             confirmButtonColor: "#3085d6",
                             cancelButtonColor: "#d33",
                             confirmButtonText: "Ya, Ubah!",
-                            cancelButtonText: "Batal"
+                            cancelButtonText: "Batal",
+                            customClass: {
+                                confirmButton: "swal2-confirm-blue",
+                                cancelButton: "swal2-cancel-gray"
+                            }
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                {{--  // Tampilkan loading
-                                Swal.fire({
-                                    title: "Memproses...",
-                                    text: "Mohon tunggu sebentar",
-                                    allowOutsideClick: false,
-                                    didOpen: () => {
-                                        Swal.showLoading();
-                                    }
-                                });  --}}
                                 
                                 const formData = new FormData(form);
                                 formData.append('ajax', 'true');
@@ -432,49 +581,5 @@
                     alert('Terjadi kesalahan saat menghitung tanggal servis selanjutnya: ' + error.message);
                 }
             });
-    
-            document.addEventListener('DOMContentLoaded', function() {
-                const fotoInputBuktiBayar = document.getElementById('fotoInputBuktiBayar');
-                const uploadTextBuktiBayar = document.getElementById('uploadTextBuktiBayar');
-                const removeFileBuktiBayar = document.getElementById('removeFileBuktiBayar');
-                const removeInputBuktiBayar = document.getElementById('removeInputBuktiBayar'); // hidden input untuk backend
-            
-                fotoInputBuktiBayar.addEventListener('change', function () {
-                    if (this.files.length > 0) {
-                        uploadTextBuktiBayar.textContent = shortenFileName(this.files[0].name);
-                        removeFileBuktiBayar.classList.remove('hidden');
-                    }
-                });
-            
-                removeFileBuktiBayar.addEventListener('click', function (e) {
-                    e.preventDefault();
-            
-                    // Set input hidden untuk menandai penghapusan file di backend
-                    if (removeInputBuktiBayar) {
-                        removeInputBuktiBayar.value = '1';
-                    }
-            
-                    // Reset UI upload
-                    fotoInputBuktiBayar.value = '';
-                    uploadTextBuktiBayar.textContent = '{{ $servis->bukti_bayar ? "Upload File" : "Upload File" }}';
-                    removeFileBuktiBayar.classList.add('hidden');
-                });
-                
-                const buktiBayarLama = "{{ $servis->bukti_bayar ? basename($servis->bukti_bayar) : '' }}";
-                if (buktiBayarLama) {
-                    uploadTextBuktiBayar.textContent = shortenFileName(buktiBayarLama, 15);
-                    removeFileBuktiBayar.classList.remove('hidden');
-                }
-            });
-
-            {{--  document.getElementById('hargaInput').addEventListener('input', function (e) {
-                let value = e.target.value.replace(/\D/g, '');
-                e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            });
-
-            document.getElementById('kilometer').addEventListener('input', function (e) {
-                let value = e.target.value.replace(/\D/g, '');
-                e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            });  --}}
         </script>
 </x-app-layout>

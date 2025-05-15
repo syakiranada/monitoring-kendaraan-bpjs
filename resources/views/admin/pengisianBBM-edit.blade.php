@@ -1,5 +1,5 @@
 <x-app-layout>
-    <a href="{{  url()->previous()  }}" class="flex items-center text-blue-600 font-semibold hover:underline mb-5">
+    <a href="{{ route('admin.pengisianBBM') }}" class="flex items-center text-blue-600 font-semibold hover:underline mb-5">
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
         </svg>
@@ -7,21 +7,21 @@
     </a>
         <div class="flex justify-center">
             <div class="w-full max-w-lg bg-white p-8 rounded shadow-md">
-                <h1 class="text-3xl font-bold mb-6 text-center">Edit Pengisian BBM Kendaraan</h1>
+                <h1 class="text-2xl font-bold mb-6 text-center">Edit Pengisian BBM Kendaraan</h1>
                 <form id="bbmForm" action="{{ route('admin.pengisianBBM.update', $bbm->id_bbm) }}" method="POST">
                     @csrf
                     @method('PUT')
                     <div class="mb-4">
-                        <label class="block text-gray-700">Merk dan Tipe Kendaraan</label>
+                        <label class="block text-sm font-medium text-gray-700">Merk dan Tipe Kendaraan</label>
                         <input type="text" class="w-full p-2 border border-gray-300 rounded bg-gray-100" readonly value="{{ $bbm->kendaraan->merk . ' ' . $bbm->kendaraan->tipe }}">
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700">Nomor Plat</label>
+                        <label class="block text-sm font-medium text-gray-700">Nomor Plat</label>
                         <input type="text" class="w-full p-2 border border-gray-300 rounded bg-gray-100" readonly value="{{ $bbm->kendaraan->plat_nomor }}">
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700">Jenis BBM</label>
-                        <select name="jenis_bbm" class="w-full p-2 border border-gray-300 rounded" required>
+                        <label class="block text-sm font-medium text-gray-700">Jenis BBM</label>
+                        <select name="jenis_bbm" class="w-full p-2 border border-gray-300 rounded">
                             <option value="Pertalite" {{ $bbm->jenis_bbm == 'Pertalite' ? 'selected' : '' }}>Pertalite</option>
                             <option value="Pertamax" {{ $bbm->jenis_bbm == 'Pertamax' ? 'selected' : '' }}>Pertamax</option>
                             <option value="Pertamax Turbo" {{ $bbm->jenis_bbm == 'Pertamax Turbo' ? 'selected' : '' }}>Pertamax Turbo</option>
@@ -30,13 +30,15 @@
                             <option value="Solar" {{ $bbm->jenis_bbm == 'Solar' ? 'selected' : '' }}>Solar</option>
                             <option value="Bio Solar" {{ $bbm->jenis_bbm == 'Bio Solar' ? 'selected' : '' }}>Bio Solar</option>
                         </select>
+                        <p id="warning-jenis-bbm" class="text-red-500 text-sm mt-1 hidden">Jenis BBM wajib diisi!</p>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700">Tanggal Pengisian BBM</label>
-                        <input type="date" id="tglI  siBBM" name="tgl_isi" class="w-full p-2 border border-gray-300 rounded" value="{{ $bbm->tgl_isi }}" max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" required>
+                        <label class="block text-sm font-medium text-gray-700">Tanggal Pengisian BBM</label>
+                        <input type="date" id="tglI  siBBM" name="tgl_isi" class="w-full p-2 border border-gray-300 rounded" value="{{ $bbm->tgl_isi }}" max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}">
+                        <p id="warning-tanggal" class="text-red-500 text-sm mt-1 hidden">Tanggal pengisian BBM wajib diisi!</p>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700">Nominal</label>
+                        <label class="block text-sm font-medium text-gray-700">Nominal</label>
                         <div class="relative">
                             <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">Rp</span>
                             <input type="text" 
@@ -44,9 +46,10 @@
                                    name="nominal" 
                                    class="w-full pl-10 p-2 border border-gray-300 rounded"
                                    value="{{ number_format($bbm->nominal, 0, '', '.') }}" 
-                                   required>
+                                   >
                         </div>
                         <div id="nominalAlert" class="text-red-500 text-sm mt-1"></div>
+                        <p id="warning-nominal" class="text-red-500 text-sm mt-1 hidden">Nominal pengisian BBM wajib diisi!</p>
                     </div>    
                     <div class="flex justify-end">
                         {{--  <a href="{{ route('admin.pengisianBBM') }}" class="bg-gray-500 text-white px-4 py-2 rounded">Kembali</a>  --}}
@@ -56,68 +59,106 @@
             </div>
         </div>
 
+        <style>
+            .swal2-cancel-gray {
+                background-color: #6c757d !important;
+                color: white !important;
+                border: none !important;
+            }
+            
+            .swal2-confirm-blue {
+                background-color: #3085d6 !important;
+                color: white !important;
+                border: none !important;
+            }
+        </style>            
+
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const today = new Date();
-                const year = today.getFullYear();
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                const todayStr = year + '-' + month + '-' + day;
+            document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('bbmForm');
+            if (!form) return;
 
-                // Set atribut max pada input tanggal
-                const tglIsiBBM = document.getElementById('tglIsiBBM');
-                if (tglIsiBBM) {
-                tglIsiBBM.setAttribute('max', todayStr);
-               }
+            const jenisBBMSelect = form.querySelector('select[name="jenis_bbm"]');
+            const tanggalInput = form.querySelector('input[name="tgl_isi"]');
+            const nominalInput = document.getElementById('nominalInput');
+            const warningJenisBBM = document.getElementById('warning-jenis-bbm');
+            const warningTanggal = document.getElementById('warning-tanggal');
+            const warningNominal = document.getElementById('warning-nominal');
+            const nominalAlert = document.getElementById('nominalAlert');
 
-                const nominalInput = document.getElementById('nominalInput');
-                const nominalAlert = document.getElementById('nominalAlert');
-                const maxHarga = 1000000000000;
-                
-                nominalInput.addEventListener('input', function (e) {
-                    let rawValue = e.target.value.replace(/\D/g, '');
-                    let numericValue = parseInt(rawValue) || 0;
-                
-                    // Cek dan tampilkan alert
-                    if (numericValue > maxHarga) {
-                        nominalAlert.textContent = 'Nonimal melebihi batas maksimum Rp 1.000.000.000.000.';
-                        numericValue = maxHarga;
-                    } else {
-                        nominalAlert.textContent = '';
-                    }
-                
-                    // Format angka ribuan
-                    e.target.value = numericValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                });
+            const maxHarga = 1000000000000;
 
-                const form = document.getElementById('bbmForm');
-                if (form) {
-                    form.addEventListener('submit', function(event) {
-                        event.preventDefault(); // Mencegah form dikirim langsung
-            
-                        // Validasi ukuran file
-                        function validateFileSize() {
-                            const fileInput = form.querySelector('input[type="file"]');
-                            if (fileInput && fileInput.files.length > 0) {
-                                const maxSize = 2 * 1024 * 1024;
-                                if (fileInput.files[0].size > maxSize) {
-                                    return false;
-                                }
-                            }
-                            return true;
-                        }
-            
-                        if (!validateFileSize()) {
-                            Swal.fire({
-                                title: "Gagal!",
-                                text: "Ukuran file tidak boleh melebihi 2MB",
-                                icon: "error",
-                                confirmButtonColor: "#d33",
-                                confirmButtonText: "OK"
-                            });
-                            return;
-                        }
+            // Set max date for tanggal input
+            const today = new Date().toISOString().split("T")[0];
+            const tglIsiBBM = document.getElementById('tglIsiBBM');
+            if (tglIsiBBM) {
+                tglIsiBBM.setAttribute('max', today);
+            }
+
+            // Hide warnings on valid input
+            jenisBBMSelect?.addEventListener('change', function () {
+                if (jenisBBMSelect.value) {
+                    warningJenisBBM.classList.add('hidden');
+                }
+            });
+
+            tanggalInput?.addEventListener('input', function () {
+                if (tanggalInput.value) {
+                    warningTanggal.classList.add('hidden');
+                }
+            });
+
+            nominalInput?.addEventListener('input', function (e) {
+                const onlyDigits = e.target.value.replace(/\D/g, '');
+                
+                if (onlyDigits === '') {
+                    e.target.value = '';
+                    warningNominal.classList.remove('hidden');
+                    nominalAlert.textContent = '';
+                    return;
+                }
+
+                const valueNum = Number(onlyDigits);
+
+                if (valueNum > maxHarga) {
+                    nominalAlert.textContent = 'Nominal melebihi batas maksimum Rp 1.000.000.000.000.';
+                } else {
+                    nominalAlert.textContent = '';
+                }
+
+                // Format ribuan
+                e.target.value = Math.min(valueNum, maxHarga)
+                    .toString()
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+                // Hide warning if valid
+                if (valueNum > 0 && valueNum <= maxHarga) {
+                    warningNominal.classList.add('hidden');
+                }
+            });
+
+            // Form validation & confirmation
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                let isValid = true;
+
+                if (!jenisBBMSelect.value) {
+                    warningJenisBBM.classList.remove('hidden');
+                    isValid = false;
+                }
+
+                if (!tanggalInput.value) {
+                    warningTanggal.classList.remove('hidden');
+                    isValid = false;
+                }
+
+                if (!nominalInput.value.trim()) {
+                    warningNominal.classList.remove('hidden');
+                    isValid = false;
+                }
+
+                if (!isValid) return;
             
                         // Tampilkan konfirmasi
                         Swal.fire({
@@ -129,18 +170,13 @@
                             confirmButtonColor: "#3085d6",
                             cancelButtonColor: "#d33",
                             confirmButtonText: "Ya, Ubah!",
-                            cancelButtonText: "Batal"
+                            cancelButtonText: "Batal",
+                            customClass: {
+                                confirmButton: "swal2-confirm-blue",
+                                cancelButton: "swal2-cancel-gray"
+                            }
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                // Tampilkan loading
-                                {{--  Swal.fire({
-                                    title: "Memproses...",
-                                    text: "Mohon tunggu sebentar",
-                                    allowOutsideClick: false,
-                                    didOpen: () => {
-                                        Swal.showLoading();
-                                    }
-                                });  --}}
             
                                 const formData = new FormData(form);
                                 formData.append('_method', 'PUT');
@@ -191,7 +227,6 @@
                             }
                         });
                     });
-                }
             });            
         </script>
 
