@@ -1379,7 +1379,7 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 
                     Swal.fire({
                         title: "Konfirmasi",
-                        text: "Apakah Anda yakin ingin menyimpan perubahan data kendaraan ini?",
+                        text: "Apakah Anda yakin ingin menyimpan data kendaraan ini?",
                         icon: "warning",
                         showCancelButton: true,
                         confirmButtonColor: "#3085d6",
@@ -1392,7 +1392,7 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 
                             Swal.fire({
                                 title: "Sukses!",
-                                text: "Perubahan data kendaraan berhasil disimpan.",
+                                text: "Data kendaraan berhasil disimpan.",
                                 icon: "success",
                                 confirmButtonColor: "#3085d6",
                                 confirmButtonText: "OK"

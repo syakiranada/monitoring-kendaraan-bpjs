@@ -14,23 +14,23 @@
             </svg>
             Kembali
     </a>
-    <div class="container mx-auto p-6">
+    <div class="container mx-auto p-4">
         <!-- Judul Halaman -->
         <!-- <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Detail Peminjaman</h1> -->
-        
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">Detail Peminjaman</h1>
 
         <!-- Grid untuk Kartu Detail -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Kartu Detail Kendaraan -->
             <div class="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
-                <h5 class="mb-4 text-2xl font-bold text-black">
+                <h5 class="mb-4 text-lg font-bold text-black">
                 {{ $peminjaman->kendaraan->merk }} {{ $peminjaman->kendaraan->tipe }} - {{ $peminjaman->kendaraan->plat_nomor }}
                 </h5>
 
                 <!-- Grid untuk Detail Kendaraan -->
                 <div class="space-y-3">
                     <!-- Mulai Peminjaman -->
-                    <div class="flex flex-col sm:flex-row items-start detail-item w-full">
+                    <div class="flex flex-col sm:flex-row items-start detail-item w-full text-sm">
                         <p class="text-gray-700 sm:w-56 detail-label font-bold">Mulai Peminjaman</p>
                         <p class="text-gray-900 break-words sm:max-w-[calc(100%-14rem)]">
                             {{ \Carbon\Carbon::parse($peminjaman->tgl_mulai)->format('d-m-Y') }} 
@@ -40,20 +40,20 @@
                     </div>
 
                     <!-- Selesai -->
-                    <div class="flex flex-col sm:flex-row items-start detail-item w-full">
+                    <div class="flex flex-col sm:flex-row items-start detail-item w-full text-sm">
                         <p class="text-gray-700 sm:w-56 detail-label font-bold">Selesai Peminjaman</p>
                         <p class="text-gray-900 break-words sm:max-w-[calc(100%-14rem)]">{{ \Carbon\Carbon::parse($peminjaman->tgl_selesai)->format('d-m-Y') }} {{ \Carbon\Carbon::parse($peminjaman->jam_selesai)->format('H.i') }}</p>
                     </div>
 
 
                     <!-- Tujuan -->
-                    <div class="flex flex-col sm:flex-row items-start detail-item w-full">
+                    <div class="flex flex-col sm:flex-row items-start detail-item w-full text-sm">
                         <p class="text-gray-700 sm:w-56 detail-label font-bold">Tujuan</p>
                         <p class="text-gray-900 break-words sm:max-w-[calc(100%-14rem)]">{{ $peminjaman->tujuan }}</p>
                     </div>
 
                     <!-- Waktu pengembalian -->
-                    <div class="flex flex-col sm:flex-row items-start detail-item w-full">
+                    <div class="flex flex-col sm:flex-row items-start detail-item w-full text-sm">
                         <p class="text-gray-700 sm:w-56 detail-label font-bold">Waktu Pengembalian Real</p>
                         <p class="text-gray-900 break-words sm:max-w-[calc(100%-14rem)]">
                             {{ $peminjaman->tgl_kembali_real ? \Carbon\Carbon::parse($peminjaman->tgl_kembali_real)->format('d-m-Y') : '-' }}
@@ -62,19 +62,19 @@
                     </div>
 
                     <!-- Kondisi -->
-                    <div class="flex flex-col sm:flex-row items-start detail-item w-full">
+                    <div class="flex flex-col sm:flex-row items-start detail-item w-full text-sm">
                         <p class="text-gray-700 sm:w-56 detail-label font-bold">Kondisi Kendaraan</p>
                         <p class="text-gray-900 break-words sm:max-w-[calc(100%-14rem)]">{{ $peminjaman->kondisi_kendaraan ?? '-' }}</p>
                     </div>
 
                     <!-- Insiden -->
-                    <div class="flex flex-col sm:flex-row items-start detail-item w-full">
+                    <div class="flex flex-col sm:flex-row items-start detail-item w-full text-sm">
                         <p class="text-gray-700 sm:w-56 detail-label font-bold">Detail Insiden</p>
                         <p class="text-gray-900 break-words sm:max-w-[calc(100%-14rem)]">{{ $peminjaman->detail_insiden ?? '-' }}</p>
                     </div>
 
                     <!-- Status Pinjam -->
-                    <div class="flex flex-col sm:flex-row items-start detail-item w-full">
+                    <div class="flex flex-col sm:flex-row items-start detail-item w-full text-sm">
                         <p class="text-gray-700 sm:w-56 detail-label font-bold">Status Pinjam</p>
                         <p class="text-gray-900 sm:max-w-[calc(100%-14rem)] uppercase">
                             <span class="
