@@ -1,4 +1,4 @@
-<nav class="bg-[#3575B8] shadow-md">
+<nav x-data="{ open: false }" class="bg-[#3575B8] shadow-md">
     {{--  <nav style="background-color: #3575B8" class="fixed top-0 transition-all duration-300 w-full z-50 shadow-md">  --}}
 
     <!-- Primary Navigation Menu -->
@@ -70,14 +70,8 @@
 
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('beranda')" :active="request()->routeIs('beranda')">
-                {{ __('Beranda') }}
-            </x-responsive-nav-link>
-        </div>
-
         <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200">
+        <div class="pt-4 pb-1 border-t border-gray-200 bg-white">
             <div class="px-4">
                 <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
                 <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
