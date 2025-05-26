@@ -13,181 +13,183 @@ use Illuminate\Support\Facades\Storage;
 class PajakController extends Controller
 { 
     public function index(Request $request)
-    {
-        $search = $request->input('search');
-        $statusFilter = $request->input('status');
-        
-        // Cek apakah pencarian mengandung kata kunci status
-        $statusKeywords = [
-            'JATUH TEMPO' => ['jatuh tempo', 'jatuhtempo', 'jatuh', 'tempo'],
-            'MENDEKATI JATUH TEMPO' => ['mendekati jatuh tempo', 'mendekati', 'dekat', 'hampir', 'mendekat'],
-            'BELUM ADA DATA PAJAK' => ['belum ada data', 'belum', 'data', 'pajak', 'tidak ada', 'kosong'],
-            'SUDAH DIBAYAR' => ['sudah bayar', 'sudah', 'bayar', 'dibayar', 'lunas', 'terbayar', 'byr']
-        ];
-        
-        // Ekstrak kata kunci status dari pencarian jika ada
+{
+    $search = $request->input('search');
+    $statusFilter = $request->input('status');
+    
+    // Kata kunci status yang bisa dicari
+    $statusKeywords = [
+        'JATUH TEMPO' => ['jatuh tempo', 'jatuhtempo', 'jatuh', 'tempo', 'overdue'],
+        'MENDEKATI JATUH TEMPO' => ['mendekati jatuh tempo', 'mendekati', 'dekat', 'hampir', 'mendekat', 'akan jatuh tempo'],
+        'BELUM ADA DATA PAJAK' => ['belum ada data', 'belum', 'tidak ada data', 'kosong', 'no data'],
+        'SUDAH DIBAYAR' => ['sudah bayar', 'sudah dibayar', 'bayar', 'dibayar', 'lunas', 'terbayar', 'paid']
+    ];
+    
+    // Deteksi status dari pencarian
+    $detectedStatus = null;
+    $cleanSearch = $search;
+    
+    if (!empty($search)) {
         $searchLower = strtolower($search);
-        $detectedStatus = null;
-        $cleanSearch = $search;
         
-        // Mencari frasa lengkap terlebih dahulu (seperti "jatuh tempo") 
-        // sebelum mencari kata-kata individual
+        // Cari kata kunci status (prioritas frasa lengkap dulu)
         foreach ($statusKeywords as $status => $keywords) {
+            // Urutkan keywords berdasarkan panjang (terpanjang dulu)
+            usort($keywords, function($a, $b) {
+                return strlen($b) - strlen($a);
+            });
+            
             foreach ($keywords as $keyword) {
                 if (stripos($searchLower, $keyword) !== false) {
                     $detectedStatus = $status;
                     // Hapus kata kunci status dari pencarian
-                    $cleanSearch = trim(preg_replace('/\b'.preg_quote($keyword, '/').'\b/ui', '', $search));
-                    
-                    // Hapus spasi ganda yang mungkin dihasilkan
+                    $cleanSearch = trim(str_ireplace($keyword, '', $search));
+                    // Bersihkan spasi berlebih
                     $cleanSearch = preg_replace('/\s+/', ' ', $cleanSearch);
                     break 2;
                 }
             }
         }
-        
-        // Base query dengan join tabel yang diperlukan di awal
-        $dataKendaraanQuery = Kendaraan::select(
-            'kendaraan.*',
-            'pajak.id_pajak',
-            'pajak.user_id',
-            'pajak.tahun',
-            'pajak.tgl_bayar',
-            'pajak.tgl_jatuh_tempo',
-            'pajak.bukti_bayar_pajak',
-            'pajak.nominal',
-            'pajak.biaya_pajak_lain',
-            DB::raw('DATE_ADD(pajak.tgl_jatuh_tempo, INTERVAL 1 YEAR) as tgl_jatuh_tempo_seharusnya')
-        )
-        ->leftJoin(DB::raw('
-            (SELECT id_kendaraan, MAX(tgl_bayar) as max_tgl_bayar 
-            FROM pajak 
-            GROUP BY id_kendaraan) as latest_pajak
-        '), function ($join) {
-            $join->on('kendaraan.id_kendaraan', '=', 'latest_pajak.id_kendaraan');
-        })
-        ->leftJoin('pajak', function ($join) {
-            $join->on('kendaraan.id_kendaraan', '=', 'pajak.id_kendaraan')
-                ->on('pajak.tgl_bayar', '=', 'latest_pajak.max_tgl_bayar');
-        })
-        ->where('kendaraan.aset', '!=', 'lelang');
-        
-        // Pencarian untuk data kendaraan (menggunakan cleanSearch tanpa kata kunci status)
-        if (!empty($cleanSearch)) {
-            $keywords = preg_split('/\s+/', $cleanSearch); // Pecah pencarian berdasarkan spasi
-            
-            $dataKendaraanQuery->where(function($q) use ($keywords) {
-                foreach ($keywords as $word) {
-                    if (!empty($word)) { // Skip kata kosong
-                        $q->where(function($q2) use ($word) {
-                            // Pencarian dasar
-                            $q2->where('kendaraan.merk', 'like', "%{$word}%")
-                            ->orWhere('kendaraan.tipe', 'like', "%{$word}%")
-                            ->orWhere('kendaraan.plat_nomor', 'like', "%{$word}%");
-                            
-                            // Pencarian numerik
-                            $numericWord = preg_replace('/[.,]/', '', $word);
-                            if (is_numeric($numericWord)) {
-                                $q2->orWhere('pajak.tahun', 'like', "%{$numericWord}%")
-                                ->orWhere('pajak.nominal', 'like', "%{$numericWord}%")
-                                ->orWhere('pajak.biaya_pajak_lain', 'like', "%{$numericWord}%");
-                            }
-                            
-                            // Pencarian tanggal dengan format yang berbeda
-                            $q2->orWhereRaw('DATE_FORMAT(pajak.tgl_bayar, "%d-%m-%Y") like ?', ["%{$word}%"])
-                            ->orWhereRaw('DATE_FORMAT(pajak.tgl_bayar, "%d/%m/%Y") like ?', ["%{$word}%"])
-                            ->orWhereRaw('DATE_FORMAT(pajak.tgl_bayar, "%Y") like ?', ["%{$word}%"])
-                            ->orWhereRaw('DATE_FORMAT(pajak.tgl_bayar, "%m") like ?', ["%{$word}%"])
-                            ->orWhereRaw('DATE_FORMAT(pajak.tgl_bayar, "%d") like ?', ["%{$word}%"]);
-                            
-                            $q2->orWhereRaw('DATE_FORMAT(pajak.tgl_jatuh_tempo, "%d-%m-%Y") like ?', ["%{$word}%"])
-                            ->orWhereRaw('DATE_FORMAT(pajak.tgl_jatuh_tempo, "%d/%m/%Y") like ?', ["%{$word}%"])
-                            ->orWhereRaw('DATE_FORMAT(pajak.tgl_jatuh_tempo, "%Y") like ?', ["%{$word}%"])
-                            ->orWhereRaw('DATE_FORMAT(pajak.tgl_jatuh_tempo, "%m") like ?', ["%{$word}%"])
-                            ->orWhereRaw('DATE_FORMAT(pajak.tgl_jatuh_tempo, "%d") like ?', ["%{$word}%"]);
-                            
-                            $q2->orWhereRaw('DATE_FORMAT(DATE_ADD(pajak.tgl_jatuh_tempo, INTERVAL 1 YEAR), "%d-%m-%Y") like ?', ["%{$word}%"])
-                            ->orWhereRaw('DATE_FORMAT(DATE_ADD(pajak.tgl_jatuh_tempo, INTERVAL 1 YEAR), "%d/%m/%Y") like ?', ["%{$word}%"])
-                            ->orWhereRaw('DATE_FORMAT(DATE_ADD(pajak.tgl_jatuh_tempo, INTERVAL 1 YEAR), "%Y") like ?', ["%{$word}%"])
-                            ->orWhereRaw('DATE_FORMAT(DATE_ADD(pajak.tgl_jatuh_tempo, INTERVAL 1 YEAR), "%m") like ?', ["%{$word}%"])
-                            ->orWhereRaw('DATE_FORMAT(DATE_ADD(pajak.tgl_jatuh_tempo, INTERVAL 1 YEAR), "%d") like ?', ["%{$word}%"]);
-                        });
-                    }
-                }
-            });
-        } else if (!empty($detectedStatus) && empty($cleanSearch)) {
-            // Jika hanya ada kata kunci status tanpa kata kunci pencarian lainnya,
-            // ambil semua data agar bisa difilter berdasarkan status nanti
-        }
-        
-        // Group by untuk menghindari duplikasi
-        $dataKendaraanQuery->groupBy(
-            'kendaraan.id_kendaraan',
-            'pajak.id_pajak',
-            'pajak.user_id',
-            'pajak.tahun',
-            'pajak.tgl_bayar',
-            'pajak.tgl_jatuh_tempo',
-            'pajak.bukti_bayar_pajak',
-            'pajak.nominal',
-            'pajak.biaya_pajak_lain'
-        );
-        
-        // Dapatkan data
-        $dataKendaraan = $dataKendaraanQuery->get();
-        
-        // Menentukan status kendaraan
-        $today = now();
-        foreach ($dataKendaraan as $item) {
-            $dueDate = $item->tgl_jatuh_tempo_seharusnya ? \Carbon\Carbon::parse($item->tgl_jatuh_tempo_seharusnya) : null;
-
-            if (!$dueDate) {
-                $item->status = 'BELUM ADA DATA PAJAK';
-            } elseif ($today->diffInDays($dueDate, false) <= 0) { 
-                $item->status = 'JATUH TEMPO';
-            } elseif ($today->diffInDays($dueDate, false) <= 30) {
-                $item->status = 'MENDEKATI JATUH TEMPO';
-            } else {
-                $item->status = 'SUDAH DIBAYAR';
-            }
-        }
-
-        // Filter berdasarkan status yang terdeteksi dari pencarian
-        if ($detectedStatus) {
-            $dataKendaraan = $dataKendaraan->filter(function ($item) use ($detectedStatus) {
-                return $item->status == $detectedStatus;
-            });
-        }
-        
-        // Filter berdasarkan status dari dropdown jika ada
-        if (!empty($statusFilter)) {
-            $dataKendaraan = $dataKendaraan->filter(function ($item) use ($statusFilter) {
-                return strtolower($item->status) == strtolower($statusFilter);
-            });
-        }
-        
-        // Debug: Tambahkan debugging khusus untuk pencarian tertentu
-        if (stripos($search, 'toyota') !== false && stripos($search, 'avanza') !== false && 
-            stripos($search, 'jatuh tempo') !== false) {
-            
-            // Cari "toyota avanza" tanpa filter status dulu
-            $debugQuery = Kendaraan::select('kendaraan.*')->where(function($q) {
-                $q->where('kendaraan.merk', 'like', '%toyota%')
-                ->orWhere('kendaraan.tipe', 'like', '%avanza%');
-            })->get();
-        }
-        
-        // Paginasi hasil
-        $dataKendaraan = new \Illuminate\Pagination\LengthAwarePaginator(
-            $dataKendaraan->forPage($request->page ?? 1, 10), 
-            $dataKendaraan->count(), 
-            10, 
-            $request->page ?? 1, 
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
-
-        return view('admin.pajak.daftar_kendaraan_pajak', compact('dataKendaraan', 'search', 'statusFilter'));
     }
+    
+    // Base query dengan join tabel yang diperlukan
+    $dataKendaraanQuery = Kendaraan::select(
+        'kendaraan.*',
+        'pajak.id_pajak',
+        'pajak.user_id',
+        'pajak.tahun',
+        'pajak.tgl_bayar',
+        'pajak.tgl_jatuh_tempo',
+        'pajak.bukti_bayar_pajak',
+        'pajak.nominal',
+        'pajak.biaya_pajak_lain',
+        DB::raw('DATE_ADD(pajak.tgl_jatuh_tempo, INTERVAL 1 YEAR) as tgl_jatuh_tempo_seharusnya')
+    )
+    ->leftJoin(DB::raw('
+        (SELECT id_kendaraan, MAX(tgl_bayar) as max_tgl_bayar 
+        FROM pajak 
+        GROUP BY id_kendaraan) as latest_pajak
+    '), function ($join) {
+        $join->on('kendaraan.id_kendaraan', '=', 'latest_pajak.id_kendaraan');
+    })
+    ->leftJoin('pajak', function ($join) {
+        $join->on('kendaraan.id_kendaraan', '=', 'pajak.id_kendaraan')
+            ->on('pajak.tgl_bayar', '=', 'latest_pajak.max_tgl_bayar');
+    })
+    ->where('kendaraan.aset', '!=', 'lelang');
+    
+    // Pencarian untuk data kendaraan (tanpa kata kunci status)
+    if (!empty($cleanSearch)) {
+        $keywords = array_filter(preg_split('/\s+/', $cleanSearch)); // Hapus kata kosong
+        
+        $dataKendaraanQuery->where(function($q) use ($keywords) {
+            foreach ($keywords as $word) {
+                $q->where(function($q2) use ($word) {
+                    // Pencarian dasar
+                    $q2->where('kendaraan.merk', 'like', "%{$word}%")
+                       ->orWhere('kendaraan.tipe', 'like', "%{$word}%")
+                       ->orWhere('kendaraan.plat_nomor', 'like', "%{$word}%");
+                    
+                    // Pencarian numerik
+                    $numericWord = preg_replace('/[.,\s]/', '', $word);
+                    if (is_numeric($numericWord)) {
+                        $q2->orWhere('pajak.tahun', 'like', "%{$numericWord}%")
+                           ->orWhere('pajak.nominal', 'like', "%{$numericWord}%")
+                           ->orWhere('pajak.biaya_pajak_lain', 'like', "%{$numericWord}%");
+                    }
+                    
+                    // Pencarian tanggal
+                    $q2->orWhereRaw('DATE_FORMAT(pajak.tgl_bayar, "%d-%m-%Y") like ?', ["%{$word}%"])
+                       ->orWhereRaw('DATE_FORMAT(pajak.tgl_bayar, "%d/%m/%Y") like ?', ["%{$word}%"])
+                       ->orWhereRaw('DATE_FORMAT(pajak.tgl_bayar, "%Y") like ?', ["%{$word}%"])
+                       ->orWhereRaw('DATE_FORMAT(pajak.tgl_jatuh_tempo, "%d-%m-%Y") like ?', ["%{$word}%"])
+                       ->orWhereRaw('DATE_FORMAT(pajak.tgl_jatuh_tempo, "%d/%m/%Y") like ?', ["%{$word}%"])
+                       ->orWhereRaw('DATE_FORMAT(pajak.tgl_jatuh_tempo, "%Y") like ?', ["%{$word}%"])
+                       ->orWhereRaw('DATE_FORMAT(DATE_ADD(pajak.tgl_jatuh_tempo, INTERVAL 1 YEAR), "%d-%m-%Y") like ?', ["%{$word}%"])
+                       ->orWhereRaw('DATE_FORMAT(DATE_ADD(pajak.tgl_jatuh_tempo, INTERVAL 1 YEAR), "%d/%m/%Y") like ?', ["%{$word}%"])
+                       ->orWhereRaw('DATE_FORMAT(DATE_ADD(pajak.tgl_jatuh_tempo, INTERVAL 1 YEAR), "%Y") like ?', ["%{$word}%"]);
+                });
+            }
+        });
+    }
+    
+    // Group by untuk menghindari duplikasi
+    $dataKendaraanQuery->groupBy([
+        'kendaraan.id_kendaraan',
+        'kendaraan.merk',
+        'kendaraan.tipe',
+        'kendaraan.plat_nomor',
+        'kendaraan.aset',
+        'pajak.id_pajak',
+        'pajak.user_id',
+        'pajak.tahun',
+        'pajak.tgl_bayar',
+        'pajak.tgl_jatuh_tempo',
+        'pajak.bukti_bayar_pajak',
+        'pajak.nominal',
+        'pajak.biaya_pajak_lain'
+    ]);
+    
+    // Dapatkan data dari database
+    $dataKendaraan = $dataKendaraanQuery->get();
+    
+    // Hitung status untuk setiap kendaraan
+    $today = now();
+    foreach ($dataKendaraan as $item) {
+        $dueDate = $item->tgl_jatuh_tempo_seharusnya ? 
+                   \Carbon\Carbon::parse($item->tgl_jatuh_tempo_seharusnya) : null;
+
+        if (!$dueDate || !$item->tgl_jatuh_tempo) {
+            $item->status = 'BELUM ADA DATA PAJAK';
+        } elseif ($today->gt($dueDate)) { 
+            // Sudah lewat jatuh tempo
+            $item->status = 'JATUH TEMPO';
+        } elseif ($today->diffInDays($dueDate, false) <= 30) {
+            // Dalam 30 hari ke depan
+            $item->status = 'MENDEKATI JATUH TEMPO';
+        } else {
+            // Masih lama
+            $item->status = 'SUDAH DIBAYAR';
+        }
+    }
+
+    // Filter berdasarkan status yang terdeteksi dari pencarian
+    if ($detectedStatus) {
+        $dataKendaraan = $dataKendaraan->filter(function ($item) use ($detectedStatus) {
+            return $item->status == $detectedStatus;
+        });
+    }
+    
+    // Filter berdasarkan status dari dropdown
+    if (!empty($statusFilter)) {
+        $dataKendaraan = $dataKendaraan->filter(function ($item) use ($statusFilter) {
+            return strtolower($item->status) == strtolower($statusFilter);
+        });
+    }
+    
+    // Convert collection ke array untuk paginasi
+    $dataKendaraanArray = $dataKendaraan->values();
+    
+    // Paginasi hasil
+    $perPage = 10;
+    $currentPage = $request->input('page', 1);
+    $offset = ($currentPage - 1) * $perPage;
+    
+    $paginatedItems = $dataKendaraanArray->slice($offset, $perPage);
+    
+    $dataKendaraan = new \Illuminate\Pagination\LengthAwarePaginator(
+        $paginatedItems, 
+        $dataKendaraanArray->count(), 
+        $perPage, 
+        $currentPage, 
+        [
+            'path' => $request->url(), 
+            'query' => $request->query()
+        ]
+    );
+
+    return view('admin.pajak.daftar_kendaraan_pajak', compact('dataKendaraan', 'search', 'statusFilter'));
+}
 
     public function kelola($id_kendaraan)
     {
