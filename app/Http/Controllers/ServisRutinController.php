@@ -222,7 +222,6 @@ class ServisRutinController extends Controller
             'harga' => 'required|numeric|min:0',
             'bukti_bayar' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048',
             'bukti_bayar_lama' => 'nullable|string',
-            // 'bukti_bayar' => $buktiValidasi . '|mimes:jpg,jpeg,png,pdf|max:2048', // Max 2MB
             'remove_bukti_bayar' => 'nullable|boolean',
         ]);
 
@@ -298,15 +297,18 @@ class ServisRutinController extends Controller
                 ->with('success', 'Data servis rutin berhasil dihapus.');
         }
 
-        $servis = ServisRutin::find($id);
+        // $servis = ServisRutin::find($id);
 
-        if (!$servis) {
-            return response()->json(['message' => 'Data tidak ditemukan'], 404);
-        }
+        // if (!$servis) {
+        //     return response()->json(['message' => 'Data tidak ditemukan'], 404);
+        // }
 
-        $servis->delete();
+        // $servis->delete();
 
-        return response()->json(['message' => 'Data berhasil dihapus'], 200);
+        // return response()->json(['message' => 'Data berhasil dihapus'], 200);
+
+        return redirect()->route('admin.servisRutin', ['id' => $idKendaraan])
+            ->with('success', 'Data servis rutin berhasil dihapus.');
     }
     
 }
