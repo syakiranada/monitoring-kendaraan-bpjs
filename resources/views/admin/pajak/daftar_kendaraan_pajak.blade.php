@@ -2,7 +2,7 @@
     <div id="main-content" class="transition-all duration-300 w-full">
         <div class="p-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <h2 class="text-2xl font-semibold text-gray-800 dark:text-white sm:mb-0 mb-4">
+            <h2 class="text-2xl font-semibold text-gray-800 sm:mb-0 mb-4">
                 Daftar Pajak Kendaraan
             </h2>
             <form action="{{ route('pajak.daftar_kendaraan_pajak') }}" method="GET" class="flex items-center gap-2">

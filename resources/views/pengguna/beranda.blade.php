@@ -101,7 +101,7 @@
     
             <!-- Daftar Peminjaman - Positioned higher and more to the left -->
             <div class="flex items-center mb-2">
-                <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
+                <h2 class="text-xl font-semibold text-gray-800">
                     Daftar Peminjaman Kendaraan
                 </h2>
             </div>

@@ -33,7 +33,7 @@ $currentPage = request()->query('page');
      Kembali
  </a>
     <div class="container px-4 w-fit">
-        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white sm:mb-0 mb-4">Detail Asuransi</h2>
+        <h2 class="text-2xl font-semibold text-gray-800 sm:mb-0 mb-4">Detail Asuransi</h2>
         <div class="w-full mt-3 max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl p-4 sm:p-6 bg-white border border-gray-200 rounded-lg shadow-sm mx-auto detail-container">
             <input type="hidden" name="current_page" value="{{ $currentPage }}">  
             <div class="flex justify-between items-center mb-4">

@@ -29,7 +29,7 @@
         </svg>
         Kembali
     </a>
-    <h2 class="text-2xl font-semibold text-gray-800 ml-4 dark:text-white sm:mb-0 mb-4">Detail Kendaraan</h2>
+    <h2 class="text-2xl font-semibold text-gray-800 ml-4 sm:mb-0 mb-4">Detail Kendaraan</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 ml-4 mt-3 gap-4 md:gap-6 px-2 md:px-0">
         <div class="space-y-3 bg-white border border-gray-200 p-3 md:p-4 rounded-lg shadow-sm">
             <h2 class="text-lg md:text-xl font-semibold text-gray-900">Informasi Kendaraan</h2>
