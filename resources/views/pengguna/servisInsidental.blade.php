@@ -31,7 +31,7 @@
                                         </td>      
                                         <td class="py-3 px-4 border-b">{{ $peminjaman->kendaraan->plat_nomor ?? '-' }}</td>
                                         <td class="py-3 px-4 border-b">
-                                            <span class="text-xs font-medium px-2.5 py-0.5 rounded-sm border text-blue-800 bg-blue-100 border-blue-400">
+                                            <span class="text-xs font-medium px-2.5 py-0.5 rounded-sm border text-green-800 bg-green-100 border-green-400">
                                                 {{ strtoupper($peminjaman->status_pinjam ?? 'TIDAK DIKETAHUI') }}
                                             </span>
                                         </td>
@@ -105,11 +105,11 @@
                                         @php
                                             $status = $servis->peminjaman->status_pinjam;
                                             $colorMap = [
-                                                'Telah Dikembalikan' => 'green',
+                                                'Telah Dikembalikan' => 'gray',
                                                 'Dibatalkan' => 'red',
                                                 'Ditolak' => 'red',
                                                 'Diperpanjang' => 'yellow',
-                                                'Disetujui' => 'blue',
+                                                'Disetujui' => 'green',
                                             ];
                                             $color = $colorMap[$status] ?? 'gray';
                                 

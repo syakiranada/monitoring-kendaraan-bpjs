@@ -108,6 +108,7 @@ class IsiBBMController extends Controller
                                     ->orWhereRaw("CAST(kendaraan.kapasitas AS CHAR) LIKE ?", ["%$term%"])
                                     ->orWhereRaw("CAST(YEAR(kendaraan.tgl_pembelian) AS CHAR) LIKE ?", ["%$term%"])
                                     ->orWhereRaw("LOWER(kendaraan.frekuensi_servis) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.status_ketersediaan) LIKE ?", ["%$term%"])
                                     ->orWhereRaw("CAST(YEAR(bbm.tgl_isi) AS CHAR) LIKE ?", ["%$term%"])
                                     ->orWhereRaw("LPAD(MONTH(bbm.tgl_isi), 2, '0') LIKE ?", ["%{$term}%"])
                                     ->orWhereRaw("LPAD(DAY(bbm.tgl_isi), 2, '0') LIKE ?", ["%{$term}%"]);

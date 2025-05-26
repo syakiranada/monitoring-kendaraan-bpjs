@@ -96,6 +96,7 @@ class ServisInsidentalController extends Controller
                                     ->orWhereRaw("LOWER(kendaraan.no_rangka) LIKE ?", ["%$term%"])
                                     ->orWhereRaw("CAST(kendaraan.kapasitas AS CHAR) LIKE ?", ["%$term%"])
                                     ->orWhereRaw("LOWER(kendaraan.frekuensi_servis) LIKE ?", ["%$term%"])
+                                    ->orWhereRaw("LOWER(kendaraan.status_ketersediaan) LIKE ?", ["%$term%"])
                                     ->orWhereRaw("CAST(YEAR(servis_insidental.tgl_servis) AS CHAR) LIKE ?", ["%$term%"])
                                     ->orWhereRaw("LPAD(MONTH(servis_insidental.tgl_servis), 2, '0') LIKE ?", ["%{$term}%"])
                                     ->orWhereRaw("LPAD(DAY(servis_insidental.tgl_servis), 2, '0') LIKE ?", ["%{$term}%"]);
