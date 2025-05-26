@@ -100,7 +100,14 @@ class ServisRutinController extends Controller
                                     ->orWhereRaw("LOWER(kendaraan.frekuensi_servis) LIKE ?", ["%$term%"])
                                     ->orWhereRaw("CAST(YEAR(servis_rutin.tgl_servis_real) AS CHAR) LIKE ?", ["%$term%"])
                                     ->orWhereRaw("LPAD(MONTH(servis_rutin.tgl_servis_real), 2, '0') LIKE ?", ["%{$term}%"])
-                                    ->orWhereRaw("LPAD(DAY(servis_rutin.tgl_servis_real), 2, '0') LIKE ?", ["%{$term}%"]);
+                                    ->orWhereRaw("LPAD(DAY(servis_rutin.tgl_servis_real), 2, '0') LIKE ?", ["%{$term}%"])
+                                    ->orWhereRaw("
+                                        CASE
+                                            WHEN servis_rutin.tgl_servis_real IS NULL THEN 'belum pernah servis'
+                                            WHEN servis_rutin.tgl_servis_real < DATE_SUB(CURDATE(), INTERVAL kendaraan.frekuensi_servis MONTH) THEN 'jatuh tempo'
+                                            WHEN DATEDIFF(DATE_ADD(servis_rutin.tgl_servis_real, INTERVAL kendaraan.frekuensi_servis MONTH), CURDATE()) <= 30 THEN 'mendekati jatuh tempo'
+                                            ELSE 'sudah dibayar'
+                                        END LIKE ?", ["%$term%"]);
                             });
                         }
                     });

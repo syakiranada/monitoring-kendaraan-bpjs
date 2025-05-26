@@ -320,7 +320,7 @@
                             reverseButtons: true,
                             confirmButtonColor: "#3085d6",
                             cancelButtonColor: "#d33",
-                            confirmButtonText: "Ya, Ubah!",
+                            confirmButtonText: "Ya, Simpan!",
                             cancelButtonText: "Batal",
                             customClass: {
                                 confirmButton: "swal2-confirm-blue",
