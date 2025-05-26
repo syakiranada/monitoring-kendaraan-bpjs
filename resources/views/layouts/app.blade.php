@@ -78,7 +78,6 @@
         
             .toggle-btn {
                 color: #000000;
-                transition: color 0.2s;
             }
         
             .toggle-btn:hover {
@@ -228,7 +227,7 @@
             }
             @endphp
             
-            <div id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-white shadow-md transition-all duration-300 ease-in-out z-50">
+            <div id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-white shadow-md z-50">
                 <div class="p-4 border-b sidebar-header flex items-center justify-between">
                     <div id="logoContainer" class="flex items-center justify-between">
                         <img src="{{ asset('logo_bpjs.png') }}" alt="BPJS Logo">
@@ -279,7 +278,7 @@
              </div>
 
             <!-- Content Area -->
-            <div id="content" class="w-full transition-all duration-300 ease-in-out lg:ml-64">
+            <div id="content" class="w-full lg:ml-64">
 
                 @include('layouts.navigation')
 
