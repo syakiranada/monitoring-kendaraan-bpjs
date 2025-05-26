@@ -87,12 +87,16 @@
                                             {{--  {{ $servis->bukti_bayar ? 'Ganti File' : 'Upload File' }}  --}}
                                         </span>
                                         <input type="file" name="bukti_bayar" id="fotoInputBuktiBayar" class="hidden" value="0" accept=".png, .jpg, .jpeg, .pdf">
+                                        <input type="hidden" name="remove_bukti_bayar" id="removeFileFlag" value="0">
                                     </label>
+
                                     @if($servis->bukti_bayar)
                                         {{--  <div class="mt-2 text-sm text-gray-700">File saat ini: {{ basename($servis->bukti_bayar) }}</div>  --}}
                                         <a href="#" id="removeFileBuktiBayar" class="text-red-600 font-medium text-sm mt-1 hover:underline text-center">Remove</a>
+                                        <input type="hidden" name="bukti_bayar_lama" value="{{ $servis->bukti_bayar }}">
                                     @else
                                         <a href="#" id="removeFileBuktiBayar" class="hidden text-red-600 font-medium text-sm mt-2 hover:underline text-center">Remove</a>
+                                        <input type="hidden" name="bukti_bayar_lama" value="">
                                     @endif
                                 </div>
                                 <p id="warning-bukti-bayar" class="text-red-500 text-sm mt-1 hidden">Bukti pembayaran wajib diunggah!</p>
@@ -315,6 +319,8 @@
                         const file = this.files[0];
                         const maxSize = 2 * 1024 * 1024;
 
+                        {{--  document.getElementById('removeFileFlag').value = '0';  --}}
+
                         if (!file) {
                             requiredWarning?.classList.remove('hidden');
                             sizeWarning?.classList.add('hidden');
@@ -340,10 +346,11 @@
                     removeFileBuktiBayar.addEventListener('click', function (e) {
                         e.preventDefault();
                         fotoBuktiBayar.value = '';
-                        uploadTextBuktiBayar.textContent = 'Upload Photo';
+                        uploadTextBuktiBayar.textContent = 'Upload File';
                         sizeWarning?.classList.add('hidden');
                         requiredWarning?.classList.remove('hidden');
                         removeFileBuktiBayar.classList.add('hidden');
+                        document.querySelector('input[name="bukti_bayar_lama"]').value = '';
                     });
 
                     const buktiBayarLama = "{{ $servis->bukti_bayar ? basename($servis->bukti_bayar) : '' }}";
@@ -352,6 +359,21 @@
                         removeFileBuktiBayar.classList.remove('hidden');
                     }
                 }
+                
+                const buktiBayarLama = "{{ $servis->bukti_bayar ? basename($servis->bukti_bayar) : '' }}";
+                if (buktiBayarLama) {
+                    uploadTextBuktiBayar.textContent = shortenFileName(buktiBayarLama, 15);
+                    removeFileBuktiBayar.classList.remove('hidden');
+                }
+                console.log('Bukti Bayar Path:', '{{ $servis->bukti_bayar ?? 'KOSONG' }}');
+                
+                // Tambahkan log untuk input hidden
+                console.log('Bukti Bayar Lama Input:', 
+                    document.querySelector('input[name="bukti_bayar_lama"]').value
+                );
+
+                const inputBaru = document.getElementById('fotoInputBuktiBayar');
+                const inputLama = document.querySelector('input[name="bukti_bayar_lama"]');
 
                 if (form) {
                     form.addEventListener('submit', function(event) {
@@ -364,12 +386,26 @@
                             const inputEl = document.querySelector(field.selector);
                             const warningEl = document.getElementById(field.warningId);
                             
-                            if (inputEl && warningEl) {
-                                if (inputEl.value.trim() === '' || (inputEl.type === 'file' && inputEl.files.length === 0)) {
+                        if (inputEl && warningEl) {
+                            if (inputEl.type === 'file') {
+                                // khusus untuk file, cek apakah file baru *dan* lama kosong
+                                if (inputEl.files.length === 0 && !inputLama.value) {
                                     warningEl.classList.remove('hidden');
-                            valid = false;
-                        }
+                                    valid = false;
+                                } else {
+                                    warningEl.classList.add('hidden');
+                                }
+                            } else {
+                                // input biasa
+                                if (inputEl.value.trim() === '') {
+                                    warningEl.classList.remove('hidden');
+                                    valid = false;
+                                } else {
+                                    warningEl.classList.add('hidden');
+                                }
                             }
+                        }
+
                         });
 
                         if (!valid) return;

@@ -212,14 +212,17 @@ class ServisRutinController extends Controller
         ]);
 
         $servis = ServisRutin::findOrFail($id);
-        $buktiValidasi = $servis->bukti_bayar ? 'nullable' : 'required';  
+        $buktiValidasi = ($servis->bukti_bayar && !$request->input('remove_bukti_bayar')) ? 'nullable' : 'required';
+
 
         $validated = $request->validate([
             'tgl_servis_real' => 'required|date_format:Y-m-d',
             'kilometer' => 'required|numeric|min:0',
             'lokasi' => 'required|string|max:200',
             'harga' => 'required|numeric|min:0',
-            'bukti_bayar' => $buktiValidasi . '|mimes:jpg,jpeg,png,pdf|max:2048', // Max 2MB
+            'bukti_bayar' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048',
+            'bukti_bayar_lama' => 'nullable|string',
+            // 'bukti_bayar' => $buktiValidasi . '|mimes:jpg,jpeg,png,pdf|max:2048', // Max 2MB
             'remove_bukti_bayar' => 'nullable|boolean',
         ]);
 
@@ -236,12 +239,24 @@ class ServisRutinController extends Controller
             $buktiBayarPath = null;
         }
 
-        // Jika ada bukti bayar baru, hapus yang lama dan simpan yang baru
+        // // Jika ada bukti bayar baru, hapus yang lama dan simpan yang baru
+        // if ($request->hasFile('bukti_bayar')) {
+        //     if ($servis->bukti_bayar) {
+        //         Storage::disk('public')->delete($servis->bukti_bayar);
+        //     }
+        //     $buktiBayarPath = $request->file('bukti_bayar')->store('bukti-bayar', 'public');
+        // }
+
+        // Proses Bukti Bayar
         if ($request->hasFile('bukti_bayar')) {
-            if ($servis->bukti_bayar) {
+            // Hapus file lama jika ada
+            if ($servis->bukti_bayar && Storage::disk('public')->exists($servis->bukti_bayar)) {
                 Storage::disk('public')->delete($servis->bukti_bayar);
             }
             $buktiBayarPath = $request->file('bukti_bayar')->store('bukti-bayar', 'public');
+        } else {
+            // Gunakan file lama jika tidak ada file baru diupload
+            $buktiBayarPath = $validated['bukti_bayar_lama'] ?? $servis->bukti_bayar;
         }
 
         // Update data servis rutin
