@@ -89,7 +89,7 @@
                         <input type="text" 
                                id="biaya_lain"
                                name="biaya_lain" 
-                               value="{{ $asuransi->biaya_lain !== null ? number_format($asuransi->biaya_lain, 0, ',', '.') : '' }}"
+                               value="{{ $asuransi->biaya_asuransi_lain !== null ? number_format($asuransi->biaya_asuransi_lain, 0, ',', '.') : '' }}"
                                class="w-full pl-8 p-2.5 border rounded-lg" 
                                oninput="formatRupiah(this)"> 
                     </div>
