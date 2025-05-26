@@ -87,7 +87,7 @@
                                class="w-full pl-8 p-2.5 border rounded-lg" 
                                oninput="formatRupiah(this)"> 
                     </div>
-                    <p id= warning-biaya-lain class="text-red-500 text-sm mt-1 hidden">Biaya lain melebihi batas maksimum!</p>
+                    <p id= "warning-biaya-lain" class="text-red-500 text-sm mt-1 hidden">Biaya lain melebihi batas maksimum!</p>
                 </div>
         
                 <div class="mb-6">
@@ -151,7 +151,7 @@
             var todayStr = year + '-' + month + '-' + day;
             var tanggalBayarInput = document.getElementById('tanggal_bayar');
             if (tanggalBayarInput) {
-            tanggalBayarInput.setAttribute('max', todayStr);
+                tanggalBayarInput.setAttribute('max', todayStr);
             }
         });
         function formatRupiah(input) {
@@ -217,13 +217,13 @@
                 errors.push("Tanggal bayar harus diisi!");
                 isValid = false;
             } else {
-                const selectedDate = this.value;
+                const selectedDate = tanggalBayarInput.value;
                 const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const formattedToday = today.toISOString().split('T')[0];
+                const todayStr = today.getFullYear() + '-' + 
+                    String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                    String(today.getDate()).padStart(2, '0');
 
-                
-                if (selectedDate > today) {
+                if (selectedDate > todayStr) {
                     warningTanggalBayar.textContent = "Tanggal bayar tidak boleh lebih dari hari ini!";
                     warningTanggalBayar.classList.remove("hidden");
                     tanggalBayarInput.classList.add("border-red-500");
@@ -386,11 +386,11 @@
                     hideWarning(this, warningElement);
                     const selectedDate = this.value;
                     const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const formattedToday = today.toISOString().split('T')[0];
+                    const todayStr = today.getFullYear() + '-' + 
+                        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                        String(today.getDate()).padStart(2, '0');
 
-                    
-                    if (selectedDate > today) {
+                    if (selectedDate > todayStr) {
                         warningElement.textContent = "Tanggal bayar tidak boleh lebih dari hari ini!";
                         warningElement.classList.remove("hidden");
                         this.classList.add("border-red-500");
@@ -592,7 +592,17 @@
                     alertDiv.id = 'alertMessage';
                     alertDiv.className = 'p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 hidden';
                     document.querySelector('.max-w-2xl.w-full.bg-white').prepend(alertDiv);
-                }
+                }document.addEventListener('DOMContentLoaded', function () {
+    var today = new Date();
+    var year = today.getFullYear();
+    var month = String(today.getMonth() + 1).padStart(2, '0');
+    var day = String(today.getDate()).padStart(2, '0');
+    var todayStr = year + '-' + month + '-' + day;
+    var tanggalBayarInput = document.getElementById('tanggal_bayar');
+    if (tanggalBayarInput) {
+        tanggalBayarInput.setAttribute('max', todayStr);
+    }
+});
                 
                 alertDiv.innerHTML = `<span class="font-medium">Peringatan!</span> ${message}`;
                 alertDiv.classList.remove('hidden');
@@ -602,58 +612,41 @@
             }
 
             document.getElementById('removeFilePolis').addEventListener('click', function(event) {
-                event.preventDefault();
-                
-                let fileInput = document.getElementById('fotoInputPolis');
-                let warningFotoPolis = document.getElementById('warning-foto-polis');
-                
-                if (fileInput.files.length > 0) {
+    event.preventDefault();
+    
+    let fileInput = document.getElementById('fotoInputPolis');
+    let warningFotoPolis = document.getElementById('warning-foto-polis');
+    
+    if (fileInput.files.length > 0) {
         fileInput.value = ''; 
         document.getElementById('uploadTextPolis').textContent = "Upload File";
-        // this.classList.add('hidden');
+        this.classList.add('hidden'); // HAPUS KOMENTAR
         
         // Show warning message after removing the file
         warningFotoPolis.textContent = "Polis asuransi harus diupload!";
-        // warningFotoPolis.classList.remove("hidden");
+        warningFotoPolis.classList.remove("hidden"); // HAPUS KOMENTAR
         document.getElementById('uploadLabelPolis').classList.add("border-red-500");
-        return;
     }
-            });
+});
 
-            document.getElementById('removeFilePembayaran').addEventListener('click', function(event) {
-                event.preventDefault();
-                let warningFotoPembayaran = document.getElementById('warning-foto-pembayaran');
+document.getElementById('removeFilePembayaran').addEventListener('click', function(event) {
+    event.preventDefault();
+    
+    let fileInput = document.getElementById('fotoInputPembayaran'); // TAMBAHKAN VARIABEL INI
+    let warningFotoPembayaran = document.getElementById('warning-foto-pembayaran');
 
     if (fileInput.files.length > 0) {
         fileInput.value = ''; 
         document.getElementById('uploadTextPembayaran').textContent = "Upload File";
-        // this.classList.add('hidden');
+        this.classList.add('hidden'); // HAPUS KOMENTAR
         
         // Show warning message after removing the file
         warningFotoPembayaran.textContent = "Bukti pembayaran asuransi harus diupload!";
-        // warningFotoPembayaran.classList.remove("hidden");
+        warningFotoPembayaran.classList.remove("hidden"); // HAPUS KOMENTAR
         document.getElementById('uploadLabelPembayaran').classList.add("border-red-500");
-        return;}
-            });
+    }
+});
 
-            document.getElementById('fotoInputPolis').addEventListener('change', function(event) {
-                let fileName = event.target.files[0] ? event.target.files[0].name : "Upload File";
-                let shortFileName = shortenFileName(fileName);
-                document.getElementById('uploadTextPolis').textContent = shortFileName;
-                // document.getElementById('removeFilePolis').classList.remove('hidden');
-                
-                validateFileInput(this, ['image/jpeg', 'image/png', 'application/pdf'], 'uploadTextPolis', 'removeFilePolis');
-            });
-
-            document.getElementById('fotoInputPembayaran').addEventListener('change', function(event) {
-                let fileName = event.target.files[0] ? event.target.files[0].name : "Upload File";
-                let shortFileName = shortenFileName(fileName);
-                document.getElementById('uploadTextPembayaran').textContent = shortFileName;
-                // document.getElementById('removeFilePembayaran').classList.remove('hidden');
-                
-                validateFileInput(this, ['image/jpeg', 'image/png', 'application/pdf'], 'uploadTextPembayaran', 'removeFilePembayaran');
-            });
-        
             function validateFileInput(fileInput, allowedTypes, uploadTextId, removeButtonId) {
                 let file = fileInput.files[0];
 
@@ -693,11 +686,11 @@
                 tanggalBayarInput.addEventListener('change', function() {
                     const selectedDate = this.value;
                     const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const formattedToday = today.toISOString().split('T')[0];
+                    const todayStr = today.getFullYear() + '-' + 
+                        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                        String(today.getDate()).padStart(2, '0');
 
-
-                    if (selectedDate > today) {
+                    if (selectedDate > todayStr) {
                         showAlert("Tanggal bayar tidak boleh lebih dari hari ini.");
                         this.value = today; 
                     }

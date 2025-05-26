@@ -224,9 +224,11 @@
             } else {
                 const selectedDate = tanggalBayarInput.value;
                 const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                
-                if (selectedDate > today) {
+                const todayStr = today.getFullYear() + '-' + 
+                    String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                    String(today.getDate()).padStart(2, '0');
+
+                if (selectedDate > todayStr) {
                     warningTanggalBayar.textContent = "Tanggal bayar tidak boleh lebih dari hari ini!";
                     warningTanggalBayar.classList.remove("hidden");
                     tanggalBayarInput.classList.add("border-red-500");
@@ -392,11 +394,13 @@
                 const warningElement = document.getElementById('warning-tanggal-bayar');
                 if (this.value) {
                     hideWarning(this, warningElement);
-                    const selectedDate = this.value;
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    
-                    if (selectedDate > today) {
+                    const selectedDate = tanggalBayarInput.value;
+                const today = new Date();
+                const todayStr = today.getFullYear() + '-' + 
+                    String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                    String(today.getDate()).padStart(2, '0');
+
+                if (selectedDate > todayStr) {
                         warningElement.textContent = "Tanggal bayar tidak boleh lebih dari hari ini!";
                         warningElement.classList.remove("hidden");
                         this.classList.add("border-red-500");
