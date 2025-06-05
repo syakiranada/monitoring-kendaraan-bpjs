@@ -42,7 +42,7 @@ class HitungDepresiasiEventSeeder extends Seeder
                                             CASE 
                                                 WHEN jenis = 'Sedan' THEN nilai_perolehan * 0.25      -- Residu 25%
                                                 WHEN jenis = 'Non Sedan' THEN nilai_perolehan * 0.20  -- Residu 20%
-                                                WHEN jenis = 'Motor' THEN nilai_perolehan * 0.15      -- Residu 15%
+                                                WHEN jenis = 'Motor' THEN nilai_perolehan * 0.10      -- Residu 10%
                                                 ELSE nilai_perolehan * 0.20                           -- Default 20%
                                             END
                                         )) 
@@ -53,7 +53,7 @@ class HitungDepresiasiEventSeeder extends Seeder
                                     CASE 
                                         WHEN jenis = 'Sedan' THEN nilai_perolehan * 0.25
                                         WHEN jenis = 'Non Sedan' THEN nilai_perolehan * 0.20
-                                        WHEN jenis = 'Motor' THEN nilai_perolehan * 0.15
+                                        WHEN jenis = 'Motor' THEN nilai_perolehan * 0.10
                                         ELSE nilai_perolehan * 0.20
                                     END
                                 )
