@@ -116,7 +116,14 @@ class ServisRutinController extends Controller
         }
 
         $servisRutins = $query
-            ->orderByDesc('servis_rutin.tgl_servis_real')
+            ->orderByRaw("
+                CASE
+                    WHEN servis_rutin.tgl_servis_real IS NULL THEN 0
+                    WHEN servis_rutin.tgl_servis_real < DATE_SUB(CURDATE(), INTERVAL kendaraan.frekuensi_servis MONTH) THEN 1
+                    WHEN DATEDIFF(DATE_ADD(servis_rutin.tgl_servis_real, INTERVAL kendaraan.frekuensi_servis MONTH), CURDATE()) <= 30 THEN 2
+                    ELSE 3
+                END ASC
+            ")
             ->orderByDesc('servis_rutin.updated_at')
             ->paginate(10)
             ->appends(['search' => $search]);

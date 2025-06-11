@@ -117,7 +117,7 @@
                             confirmButtonText: "Ya, Hapus!",
                             cancelButtonText: "Batal",
                             customClass: {
-                                confirmButton: "swal2-confirm-blue",
+                                confirmButton: "swal2-confirm-red",
                                 cancelButton: "swal2-cancel-gray"
                             }
                         }).then((result) => {
