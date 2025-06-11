@@ -231,7 +231,7 @@ class AsuransiController extends Controller
                 'tgl_perlindungan_awal' => 'required|date',
                 'tgl_perlindungan_akhir' => 'required|date|after:tgl_perlindungan_awal',
                 'nominal_tagihan' => 'required|numeric',
-                'biaya_lain' => 'nullable|numeric',
+                'biaya_asuransi_lain' => 'nullable|numeric',
                 'foto_polis' => 'required|mimes:jpeg,jpg,png,pdf|max:5120',
                 'bukti_bayar_asuransi' => 'required|mimes:jpeg,jpg,png,pdf|max:5120',
             ]);
@@ -250,7 +250,7 @@ class AsuransiController extends Controller
                 'bukti_bayar_asuransi' => $buktiPath,
                 'tgl_perlindungan_awal' => $request->tgl_perlindungan_awal,
                 'tgl_perlindungan_akhir' => $request->tgl_perlindungan_akhir,
-                'biaya_asuransi_lain' => $request->biaya_lain ?? 0,
+                'biaya_asuransi_lain' => $request->biaya__asuransi_lain ?? 0,
                 'nominal' => $request->nominal_tagihan,
             ]);
 
